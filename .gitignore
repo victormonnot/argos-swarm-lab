@@ -1,0 +1,25 @@
+# Local credentials and private working material
+.env
+.env.*
+!.env.example
+local/
+
+# Generated web artifacts
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+
+# Python environments and generated artifacts, if introduced later
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editor and operating-system files
+.idea/
+.DS_Store
+*~
