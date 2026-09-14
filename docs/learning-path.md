@@ -3,9 +3,10 @@
 Consensus, Artificial Potential Fields, task allocation/execution, decision
 architectures, A* path planning, individual Kalman position estimation and shared
 target estimates are implemented local workshops (1–7). The proposed main
-sequence below breaks distributed software into workshops 8–11 and flight
-simulation into workshops 12–15. Optional algorithm topics are listed separately;
-they are not prerequisites or additional numbered commitments.
+sequence continues with algorithm workshops 8–13, distributed software in
+workshops 14–17 and flight simulation in workshops 18–21. ORCA, CBBA, Behavior
+Trees, cooperative localization and two introductions to SLAM are included in
+the main proposal. Only workshops 1–7 are implemented.
 
 A **phase** groups related subjects. A **workshop** answers one bounded question
 with an experiment. Its **lesson page** explains the method, exposes controls
@@ -24,21 +25,69 @@ and displays the observed results. Each follows the
 | 6. [Individual position estimation](lessons/06-localization.md) | What if the controller's position is wrong? | Exact reference, dead reckoning and linear Kalman filtering with synthetic odometry bias and missing absolute fixes. | Prediction/correction, assumed covariance versus true error, controller belief versus actual arrival. |
 | 7. [Shared estimates and Covariance Intersection](lessons/07-shared-estimates.md) | Does every received estimate contain new information? | Three agents observe one static target once. Compare no sharing, naive independent fusion, unique-measurement fusion and fixed-half Covariance Intersection under ring/cut/recovery delivery. | Source provenance, unknown cross-correlation, duplicate evidence, covariance consistency and communication cost. |
 
-## Proposed main sequence: distributed software
+## Proposed main sequence: algorithms and estimation
 
 These are proposed workshop boundaries and ordering, not implemented features
-or a fixed complete curriculum. The immediate next proposal is workshop 8.
-The later briefs, versions and acceptance criteria will be defined one workshop
-at a time. The later entries remain planning candidates.
+or an exhaustive curriculum. The next proposal is workshop 8, ORCA. Each lesson
+will define its exact variant, assumptions and acceptance criteria before its
+experiment is built.
+
+The ordering groups motion, task allocation and execution, followed by joint
+estimation and mapping. These subjects extend the existing browser models and
+can be studied before installing robotics middleware. This is a learning order,
+not a claim that every algorithm is a technical prerequisite for ROS 2 or flight.
 
 | No. | Proposed workshop | Question | Bounded experiment |
 | --- | --- | --- | --- |
-| 8 | ROS 2 nodes, topics and explicit rounds | What changes when a known algorithm runs in separate programs? | Reproduce a lesson-1 consensus case with one agent per process and inspect published/received messages. Specify run IDs, round IDs and a synchronization protocol before comparing numerical traces. |
-| 9 | Message freshness and Quality of Service (QoS) | Is a delivered message still useful? | Keep the same processes; introduce a controlled delivery impairment and compare selected reliability/history settings. Inspect sequence gaps and message age under a declared clock model. |
-| 10 | Process failure and restart | What can peers infer when an agent stops, then returns? | Stop one agent process and restart it. Inspect timeout evidence, session identity and stale state. Define restart/reset behavior explicitly; silence alone does not prove a crash. |
-| 11 | One DDS-based RMW versus rmw_zenoh | What changes when the transport implementation changes? | Reuse the same message scenario with one named DDS implementation and Zenoh through ROS 2's RMW interface. Compare a declared delivery/recovery metric with versions, topology and supported QoS recorded. Keep this comparison conditional on a useful, comparable experiment. |
+| 8 | ORCA — Optimal Reciprocal Collision Avoidance | How can moving agents share responsibility for avoiding a collision? | Compare reciprocal velocity selection with the existing reactive motion baseline on a small disk-agent crossing. Inspect velocity constraints, preferred/chosen velocities, clearance and arrival. State the sensing, reciprocity and finite-horizon assumptions. |
+| 9 | CBBA — Consensus-Based Bundle Algorithm | How can peers resolve competing task bundles? | Use a small shared task set with declared bundle length and scoring. Inspect local bids, believed winners, conflict resolution and released bundle entries under connected and interrupted exchanges. Keep allocation quality separate from execution success. |
+| 10 | Behavior Trees versus a finite-state machine | How should execution react when an action is interrupted or fails? | Hold assignment and action behavior fixed; compare the existing FSM with a small tree of conditions, sequences, fallbacks and actions. Inspect ticks and Success/Failure/Running states, with explicit reactive or memory semantics. |
+| 11 | Cooperative localization — joint-state Kalman reference | Can robots improve their own position estimates by observing each other? | Start with two planar robots, noisy odometry and relative Cartesian displacement readings in a declared shared frame. Compare independent filtering with a joint position filter retaining cross-covariances. Declare the absolute reference and expose the unobservable common offset when it is absent. |
+| 12 | EKF-SLAM — pose and landmark estimation | How can a robot estimate a map while locating itself inside it? | Use one planar robot and a few unknown landmark positions with supplied landmark IDs. Introduce heading, a small nonlinear motion/sensor model and Extended Kalman Filter linearization. Inspect joint pose/map updates, cross-covariances and a fixed reference frame. |
+| 13 | Graph-based SLAM — pose graphs and loop closure | How does revisiting a place constrain an accumulated trajectory? | Optimize a small anchored pose graph with noisy relative-motion constraints. Compare no loop, one correctly supplied loop association and a controlled incorrect association. Inspect residuals and trajectory changes; do not claim automatic place recognition. |
 
-One node per process in workshop 8 is an experiment choice; ROS 2 also supports
+ORCA selects a locally suitable velocity under its model; global route planning,
+physical feasibility and eventual mission completion remain separate questions.
+Its authors describe the method and original references on the
+[ORCA project page](https://gamma-web.iacs.umd.edu/ORCA/).
+CBBA's score and communication assumptions must be explicit; no universal
+optimality claim is intended. The
+[MIT CBBA project](https://acl.mit.edu/projects/consensus-based-bundle-algorithm)
+provides the original allocation work and distinguishes later variants.
+Behavior Trees organize execution; they do not replace task allocation. The
+[authors' introduction](https://arxiv.org/abs/1709.00084) provides the formal
+control-flow vocabulary for workshop 10.
+
+Workshop 11 estimates different robots' positions, unlike workshop 7's estimates
+of one shared target. Its joint filter is a reference architecture; a distributed
+implementation is not implied by the word cooperative. Roumeliotis and Bekey's
+[Distributed multirobot localization](https://experts.umn.edu/en/publications/distributed-multirobot-localization/)
+provides context for relative observations and joint versus distributed filtering.
+The exact teaching model and reference-frame assumptions will be declared in the
+lesson brief.
+
+SLAM means simultaneous localization and mapping; it is a problem family, not one
+algorithm. Workshops 12 and 13 introduce filtering and graph optimization through
+two small examples. They do not implement a complete camera/LiDAR SLAM system,
+unknown data association, collaborative SLAM or every SLAM method. The
+[Durrant-Whyte/Bailey tutorial](https://www-personal.acfr.usyd.edu.au/tbailey/publications/slamtutorial1.htm)
+and [Grisetti et al. graph-based tutorial](https://iris.uniroma1.it/handle/11573/137105)
+provide the method context. The estimator, solver and supplied observation
+associations must be named explicitly when each experiment is specified.
+
+## Proposed main sequence: distributed software
+
+After those algorithm experiments, reuse a known scenario across actual processes.
+The four planned workshop questions below retain a small, inspectable scope.
+
+| No. | Proposed workshop | Question | Bounded experiment |
+| --- | --- | --- | --- |
+| 14 | ROS 2 nodes, topics and explicit rounds | What changes when a known algorithm runs in separate programs? | Reproduce a lesson-1 consensus case with one agent per process and inspect published/received messages. Specify run IDs, round IDs and a synchronization protocol before comparing numerical traces. |
+| 15 | Message freshness and Quality of Service (QoS) | Is a delivered message still useful? | Keep the same processes; introduce a controlled delivery impairment and compare selected reliability/history settings. Inspect sequence gaps and message age under a declared clock model. |
+| 16 | Process failure and restart | What can peers infer when an agent stops, then returns? | Stop one agent process and restart it. Inspect timeout evidence, session identity and stale state. Define restart/reset behavior explicitly; silence alone does not prove a crash. |
+| 17 | One DDS-based RMW versus rmw_zenoh | What changes when the transport implementation changes? | Reuse the same message scenario with one named DDS implementation and Zenoh through ROS 2's RMW interface. Compare a declared delivery/recovery metric with versions, topology and supported QoS recorded. Keep this comparison conditional on a useful, comparable experiment. |
+
+One node per process in workshop 14 is an experiment choice; ROS 2 also supports
 [multiple nodes in one process](https://docs.ros.org/en/rolling/Tutorials/Intermediate/Composition.html).
 Round synchronization is part of the application protocol, not an automatic
 property of publish/subscribe. The
@@ -56,12 +105,12 @@ completing a ROS 2 middleware comparison first.
 
 | No. | Proposed workshop | Question | Bounded experiment |
 | --- | --- | --- | --- |
-| 12 | ArduPilot SITL and MAVLink command feedback | Did the vehicle execute the requested action? | Use one simulated vehicle and a short takeoff/waypoint/landing sequence. Inspect commands, acknowledgements and telemetry against explicit completion criteria. Start with SITL's built-in dynamics model. |
-| 13 | ArduPilot with a Gazebo environment | How does the flight controller interact with an external simulated world? | Connect one vehicle to a supported Gazebo model. Observe a short motion command and one declared perturbation or execution limit, with simulation timing and state feedback visible. |
-| 14 | Lost GCS heartbeat and configured failsafe | What does the autopilot do when contact with the ground station is lost? | On one simulated vehicle, interrupt the established GCS heartbeat, inspect timeout and configured response, then restore it. Distinguish heartbeat loss from merely pausing commands or losing a telemetry display. |
-| 15 | Two vehicles and one bounded mission | Can commands, reports and task completion stay associated with the right vehicle? | Start with two separately identified SITL vehicles, isolated message routes and one simple allocation scenario using a known policy. Measure execution and confirmation; document separation assumptions and resource use before increasing the fleet. |
+| 18 | ArduPilot SITL and MAVLink command feedback | Did the vehicle execute the requested action? | Use one simulated vehicle and a short takeoff/waypoint/landing sequence. Inspect commands, acknowledgements and telemetry against explicit completion criteria. Start with SITL's built-in dynamics model. |
+| 19 | ArduPilot with a Gazebo environment | How does the flight controller interact with an external simulated world? | Connect one vehicle to a supported Gazebo model. Observe a short motion command and one declared perturbation or execution limit, with simulation timing and state feedback visible. |
+| 20 | Lost GCS heartbeat and configured failsafe | What does the autopilot do when contact with the ground station is lost? | On one simulated vehicle, interrupt the established GCS heartbeat, inspect timeout and configured response, then restore it. Distinguish heartbeat loss from merely pausing commands or losing a telemetry display. |
+| 21 | Two vehicles and one bounded mission | Can commands, reports and task completion stay associated with the right vehicle? | Start with two separately identified SITL vehicles, isolated message routes and one simple allocation scenario using a known policy. Measure execution and confirmation; document separation assumptions and resource use before increasing the fleet. |
 
-SITL already includes a vehicle dynamics model; workshop 13 introduces an
+SITL already includes a vehicle dynamics model; workshop 19 introduces an
 external environment, rather than the first physical dynamics in the sequence.
 The [ArduPilot simulation overview](https://ardupilot.org/dev/docs/simulation-2.html)
 and [Gazebo integration guide](https://ardupilot.org/dev/docs/sitl-with-gazebo.html)
@@ -78,7 +127,7 @@ trace; its 2D/3D views must not run a separate browser approximation presented a
 ROS 2 or autopilot execution. A small adapter can be introduced when needed by
 that specific experiment. Software versions, installation/resource requirements,
 supported vehicle counts and acceptance criteria must be verified before delivery.
-None of workshops 8–15 is implemented by the current browser lab.
+None of workshops 8–21 is implemented by the current browser lab.
 
 ## Comparisons must answer a specific question
 
@@ -108,20 +157,12 @@ For mission lessons, report what was completed, what remains possible and what
 requires intervention. An agent process staying alive is not a mission metric.
 The [experiment guide](experiment-guide.md) defines the reporting rules.
 
-## Optional algorithm workshops
+## Further extensions
 
-These are independent candidates for further browser experiments. They are not
-an alternative numbered next sequence and are not hidden prerequisites for ROS 2
-or flight simulation. They can be selected before, during or after the proposed
-main sequence when a particular algorithmic question becomes the priority.
-
-| Candidate | Possible bounded question | Builds on |
-| --- | --- | --- |
-| ORCA, Optimal Reciprocal Collision Avoidance | How does reciprocal velocity selection handle two agents crossing, compared with the existing reactive baseline? | Motion and collision checks in workshop 2. |
-| CBBA, Consensus-Based Bundle Algorithm | How do distributed bids resolve competing task bundles under declared connectivity? | Allocation and decision authority in workshops 3–4. |
-| Behavior Trees | How does task execution react to failure or interruption, compared with the existing finite-state machine? | Execution in workshop 3; allocation remains a separate rule. |
-| Cooperative localization | What changes when observations constrain agents' own poses rather than a shared static target? | Individual filtering and shared evidence in workshops 6–7. |
-| SLAM, simultaneous localization and mapping | How can pose and map be estimated together in one small, declared sensor scenario? | A separate scope and method selection are needed; this is a broader subject, not a single already-defined lesson. |
-
-Research methods enter through a precise question, stated assumptions and an
-understandable baseline. This list is not a requirement to cover every technique.
+The numbered proposal includes ORCA, CBBA, Behavior Trees, cooperative
+localization and introductory SLAM. Further work may deepen any of those topics,
+for example automatic data association, visual/LiDAR sensing or collaborative
+SLAM, but these are not silently included in the small initial experiments.
+Learned policies and language-model interfaces remain optional. Select additional
+methods through a specific question and an understandable baseline; the roadmap
+is not a requirement to cover every technique.

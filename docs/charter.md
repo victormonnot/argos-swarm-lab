@@ -53,7 +53,8 @@ lesson. Document the chosen dependencies and rationale with the implementation.
 
 Python, C++, ROS 2, middleware and autopilot simulation are candidate technologies
 for later modules. They are not required dependencies of the first web page.
-SLAM, learned policies and language-model interfaces remain optional topics.
+Bounded introductory SLAM workshops are part of the proposed algorithm sequence.
+Learned policies and language-model interfaces remain optional topics.
 No cloud account, physical drone, external service or user authentication is
 required for the first lesson.
 
