@@ -1,9 +1,9 @@
 # Module catalog
 
 Consensus, Artificial Potential Fields, task allocation/execution, decision
-architectures, A* path planning and individual Kalman position estimation are
-implemented local workshops. Shared estimates and the software/flight extensions
-remain proposed. The motion/estimation topics are separate bounded lessons.
+architectures, A* path planning, individual Kalman position estimation and shared
+target estimates are implemented local workshops. The software/flight extensions
+remain proposed. The motion and estimation topics are separate bounded lessons.
 Each module combines an interactive
 experiment with explanations following the [experiment guide](experiment-guide.md).
 
@@ -15,9 +15,23 @@ experiment with explanations following the [experiment guide](experiment-guide.m
 | 4. [Decision architectures](lessons/04-decision-architectures.md) | What changes when decision authority moves? | Reuse nearest-pair greedy with a central allocator, fixed subgroup domains or replicated peer plans. Cut and restore links between {C,A1} and {A2,A3}. | Authority and eligibility, delivered report caches, retained reservations, full-roster barriers, physical completion versus confirmation. |
 | 5. [A* path planning and waypoint execution](lessons/05-pathfinding.md) | How does a route become motion around a wall? | A*, Dijkstra and direct motion on known grids. | Shortest graph paths, Manhattan heuristic, search effort and motion limits. |
 | 6. [Individual position estimation](lessons/06-localization.md) | What if the controller's position is wrong? | Exact reference, dead reckoning and linear Kalman filtering with synthetic odometry bias and missing absolute fixes. | Prediction/correction, assumed covariance versus true error, controller belief versus actual arrival. |
-| Proposed: shared estimates | When does another agent's information help? | A separate bounded comparison of individual and shared estimates, with declared data provenance and correlations. | Communication, measurement reuse and avoiding double-counted evidence. Additional motion constraints/local avoidance may be separate lessons. |
-| Proposed: distributed software | What changes when the same experiment runs across processes? | Reproduce a known scenario with ROS 2 and Python/C++ components. Compare DDS and Zenoh for a defined communication scenario. | Message contracts, process lifecycle, observability and middleware integration. |
-| Proposed: flight simulation | Which simplifying assumptions break with an autopilot and vehicle dynamics? | Run a bounded scenario with Gazebo, ArduPilot SITL and MAVLink; document hardware requirements and supported fleet sizes. | Autopilot integration, simulation timing, execution feedback and realistic diagnostic limits. |
+| 7. [Shared estimates and Covariance Intersection](lessons/07-shared-estimates.md) | Does every received estimate contain new information? | Three agents observe one static target once. Compare no sharing, naive independent fusion, unique-measurement fusion and fixed-half Covariance Intersection under ring/cut/recovery delivery. | Source provenance, unknown cross-correlation, duplicate evidence, covariance consistency and communication cost. |
+| Proposed next: distributed software | What changes when the same experiment runs across processes? | First reproduce one known scenario with ROS 2 processes and explicit messages. Then compare DDS and Zenoh for a defined transport question if that comparison is useful. | Message contracts, process lifecycle, timestamps, observability and middleware integration. Python/C++ and middleware versions are selected at implementation time. |
+| Proposed later: flight simulation | Which simplifying assumptions break with an autopilot and vehicle dynamics? | Begin with one bounded Gazebo/ArduPilot SITL/MAVLink scenario; establish timing, resources and execution feedback before extending the fleet. | Autopilot integration, physical dynamics, supported fleet sizes and diagnostic limits. |
+
+## Progression beyond the browser models
+
+The first seven workshops isolate algorithmic questions in one deterministic
+simulator. The next proposed phase keeps a known scenario while moving execution
+into separate processes, so transport and lifecycle effects can be identified.
+It should begin with one reproducible message contract and failure case, not a
+general platform or several middleware migrations at once.
+
+Flight simulation follows as a separate fidelity step. Software versions,
+installation and hardware requirements, supported vehicle counts and exact
+acceptance criteria must be checked for that bounded scenario before claiming
+it works. No ROS 2, DDS/Zenoh comparison, Gazebo, autopilot or MAVLink integration
+is implemented by the current browser workshops.
 
 ## Comparisons must answer a specific question
 

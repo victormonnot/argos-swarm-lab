@@ -4,11 +4,12 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** six local workshops with explanations, linked 2D/3D views, step
+**Available:** seven local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
 **Artificial Potential Fields**, **task allocation with finite-state
 execution**, **decision architectures under network partition**, **A* path
-planning with waypoint execution**, and **linear Kalman position filtering**.
+planning with waypoint execution**, **linear Kalman position filtering**, and
+**shared estimates with Covariance Intersection**.
 Other modules in the
 [catalog](docs/learning-path.md) remain proposals.
 
@@ -27,7 +28,7 @@ The server binds to loopback. No account, backend or external service is needed.
 Dependencies and the optional test browser need a network connection to install;
 the workshops load their assets locally. Use the workshop links to switch pages;
 the additional workshops are at `/movement/`, `/mission/`, `/architecture/`,
-`/pathfinding/`, and `/localization/`. Navigation
+`/pathfinding/`, `/localization/`, and `/fusion/`. Navigation
 starts a new run.
 
 If the local server has stopped after sleep or shutdown, run `npm run dev` again
@@ -43,6 +44,7 @@ npm run compare:missions         # allocation and failure reference cases as JSO
 npm run compare:architectures    # authority and network partition cases as JSON
 npm run compare:pathfinding      # A*, Dijkstra and direct-motion cases as JSON
 npm run compare:localization     # position filters and 200 seeded trials as JSON
+npm run compare:fusion           # shared estimates and 1,000 seeded trials as JSON
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -56,8 +58,9 @@ hardware rendering performance. The [consensus results](docs/lessons/01-consensu
 [potential-field results](docs/lessons/02-potential-fields-results.md),
 [mission results](docs/lessons/03-mission-allocation-results.md),
 [architecture results](docs/lessons/04-decision-architectures-results.md),
-[pathfinding results](docs/lessons/05-pathfinding-results.md) and
-[localization results](docs/lessons/06-localization-results.md) list the checks
+[pathfinding results](docs/lessons/05-pathfinding-results.md),
+[localization results](docs/lessons/06-localization-results.md) and
+[shared-estimation results](docs/lessons/07-shared-estimates-results.md) list the checks
 actually run and their limitations.
 
 ## First workshop: distributed average consensus
@@ -200,7 +203,7 @@ constant-speed **waypoint follower**; a direct-to-goal baseline skips planning.
 Select cells to inspect frontier/settled state, g/h/f and predecessors. Compare
 the dashed planned route with the actual trail, waypoint, pose and goal distance.
 All execution controls and both views observe one run. This single-agent baseline
-is followed by individual position estimation below; shared estimates remain proposed.
+is followed by individual position estimation and shared target estimates below.
 The graph's shortest route is not necessarily a shortest continuous-space path or
 a feasible vehicle trajectory. There is no body radius, turning constraint,
 obstacle discovery or synthetic pose error. See the
@@ -233,16 +236,45 @@ localization. The filter has no bias state, so its assumed covariance does not
 guarantee accurate position or safe execution. See the
 [specification](docs/lessons/06-localization.md) for sensing, timing and limits.
 
+## Seventh workshop: shared estimates and Covariance Intersection
+
+**Does another message mean another measurement?** Three agents each observe the
+same static target once, then exchange estimates along a directed ring. Compare
+**no sharing**, **naive independent-information fusion**, **unique-measurement
+fusion** with immutable IDs, and **Covariance Intersection (CI)** with fixed
+half weights. Every method uses the same observations and twelve-round window.
+
+1. Advance naive fusion to round 2. Its reported variance is 0.16 m² per axis,
+   but the true expected variance is 0.24 m²: summaries already overlap.
+2. Compare unique-measurement fusion. All three originals arrive by round 2,
+   giving variance 0.64/3 m². Further copies do not count as new evidence.
+3. Compare CI on the intact ring. It produces the same means as naive fusion,
+   while retaining conservative variance 0.64 m². Agreement, accuracy and
+   reported uncertainty are separate properties.
+4. Cut A3→A1 or restore it at round 5. Inspect received packets, original-source
+   weights and coverage. With a lasting cut, repeated averaging can increasingly
+   favor A1, even though CI still reports a valid covariance bound here.
+5. Compare all 100 paired seeds, not only the visible seed. The exact expected
+   error covariance is computed independently from source coefficients.
+
+Both views show estimates of one target, not moving robots. The packet inspector
+distinguishes received evidence from evaluator truth; ledgers transmit more
+logical records than summaries. IDs work because the original measurements are
+independent in this experiment; CI requires consistent input covariances. Neither
+method guarantees low error for each realization. The
+[specification](docs/lessons/07-shared-estimates.md) defines equations, transport,
+metrics and primary sources.
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
   model and page controller. `src/model.js`, `src/movement-model.js`,
-  `src/mission-model.js`, `src/architecture-model.js`, `src/pathfinding-model.js`
-  and `src/localization-model.js`
+  `src/mission-model.js`, `src/architecture-model.js`, `src/pathfinding-model.js`,
+  `src/localization-model.js` and `src/fusion-model.js`
   contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with six explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with seven explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -255,7 +287,8 @@ guarantee accurate position or safe execution. See the
   mission references use `compareMissions()` in `src/mission-model.js`; architecture
   references use `compareArchitectures()` in `src/architecture-model.js`; pathfinding
   references use `comparePaths()` in `src/pathfinding-model.js`; localization uses
-  `compareLocalization()` and the paired-seed `compareLocalizationSeeds()`.
+  `compareLocalization()` and the paired-seed `compareLocalizationSeeds()`;
+  shared estimation uses `compareFusion()` and `compareFusionSeeds()`.
 
 Official dependency documentation was checked on 2026-09-14. Dependencies are
 shared by the workshops; robotics middleware and flight dynamics are outside

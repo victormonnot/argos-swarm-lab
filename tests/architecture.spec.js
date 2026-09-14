@@ -127,8 +127,8 @@ test('keyboard selection, mobile layout and all workshop links remain usable', a
   await page.locator('#arch-cut').click();
   await expect(page.locator('#arch-step-count')).toHaveText('20');
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(6);
-  for (const [name, id] of [['01 / Average consensus', '#step-count'], ['02 / Potential fields', '#movement-step-count'], ['03 / Task allocation', '#mission-step-count'], ['04 / Decision architectures', '#arch-step-count'], ['05 / A* path planning', '#path-step-count'], ['06 / Kalman position filtering', '#loc-step-count']]) {
+  await expect(navigation.getByRole('link')).toHaveCount(7);
+  for (const [name, id] of [['01 / Average consensus', '#step-count'], ['02 / Potential fields', '#movement-step-count'], ['03 / Task allocation', '#mission-step-count'], ['04 / Decision architectures', '#arch-step-count'], ['05 / A* path planning', '#path-step-count'], ['06 / Kalman position filtering', '#loc-step-count'], ['07 / Shared estimates', '#fusion-round']]) {
     await page.getByRole('navigation', { name: 'Workshops', exact: true }).getByRole('link', { name, exact: true }).click();
     await expect(page.locator(id)).toHaveText('0');
   }

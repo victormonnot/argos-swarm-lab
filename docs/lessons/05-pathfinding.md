@@ -2,8 +2,9 @@
 
 **Status:** implemented locally at `/pathfinding/`; see the
 [measured results](05-pathfinding-results.md). This is the first
-bounded part of the motion/estimation module; shared estimates and localization
-errors remain separate proposed experiments.
+bounded part of the motion/estimation topics. Localization errors are explored
+in [lesson 6](06-localization.md), and shared target estimates in
+[lesson 7](07-shared-estimates.md).
 
 **Question:** how does a robot find a route around an obstacle, and what is the
 difference between that route and the motion that follows it?

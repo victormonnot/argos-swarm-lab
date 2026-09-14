@@ -14,7 +14,8 @@
     "compare:missions": "node scripts/compare-missions.js",
     "compare:architectures": "node scripts/compare-architectures.js",
     "compare:pathfinding": "node scripts/compare-pathfinding.js",
-    "compare:localization": "node scripts/compare-localization.js"
+    "compare:localization": "node scripts/compare-localization.js",
+    "compare:fusion": "node scripts/compare-fusion.js"
   },
   "engines": {
     "node": ">=22.12.0"

@@ -11,6 +11,7 @@ export default defineConfig({
         architecture: resolve(import.meta.dirname, 'architecture/index.html'),
         pathfinding: resolve(import.meta.dirname, 'pathfinding/index.html'),
         localization: resolve(import.meta.dirname, 'localization/index.html'),
+        fusion: resolve(import.meta.dirname, 'fusion/index.html'),
       },
     },
   },
