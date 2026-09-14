@@ -1,8 +1,9 @@
 # Module catalog
 
 Consensus, Artificial Potential Fields, task allocation/execution, decision
-architectures and the A* path-planning portion of module 5 are implemented local
-workshops. Estimation/shared knowledge in module 5 and entries 6–7 remain proposed.
+architectures, A* path planning and individual Kalman position estimation are
+implemented local workshops. Shared estimates and the software/flight extensions
+remain proposed. The motion/estimation topics are separate bounded lessons.
 Each module combines an interactive
 experiment with explanations following the [experiment guide](experiment-guide.md).
 
@@ -12,9 +13,11 @@ experiment with explanations following the [experiment guide](experiment-guide.m
 | 2. [Artificial Potential Fields](lessons/02-potential-fields.md) | How do local motion rules produce useful or undesirable behavior? | Capped velocity commands from attraction/repulsion in a known map; compare arrival, a U-shaped trap and contact failures. | Decentralized reactive control; finite-range peer sensing; synchronous kinematics; tuning and local traps. |
 | 3. [Task allocation and finite-state execution](lessons/03-mission-allocation.md) | Who should do which task, and when is it complete? | Three agents service six points; compare fixed round-robin, nearest-pair greedy and Hungarian assignment under one central coordinator. Make A2 unavailable at 5 s. | Linear assignment versus mission execution; finite-state machines; exclusive ownership, reallocation and completion metrics. |
 | 4. [Decision architectures](lessons/04-decision-architectures.md) | What changes when decision authority moves? | Reuse nearest-pair greedy with a central allocator, fixed subgroup domains or replicated peer plans. Cut and restore links between {C,A1} and {A2,A3}. | Authority and eligibility, delivered report caches, retained reservations, full-roster barriers, physical completion versus confirmation. |
-| 5. Motion and shared estimates | How do movement constraints and uncertain knowledge affect decisions? | Implemented first slice: [A* path planning and waypoint execution](lessons/05-pathfinding.md), compared with Dijkstra and direct motion on known grids. Later separate lessons may add motion constraints, local avoidance and declared synthetic pose error. | Graph paths versus motion, Manhattan heuristics, reachability and information boundaries. Uncertain/shared estimates and avoiding double-counted evidence remain proposed. |
-| 6. Distributed software | What changes when the same experiment runs across processes? | Reproduce a known scenario with ROS 2 and Python/C++ components. Compare DDS and Zenoh for a defined communication scenario. | Message contracts, process lifecycle, observability and middleware integration. |
-| 7. Flight simulation | Which simplifying assumptions break with an autopilot and vehicle dynamics? | Run a bounded scenario with Gazebo, ArduPilot SITL and MAVLink; document hardware requirements and supported fleet sizes. | Autopilot integration, simulation timing, execution feedback and realistic diagnostic limits. |
+| 5. [A* path planning and waypoint execution](lessons/05-pathfinding.md) | How does a route become motion around a wall? | A*, Dijkstra and direct motion on known grids. | Shortest graph paths, Manhattan heuristic, search effort and motion limits. |
+| 6. [Individual position estimation](lessons/06-localization.md) | What if the controller's position is wrong? | Exact reference, dead reckoning and linear Kalman filtering with synthetic odometry bias and missing absolute fixes. | Prediction/correction, assumed covariance versus true error, controller belief versus actual arrival. |
+| Proposed: shared estimates | When does another agent's information help? | A separate bounded comparison of individual and shared estimates, with declared data provenance and correlations. | Communication, measurement reuse and avoiding double-counted evidence. Additional motion constraints/local avoidance may be separate lessons. |
+| Proposed: distributed software | What changes when the same experiment runs across processes? | Reproduce a known scenario with ROS 2 and Python/C++ components. Compare DDS and Zenoh for a defined communication scenario. | Message contracts, process lifecycle, observability and middleware integration. |
+| Proposed: flight simulation | Which simplifying assumptions break with an autopilot and vehicle dynamics? | Run a bounded scenario with Gazebo, ArduPilot SITL and MAVLink; document hardware requirements and supported fleet sizes. | Autopilot integration, simulation timing, execution feedback and realistic diagnostic limits. |
 
 ## Comparisons must answer a specific question
 

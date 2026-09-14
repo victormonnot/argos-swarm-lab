@@ -4,11 +4,12 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** five local workshops with explanations, linked 2D/3D views, step
+**Available:** six local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
 **Artificial Potential Fields**, **task allocation with finite-state
-execution**, **decision architectures under network partition**, and **A* path
-planning with waypoint execution**. Other modules in the
+execution**, **decision architectures under network partition**, **A* path
+planning with waypoint execution**, and **linear Kalman position filtering**.
+Other modules in the
 [catalog](docs/learning-path.md) remain proposals.
 
 ## Run locally
@@ -25,8 +26,8 @@ Open the URL printed by Vite, normally [http://127.0.0.1:5173](http://127.0.0.1:
 The server binds to loopback. No account, backend or external service is needed.
 Dependencies and the optional test browser need a network connection to install;
 the workshops load their assets locally. Use the workshop links to switch pages;
-the additional workshops are at `/movement/`, `/mission/`, `/architecture/`, and
-`/pathfinding/`. Navigation
+the additional workshops are at `/movement/`, `/mission/`, `/architecture/`,
+`/pathfinding/`, and `/localization/`. Navigation
 starts a new run.
 
 If the local server has stopped after sleep or shutdown, run `npm run dev` again
@@ -41,6 +42,7 @@ npm run compare:movement         # potential-field reference cases as JSON
 npm run compare:missions         # allocation and failure reference cases as JSON
 npm run compare:architectures    # authority and network partition cases as JSON
 npm run compare:pathfinding      # A*, Dijkstra and direct-motion cases as JSON
+npm run compare:localization     # position filters and 200 seeded trials as JSON
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -53,8 +55,9 @@ The browser checks use software WebGL for reproducibility; they do not measure
 hardware rendering performance. The [consensus results](docs/lessons/01-consensus-results.md),
 [potential-field results](docs/lessons/02-potential-fields-results.md),
 [mission results](docs/lessons/03-mission-allocation-results.md),
-[architecture results](docs/lessons/04-decision-architectures-results.md) and
-[pathfinding results](docs/lessons/05-pathfinding-results.md) list the checks
+[architecture results](docs/lessons/04-decision-architectures-results.md),
+[pathfinding results](docs/lessons/05-pathfinding-results.md) and
+[localization results](docs/lessons/06-localization-results.md) list the checks
 actually run and their limitations.
 
 ## First workshop: distributed average consensus
@@ -197,21 +200,49 @@ constant-speed **waypoint follower**; a direct-to-goal baseline skips planning.
 Select cells to inspect frontier/settled state, g/h/f and predecessors. Compare
 the dashed planned route with the actual trail, waypoint, pose and goal distance.
 All execution controls and both views observe one run. This single-agent baseline
-is the first part of the motion/estimation module; shared estimates remain proposed.
+is followed by individual position estimation below; shared estimates remain proposed.
 The graph's shortest route is not necessarily a shortest continuous-space path or
 a feasible vehicle trajectory. There is no body radius, turning constraint,
 obstacle discovery or synthetic pose error. See the
 [specification](docs/lessons/05-pathfinding.md) for search, motion and contact semantics.
 
+## Sixth workshop: dead reckoning and linear Kalman position filtering
+
+**Can a robot believe it arrived while still missing the goal?** Keep the known
+A* route, but control from an estimated position. Compare an **exact-position
+oracle**, **dead reckoning** from measured displacement and a **linear Kalman
+filter** for independent x/y coordinates. Odometry has seeded random noise and
+an optional fixed bias; synthetic absolute position fixes arrive once per second.
+
+1. Compare the oracle with dead reckoning on the U route. With seed 1 and bias
+   enabled, dead reckoning announces arrival while the robot is 1.437 m from goal.
+2. Run Kalman with regular fixes. Inspect prediction, innovation, gain and
+   covariance. True estimation error is an evaluator quantity; it is not P.
+3. Stop fixes at 3 s. Odometry and prediction continue, with no stale-fix reuse.
+4. Restore fixes at 8 s on the U route; inspect the first new correction. On the
+   shorter open route, this policy can stop before restoration ever happens.
+5. Disable the systematic bias or change the seed. The comparison table reports
+   all outcomes across twenty seeds, including false arrivals with regular fixes.
+
+Display physical and estimated trajectories together, the last fix and its age,
+assumed uncertainty, current waypoint and both goal distances. Arrival requires
+a controller completion claim and true goal distance within 0.25 m. The 0.10 m
+estimated waypoint radius is explicit; it differs from the prior lesson's exact
+center arrival. This single-agent experiment has no real GPS, IMU, SLAM or shared
+localization. The filter has no bias state, so its assumed covariance does not
+guarantee accurate position or safe execution. See the
+[specification](docs/lessons/06-localization.md) for sensing, timing and limits.
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
   model and page controller. `src/model.js`, `src/movement-model.js`,
-  `src/mission-model.js`, `src/architecture-model.js` and `src/pathfinding-model.js`
+  `src/mission-model.js`, `src/architecture-model.js`, `src/pathfinding-model.js`
+  and `src/localization-model.js`
   contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with five explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with six explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -223,7 +254,8 @@ obstacle discovery or synthetic pose error. See the
   references similarly use `compareMovement()` in `src/movement-model.js`;
   mission references use `compareMissions()` in `src/mission-model.js`; architecture
   references use `compareArchitectures()` in `src/architecture-model.js`; pathfinding
-  references use `comparePaths()` in `src/pathfinding-model.js`.
+  references use `comparePaths()` in `src/pathfinding-model.js`; localization uses
+  `compareLocalization()` and the paired-seed `compareLocalizationSeeds()`.
 
 Official dependency documentation was checked on 2026-09-14. Dependencies are
 shared by the workshops; robotics middleware and flight dynamics are outside
@@ -241,5 +273,6 @@ their scope.
 | [Mission results](docs/lessons/03-mission-allocation-results.md) | Assignment costs, completion and reallocation after agent loss. |
 | [Architecture results](docs/lessons/04-decision-architectures-results.md) | Physical completion, delivered knowledge and partition recovery. |
 | [Pathfinding results](docs/lessons/05-pathfinding-results.md) | Grid shortest routes, search effort, waypoint execution and contact. |
+| [Localization results](docs/lessons/06-localization-results.md) | Position error, assumed uncertainty, missing fixes and false arrival. |
 
 Additional modules and integrations need their own specifications and validation.
