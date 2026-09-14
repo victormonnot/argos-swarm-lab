@@ -1,0 +1,167 @@
+{
+  "generatedAt": "2026-09-14T06:37:48.658Z",
+  "runtime": "v22.22.1",
+  "revision": "d7b235102a9cf5988d5fd5f480f01be2c383d029",
+  "workingTreeModified": true,
+  "sourceHashes": {
+    "src/model.js": "337b8e54814d1a4e4100f4be0a976dd9696251e91e931897d7b5725d7193529e",
+    "src/comparisons.js": "c52b16173c8aa87ff2e8b67bbfb711719991b1deef5e69a9780d07bd3e4d5ad3"
+  },
+  "model": {
+    "agents": 6,
+    "alpha": 0.08333333333333333,
+    "budget": 1000,
+    "threshold": 0.01,
+    "exchangeUnit": "one directed scalar value per active edge endpoint per update"
+  },
+  "results": [
+    {
+      "id": "complete",
+      "label": "Complete graph",
+      "initialValues": [
+        0,
+        2,
+        4,
+        8,
+        10,
+        12
+      ],
+      "initialMean": 6,
+      "firstAgreementStep": 11,
+      "exchangesToAgreement": 330,
+      "finalStep": 1000,
+      "finalDisagreement": 3.552713678800501e-15,
+      "totalExchanges": 30000,
+      "finalValues": [
+        5.999999999999998,
+        5.999999999999998,
+        6,
+        6,
+        6.000000000000002,
+        6.000000000000002
+      ],
+      "events": []
+    },
+    {
+      "id": "chain",
+      "label": "Chain",
+      "initialValues": [
+        0,
+        2,
+        4,
+        8,
+        10,
+        12
+      ],
+      "initialMean": 6,
+      "firstAgreementStep": 314,
+      "exchangesToAgreement": 3140,
+      "finalStep": 1000,
+      "finalDisagreement": 1.8348256247691097e-9,
+      "totalExchanges": 10000,
+      "finalValues": [
+        5.99999999908259,
+        5.999999999328409,
+        5.999999999754182,
+        6.000000000245823,
+        6.000000000671596,
+        6.0000000009174155
+      ],
+      "events": []
+    },
+    {
+      "id": "groups",
+      "label": "Two groups",
+      "initialValues": [
+        0,
+        2,
+        4,
+        8,
+        10,
+        12
+      ],
+      "initialMean": 6,
+      "firstAgreementStep": null,
+      "exchangesToAgreement": null,
+      "finalStep": 1000,
+      "finalDisagreement": 8.000000000000012,
+      "totalExchanges": 8000,
+      "finalValues": [
+        1.9999999999999987,
+        2,
+        2.0000000000000018,
+        9.99999999999999,
+        10,
+        10.00000000000001
+      ],
+      "events": []
+    },
+    {
+      "id": "recovery",
+      "label": "Chain: cut at 0, reconnect at 100",
+      "initialValues": [
+        0,
+        2,
+        4,
+        8,
+        10,
+        12
+      ],
+      "initialMean": 6,
+      "firstAgreementStep": 406,
+      "exchangesToAgreement": 3860,
+      "finalStep": 1000,
+      "finalDisagreement": 1.4837119977073598e-8,
+      "totalExchanges": 9800,
+      "finalValues": [
+        5.999999992581437,
+        5.999999994569234,
+        5.999999998012202,
+        6.000000001987794,
+        6.000000005430761,
+        6.000000007418557
+      ],
+      "events": [
+        {
+          "step": 0,
+          "a": 2,
+          "b": 3,
+          "enabled": false
+        },
+        {
+          "step": 100,
+          "a": 2,
+          "b": 3,
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "shifted",
+      "label": "Complete graph: all values +100",
+      "initialValues": [
+        100,
+        102,
+        104,
+        108,
+        110,
+        112
+      ],
+      "initialMean": 106,
+      "firstAgreementStep": 11,
+      "exchangesToAgreement": 330,
+      "finalStep": 1000,
+      "finalDisagreement": 5.684341886080802e-14,
+      "totalExchanges": 30000,
+      "finalValues": [
+        105.99999999999997,
+        105.99999999999997,
+        105.99999999999999,
+        106,
+        106.00000000000003,
+        106.00000000000003
+      ],
+      "events": []
+    }
+  ]
+}

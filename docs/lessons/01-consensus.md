@@ -1,6 +1,27 @@
-# Lesson 01 — How do several agents reach agreement?
+# Lesson 01 — Distributed average consensus
 
-**Status:** planned module specification; implementation has not started.
+**Status:** implemented local workshop. See the [setup instructions](../../README.md#run-locally)
+and [measured results](01-consensus-results.md).
+
+**Question:** how do several agents reach agreement through neighbor exchanges?
+
+## Method profile
+
+| Aspect | Implemented choice | Meaning in this lesson |
+| --- | --- | --- |
+| Algorithm | Distributed average consensus | For a fixed connected graph, local exchanges converge to the initial population mean. |
+| Update rule | Linear consensus with constant edge gain | Each neighbor difference contributes with the fixed gain `alpha = 1/12`. |
+| Decision architecture | Decentralized, leaderless | Every agent updates from its own value and its neighbors' values. No coordinator supplies the answer. |
+| Timing | Synchronous, discrete time | All agents read state `k` before any value from state `k+1` takes effect. |
+| Communication | Undirected, unweighted graph | Each link carries values both ways with the same edge gain, without delay or random loss. |
+| Topology | Complete graph, chain, or two groups | These presets change the neighbors, while retaining the same algorithm and decision architecture. |
+| Available information | Own and current neighbor values | Global mean, disagreement and component membership are evaluator data, not agent inputs. |
+| Execution and fidelity | One browser simulation of scalar dynamics | One program simulates six agents making local decisions; spatial views display the same abstract state. |
+
+Show the algorithm name in the page title and opening heading. Keep a concise
+method profile visible before the experiment, define topology by its selector,
+and label the aspect changed by each guided experiment. The primary reference
+and implementation boundaries are listed at the end of this brief.
 
 ## Learning objective
 
@@ -27,7 +48,7 @@ Provide three graph presets:
 - Chain: edges `(1,2), (2,3), (3,4), (4,5), (5,6)`.
 - Two groups: chains `(1,2), (2,3)` and `(4,5), (5,6)`, without a bridge.
 
-## Proposed reference model
+## Implemented reference model
 
 Keep this model explicit in the implementation and teaching page. If changed,
 update this brief and the expected results together.
@@ -38,6 +59,13 @@ For a fixed population of `N = 6`, at each synchronous step:
 x_i[k+1] = x_i[k] + alpha * sum(x_j[k] - x_i[k], j in neighbors(i))
 alpha = 1 / (2 * N) = 1/12
 ```
+
+Here `x_i[k]` is agent `i`'s value at step `k`, and `neighbors(i)` is its current
+set of linked neighbors. The sum adds their differences from its own value.
+Each neighbor coefficient is `alpha`; the self-weight is
+`1 - alpha * degree(i)`, where `degree(i)` counts its neighbors. Link edits
+therefore change the self-weight while leaving the edge gain fixed. The rule
+is linear in the previous state for a given graph.
 
 Every agent uses its own and its current neighbors' values from the previous
 step. Compute all next values before replacing any current value. Links are
@@ -59,7 +87,7 @@ one-way loss, asynchronous updates or changing membership in this first lesson.
 
 ## Controls and views
 
-- Play/pause, advance exactly one model step, and control playback speed.
+- Play/pause, advance exactly one model step, and control playback speed (1, 5, 20 or 60 model steps per second).
 - Edit initial values and choose a graph preset for a new run.
 - Remove or restore links while paused, then continue from the current values.
 - Reset to the configured initial values and initial graph.
@@ -71,17 +99,21 @@ the prior event history. A paused link edit affects the next update and is
 recorded. Replay starts from the saved initial configuration and applies the
 same events. Disable configuration and link editing during replay; the learner
 can leave replay and reset before making a new experiment. Keep these semantics
-visible in the controls.
+visible in the controls. Replay starts playing automatically and stops at the
+recorded final step; it includes any edits made at that final boundary. Runs are
+held in tab memory and do not survive a reload.
 
 Show the current step, each agent's value, connected components, initial/current
-mean and disagreement curve. The mean is an evaluator display: agents do not
-receive it as an input. Include a textual state table usable without the canvas.
+mean and disagreement curve. The mean, disagreement and connected-component labels are evaluator displays:
+agents do not receive them as inputs. Include a textual state table usable without the canvas.
 
 ## Metrics and guided experiments
 
 Define disagreement as `D[k] = max(x[k]) - min(x[k])`, in scalar-value units.
 Show the first step where `D[k] <= 0.01`; if it is not reached within a
-1,000-step comparison budget, report that explicitly. For the declared averaging
+1,000-step comparison budget, report that explicitly. Interactive runs also stop
+at this budget. Initial values must be finite numbers within `[-1,000,000,
+1,000,000]`; these bounds keep the numerical model and visual scales manageable. For the declared averaging
 updates, the range cannot increase. Do not present display rounding as agreement.
 
 | Experiment | Change | What the learner should inspect |

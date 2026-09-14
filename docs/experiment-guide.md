@@ -13,6 +13,39 @@ The web page should bring these elements together. Prefer explanatory labels,
 visible numerical values and a small number of useful controls. Support keyboard
 operation and do not encode important state using color alone.
 
+## Name the method and explain its aspects
+
+Each lesson page and its written brief must show the recognized algorithm name
+near the start, alongside the question it explores. Expand an acronym on first
+use when one is established. Name the implemented variant explicitly; do not
+present a broad family or a paper title as a uniquely specified algorithm.
+
+Use a short, visible method profile with consistent fields and a plain-language
+explanation next to each technical term:
+
+| Aspect | What the learner should be able to identify |
+| --- | --- |
+| Algorithm and variant | The named rule and the specific version being executed. |
+| Decision architecture | Who decides, whether a leader/coordinator exists, and which information each decision uses. |
+| Update timing | Whether updates are synchronous/asynchronous and time is discrete/continuous. |
+| Communication model | Direction, weights, and assumptions about delays or loss. |
+| Network topology | Who exchanges with whom, distinguished from the update rule. |
+| Agent inputs and evaluator data | Which values agents can use and which are global observations for the learner. |
+| Execution and fidelity | One browser simulation, separate processes, or a physical model; state what is actually implemented. |
+
+Keep the principal name and essential aspects visible without opening a tooltip.
+Define symbols beside equations. Link the declared method to a primary reference
+and explain which part is implemented. Mark an undecided or inapplicable aspect
+explicitly rather than inventing a method name for a future module.
+
+Label what each comparison changes: algorithm, architecture, topology, link
+schedule or initial conditions. For example, the first lesson implements
+**distributed average consensus** with a **constant edge gain**, **decentralized,
+leaderless** decisions and **synchronous, discrete-time** updates. Complete,
+chain and two-group graphs are topologies of the same algorithm. The coefficient
+on an agent's own value depends on its number of neighbors, so "constant edge
+gain" is more precise than an unqualified "constant weights".
+
 ## 2D and 3D views
 
 Both views consume the same experiment state and event history. Switching views

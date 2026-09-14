@@ -1,12 +1,12 @@
-# Planned module catalog
+# Module catalog
 
-Consensus is the initial planned module. The remaining entries are candidate
-extensions, not implemented features. Each module combines an interactive
+Consensus is the initial implemented local module. The remaining entries are
+candidate extensions, not implemented features. Each module combines an interactive
 experiment with explanations following the [experiment guide](experiment-guide.md).
 
 | Module | Question explored | Bounded experiment and comparison | Concepts covered |
 | --- | --- | --- | --- |
-| 1. Agreement | How can local exchanges produce agreement? | Scalar consensus on a complete graph, a chain and disconnected groups; remove and restore links. | Graphs, synchronous updates, convergence assumptions and reproducible measurement. |
+| 1. Distributed average consensus | How can local exchanges produce agreement? | Linear consensus with constant edge gain on a complete graph, a chain and disconnected groups; remove and restore links. | Decentralized, leaderless decisions; synchronous discrete updates; communication topology and convergence assumptions. |
 | 2. Collective movement | How do local motion rules produce useful or undesirable behavior? | Attraction/repulsion in a known synthetic map; show an obstacle configuration where progress stalls. | Feedback laws, tuning, local minima and separating motion from mission completion. |
 | 3. Mission execution and allocation | Who should do which task, and when is it complete? | Three agents service predefined observation points; compare fixed allocation, a simple adaptive greedy rule and an appropriate assignment method. Remove an agent mid-run. | Task models, execution states, constraints, reallocation and objective metrics. |
 | 4. Decision architectures | What changes when decision authority moves? | Reuse one task scenario with central allocation, subgroup coordinators and peer allocation. Introduce a network partition. | Information access, ownership, stale decisions and architecture tradeoffs. |
