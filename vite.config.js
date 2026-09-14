@@ -15,6 +15,7 @@ export default defineConfig({
         orca: resolve(import.meta.dirname, 'orca/index.html'),
         cbba: resolve(import.meta.dirname, 'cbba/index.html'),
         behavior: resolve(import.meta.dirname, 'behavior/index.html'),
+        cooperative: resolve(import.meta.dirname, 'cooperative/index.html'),
       },
     },
   },

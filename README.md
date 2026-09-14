@@ -4,14 +4,15 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** ten local workshops with explanations, linked 2D/3D views, step
+**Available:** eleven local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
 **Artificial Potential Fields**, **task allocation with finite-state
 execution**, **decision architectures under network partition**, **A* path
 planning with waypoint execution**, **linear Kalman position filtering**,
 **shared estimates with Covariance Intersection**, **Optimal Reciprocal
 Collision Avoidance (ORCA)**, **Consensus-Based Bundle Algorithm (CBBA)**,
-and **Behavior Trees versus finite-state machines (FSM)**.
+**Behavior Trees versus finite-state machines (FSM)**, and **cooperative
+localization with a joint-state Kalman filter**.
 Other modules in the
 [catalog](docs/learning-path.md) remain proposals.
 
@@ -30,8 +31,8 @@ The server binds to loopback. No account, backend or external service is needed.
 Dependencies and the optional test browser need a network connection to install;
 the workshops load their assets locally. Use the workshop links to switch pages;
 the additional workshops are at `/movement/`, `/mission/`, `/architecture/`,
-`/pathfinding/`, `/localization/`, `/fusion/`, `/orca/`, `/cbba/`, and `/behavior/`. Navigation
-starts a new run.
+`/pathfinding/`, `/localization/`, `/fusion/`, `/orca/`, `/cbba/`, `/behavior/`, and
+`/cooperative/`. Navigation starts a new run.
 
 If the local server has stopped after sleep or shutdown, run `npm run dev` again
 from this project directory and keep that terminal open. To reuse a chosen port,
@@ -50,6 +51,7 @@ npm run compare:fusion           # shared estimates and 1,000 seeded trials as J
 npm run compare:orca             # disk crossing, symmetry and sensing cases as JSON
 npm run compare:cbba             # task bundles, partition and recovery as JSON
 npm run compare:behavior         # execution, interruption and recovery as JSON
+npm run compare:cooperative      # joint localization, missing anchors and paired seeds
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -67,9 +69,10 @@ hardware rendering performance. The [consensus results](docs/lessons/01-consensu
 [localization results](docs/lessons/06-localization-results.md),
 [shared-estimation results](docs/lessons/07-shared-estimates-results.md),
 [ORCA results](docs/lessons/08-orca-results.md),
-[CBBA results](docs/lessons/09-cbba-results.md) and
-[execution results](docs/lessons/10-behavior-trees-results.md) list the checks
-actually run and their limitations.
+[CBBA results](docs/lessons/09-cbba-results.md),
+[execution results](docs/lessons/10-behavior-trees-results.md) and
+[cooperative-localization results](docs/lessons/11-cooperative-localization-results.md)
+list the checks actually run and their limitations.
 
 ## First workshop: distributed average consensus
 
@@ -347,17 +350,42 @@ There is no flight physics or collision-avoidance controller. See the
 [specification](docs/lessons/10-behavior-trees.md) for tick timing, action lifecycle
 and the information boundary.
 
+## Eleventh workshop: cooperative localization
+
+**Can two robots improve their positions by observing each other?** Compare
+independent position Kalman filters with a **joint-state linear Kalman filter**
+that retains the covariance between both robots. They receive identical noisy
+odometry; relative Cartesian observations couple the estimates, while only A1
+receives absolute position fixes. The joint estimator is a centralized reference.
+
+Inspect a relative update, then the A1 absolute correction: cross-covariance lets
+that fix also affect A2. Remove the absolute reference to distinguish accurate
+relative placement from uncertain team position. Add the same initial offset
+to both estimates; relative observations cannot identify that translation.
+Restore the reference at 10 s or remove relative observations from 5 through 9 s
+to inspect prediction, missing corrections and resumed information.
+
+The two physical paths stay fixed across methods. True drones, estimated
+positions, covariance contours, update stages and a full joint covariance table
+separate evaluator truth from estimator information. The volumetric yard and
+2D map observe the same planar positions; altitude is fixed for display and is
+not estimated. There is no flight controller, range/bearing conversion or SLAM.
+Seeded reference copies and paired trials show errors alongside reported
+uncertainty, including the intentionally misspecified common-prior offset.
+See the [specification](docs/lessons/11-cooperative-localization.md) for the
+coordinate-frame, sensing, covariance and observability assumptions.
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
   model and page controller. `src/model.js`, `src/movement-model.js`,
   `src/mission-model.js`, `src/architecture-model.js`, `src/pathfinding-model.js`,
   `src/localization-model.js`, `src/fusion-model.js`, `src/orca-model.js`,
-  `src/cbba-model.js` and `src/behavior-model.js`
+  `src/cbba-model.js`, `src/behavior-model.js` and `src/cooperative-model.js`
   contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with ten explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with eleven explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -374,7 +402,8 @@ and the information boundary.
   shared estimation uses `compareFusion()` and `compareFusionSeeds()`; ORCA uses
   `referenceComparisons()` in `src/orca-model.js`; task-bundle references use
   `referenceComparisons()` in `src/cbba-model.js`; execution references use
-  `referenceComparisons()` in `src/behavior-model.js`.
+  `referenceComparisons()` in `src/behavior-model.js`; cooperative localization
+  uses `referenceComparisons()` and `compareSeeds()` in `src/cooperative-model.js`.
 
 Official dependency documentation was checked on 2026-09-14. Dependencies are
 shared by the workshops; robotics middleware and flight dynamics are outside
@@ -397,5 +426,6 @@ their scope.
 | [ORCA results](docs/lessons/08-orca-results.md) | Reciprocal avoidance, clearance, arrival and failures under missing sensing. |
 | [CBBA results](docs/lessons/09-cbba-results.md) | Bundle conflicts, neighbor agreement, partition recovery and allocation quality. |
 | [Execution results](docs/lessons/10-behavior-trees-results.md) | Matched BT/FSM behavior, interruption, memory semantics and recovery outcomes. |
+| [Cooperative-localization results](docs/lessons/11-cooperative-localization-results.md) | Joint covariance, missing references, shared prior offsets and paired-seed estimation errors. |
 
 Additional modules and integrations need their own specifications and validation.

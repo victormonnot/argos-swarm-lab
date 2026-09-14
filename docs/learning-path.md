@@ -2,11 +2,11 @@
 
 Consensus, Artificial Potential Fields, task allocation/execution, decision
 architectures, A* path planning, individual Kalman position estimation, shared
-target estimates, ORCA, CBBA and Behavior Trees/FSM are implemented local workshops
-(1–10). The proposed main sequence continues with algorithm workshops 11–13,
-distributed software in workshops 14–17 and flight simulation in workshops 18–21. ORCA, CBBA, Behavior
+target estimates, ORCA, CBBA, Behavior Trees/FSM and cooperative localization
+are implemented local workshops (1–11). The proposed main sequence continues
+with algorithm workshops 12–13, distributed software in workshops 14–17 and flight simulation in workshops 18–21. ORCA, CBBA, Behavior
 Trees, cooperative localization and two introductions to SLAM are included in
-the program. Only workshops 1–10 are implemented.
+the program. Only workshops 1–11 are implemented.
 
 A **phase** groups related subjects. A **workshop** answers one bounded question
 with an experiment. Its **lesson page** explains the method, exposes controls
@@ -27,12 +27,14 @@ and displays the observed results. Each follows the
 | 8. [Optimal Reciprocal Collision Avoidance](lessons/08-orca.md) | How can moving agents share responsibility for avoiding a collision? | ORCA, APF and direct goal following on planar disk crossings; inspect velocity constraints and compare symmetry and unavailable peer sensing. | Half-responsibility, nearest feasible velocity, prediction horizon, swept clearance and arrival versus avoidance. |
 | 9. [Consensus-Based Bundle Algorithm](lessons/09-cbba.md) | How can peers resolve competing task bundles? | Three planners with additive utilities exchange timestamped winner beliefs over a chain, partition or recovery; compare independent greedy bundles and an evaluator's exact score reference. | Bundle acquisition, suffix release, local beliefs, conflicting claims, agreement and allocation quality versus execution. |
 | 10. [Behavior Trees and finite-state machines](lessons/10-behavior-trees.md) | What happens when a running action is interrupted? | One fixed drone inspection mission with identical actions: reactive BT, guarded FSM and a memory-root BT; temporary/persistent hold and inspection failure. | Tick traversal, Success/Failure/Running, action cancellation, reactive versus memory semantics, recovery versus mission success, and 3D kinematics. |
+| 11. [Cooperative localization](lessons/11-cooperative-localization.md) | Can robots improve their own positions by observing each other? | Independent position Kalman filters versus a joint four-state KF; relative Cartesian observations, A1-only absolute fixes, absent/restored reference and a shared prior offset. | Cross-covariance, indirect corrections, known coordinate frame, common-translation observability, error versus uncertainty and paired seeded trials. |
 
 ## Proposed main sequence: algorithms and estimation
 
 These are proposed workshop boundaries and ordering, not implemented features
-or an exhaustive curriculum. The next proposal is workshop 11, cooperative
-localization with a joint-state Kalman reference. Each lesson will define its exact variant, assumptions and acceptance criteria before its
+or an exhaustive curriculum. The next proposal is workshop 12,
+Extended Kalman Filter SLAM with supplied landmark identities. Each lesson will
+define its exact variant, assumptions and acceptance criteria before its
 experiment is built.
 
 The ordering groups motion, task allocation and execution, followed by joint
@@ -42,7 +44,6 @@ not a claim that every algorithm is a technical prerequisite for ROS 2 or flight
 
 | No. | Proposed workshop | Question | Bounded experiment |
 | --- | --- | --- | --- |
-| 11 | Cooperative localization — joint-state Kalman reference | Can robots improve their own position estimates by observing each other? | Start with two planar robots, noisy odometry and relative Cartesian displacement readings in a declared shared frame. Compare independent filtering with a joint position filter retaining cross-covariances. Declare the absolute reference and expose the unobservable common offset when it is absent. |
 | 12 | EKF-SLAM — pose and landmark estimation | How can a robot estimate a map while locating itself inside it? | Use one planar robot and a few unknown landmark positions with supplied landmark IDs. Introduce heading, a small nonlinear motion/sensor model and Extended Kalman Filter linearization. Inspect joint pose/map updates, cross-covariances and a fixed reference frame. |
 | 13 | Graph-based SLAM — pose graphs and loop closure | How does revisiting a place constrain an accumulated trajectory? | Optimize a small anchored pose graph with noisy relative-motion constraints. Compare no loop, one correctly supplied loop association and a controlled incorrect association. Inspect residuals and trajectory changes; do not claim automatic place recognition. |
 
@@ -63,8 +64,8 @@ of one shared target. Its joint filter is a reference architecture; a distribute
 implementation is not implied by the word cooperative. Roumeliotis and Bekey's
 [Distributed multirobot localization](https://experts.umn.edu/en/publications/distributed-multirobot-localization/)
 provides context for relative observations and joint versus distributed filtering.
-The exact teaching model and reference-frame assumptions will be declared in the
-lesson brief.
+The [implemented lesson](lessons/11-cooperative-localization.md) declares its
+linear Cartesian measurement model, supplied frame and information boundaries.
 
 SLAM means simultaneous localization and mapping; it is a problem family, not one
 algorithm. Workshops 12 and 13 introduce filtering and graph optimization through

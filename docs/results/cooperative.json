@@ -1,0 +1,659 @@
+{
+  "generatedAt": "2026-09-14T19:13:34.349Z",
+  "runtime": "v22.22.1",
+  "revision": "f6d4ad569b1bdb13e090084de70045df2c0cb68d",
+  "workingTreeModified": true,
+  "sourceHashes": {
+    "src/cooperative-model.js": "22d2760a66fee53c6a6ce8488189c8e8d0a1a068d2e901965b7a96996d2ad3d2"
+  },
+  "model": {
+    "agents": 2,
+    "state": "[x1, y1, x2, y2] in a declared shared Cartesian frame",
+    "steps": 80,
+    "stepSeconds": 0.25,
+    "timeBudgetSeconds": 20,
+    "trajectories": "Evaluator-only open-loop planar paths: p1(t)=[-3+0.3t, -1.5+0.4sin(0.4t)], p2(t)=[-2.5+0.25t, 1.1+0.4cos(0.4t)], t in seconds, positions in metres. Estimates do not control motion.",
+    "initialPrior": {
+      "positionStandardDeviationMetresPerAxis": 0.8,
+      "covariance": "0.64 I4; independent zero-mean Gaussian initial errors for the calibrated prior. No initial cross-covariances.",
+      "sharedShiftMetres": [
+        2,
+        -1.5
+      ],
+      "sharedShiftInterpretation": "The same fixed offset is added to both initial means while P remains unchanged. This intentionally misspecified prior demonstrates an unobservable translation and is excluded from all calibration ensembles."
+    },
+    "odometry": {
+      "displacementStandardDeviationMetresPerAxisPerStep": 0.08,
+      "processCovariance": "0.0064 I4 per 0.25-second step",
+      "interpretation": "Each robot measures its own displacement with independent Gaussian noise. The filter adds the supplied displacement and Q; it receives neither the true increment nor the trajectory function."
+    },
+    "relativeObservation": {
+      "H": [
+        [
+          -1,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          -1,
+          0,
+          1
+        ]
+      ],
+      "standardDeviationMetresPerAxis": 0.15,
+      "covariance": "0.0225 I2",
+      "interpretation": "A direct relative Cartesian displacement p2-p1, including orientation in the already shared world axes. No range-to-Cartesian conversion, heading estimation, bearing, data association or synthetic radio geometry is modeled."
+    },
+    "absoluteObservation": {
+      "H": [
+        [
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ]
+      ],
+      "standardDeviationMetresPerAxis": 0.2,
+      "covariance": "0.04 I2",
+      "interpretation": "A1 alone receives an absolute Cartesian position fix. A2 never receives its own absolute fix."
+    },
+    "timing": "Prediction at every 0.25-second endpoint. Potential relative and A1 absolute samples arrive at t=1,2,...,20 seconds. When both arrive, apply relative then absolute at the same boundary. Sequential corrections retain their intermediate means, covariances, innovations, gains and normalized innovation squared values.",
+    "methods": "Joint-state Kalman filter retains the complete 4x4 covariance and admits relative plus A1 absolute observations. Independent Kalman filters admit only A1 absolute observations; relative packets are recorded but ignored. Its block-diagonal covariance remains block diagonal, and A2 is dead reckoning. Both use the same initial prior, odometry and available raw measurement samples for a seed.",
+    "correction": "Linear H, S=H P H^T+R, K=P H^T S^-1 using Cholesky solves. Covariance uses Joseph form (I-KH)P(I-KH)^T+K R K^T, symmetrized to remove floating-point asymmetry.",
+    "scenarios": "Anchored: all samples. Unanchored: no absolute samples. Anchor restored: no absolute samples before t=10, then t=10,...,20 (11 fixes). Relative outage: omit the five relative samples at t=5,6,7,8,9; resume at t=10 while A1 absolute fixes remain regular.",
+    "randomness": "Seeded Mulberry32 uniforms with Box-Muller Gaussian draws. Draw four initial Gaussian errors and eight Gaussian values at every step (four odometry, two potential relative, two potential anchor), regardless of method or availability schedule. Observation noises, odometry errors, robots, axes and initial errors are independent under the specified model.",
+    "architecture": "An ideal centralized joint-state reference fuses supplied observation packets. The baseline comprises two independent filters evaluated together in one browser. Cooperative refers to observing different robots; it does not imply decentralized software. No real network, packets in transit, message delays, decentralized covariance bookkeeping or commercial implementation is reproduced.",
+    "informationBoundary": "Estimator functions receive only the current mean and covariance, noisy odometry and available measurement values with known H/R. Evaluator truth, path definitions, future schedules and truth-based metrics remain separate. The UI can inspect both estimator inputs and evaluator truth.",
+    "observability": "H_relative*[dx,dy,dx,dy]^T=0. Relative-only measurements cannot identify a common translation. A finite prior still supplies a probabilistic reference. In this symmetric unanchored setup, center covariance is (0.32 + 0.0032*step) I2 and relative corrections preserve the center mean. After absolute fixes break prior symmetry, relative corrections can change the center through prior correlations; unobservable measurement directions do not imply every update leaves every center estimate unchanged.",
+    "covarianceMetrics": "With P partitioned by robot, center covariance C=(P11+P12+P21+P22)/4 and relative covariance D=P11+P22-P12-P21. positionRmsRadius=sqrt(trace(P)/2) is a per-robot mean RMS position radius. centerRmsRadius=sqrt(trace(C)) and relativeRmsRadius=sqrt(trace(D)) are two-dimensional RMS radii, not confidence bounds. crossCovarianceNorm is the Frobenius norm of P12 in square metres.",
+    "evaluatorMetrics": "positionRmse=sqrt((||e1||^2+||e2||^2)/2), relativeError=||e2-e1||, centerError=||(e1+e2)/2||, all in metres at the current instant. NEES=e^T P^-1 e has expected value 4 for the specified calibrated Gaussian model. Each applied 2D update has NIS=innovation^T S^-1 innovation with expected value 2. Ignored or unavailable measurements have no applied-update NIS.",
+    "ensemble": "For each of four scenarios, run seeds 1 through 200 with the calibrated, unshifted prior and both methods (1,600 method runs). Endpoint RMS error is the square root of mean squared error over seeds; it is not the mean of individual RMSE values. NEES is averaged across 200 endpoints per method/scenario; NIS is pooled over actually applied measurements. Count paired seeds where joint filtering gives smaller realized error. Bias cases appear only in single-seed references.",
+    "fidelity": "Planar noisy position estimation, with fixed-altitude drone geometry and a volumetric scene as presentation. No estimated altitude or heading, flight dynamics, collision avoidance, SLAM, mapping, middleware, autopilot or sensor hardware integration. Finishing the observation budget is not a mission-success criterion."
+  },
+  "methodSources": [
+    {
+      "title": "Roumeliotis and Bekey (2002), Distributed multirobot localization",
+      "url": "https://doi.org/10.1109/TRA.2002.803461",
+      "authorManuscript": "https://www-users.cse.umn.edu/~stergios/papers/TRA-MULTI.pdf",
+      "use": "Context for relative observations, joint covariance and cooperative localization. This small linear centralized reference does not reproduce the paper's full nonlinear or distributed algorithm."
+    },
+    {
+      "title": "Kalman (1960), A New Approach to Linear Filtering and Prediction Problems",
+      "url": "https://doi.org/10.1115/1.3662552",
+      "use": "Linear state prediction and measurement correction."
+    }
+  ],
+  "references": [
+    {
+      "method": "joint",
+      "scenario": "anchored",
+      "priorShift": "none",
+      "seed": 7,
+      "methodLabel": "Joint-state Kalman filter",
+      "scenarioLabel": "Regular A1 absolute fixes",
+      "steps": 80,
+      "time": 20,
+      "metrics": {
+        "positionRmse": 0.13661555720722368,
+        "relativeError": 0.040841870675104225,
+        "centerError": 0.13508070132694652,
+        "positionRmsRadius": 0.21235500849231306,
+        "relativeRmsRadius": 0.17958278873562167,
+        "centerRmsRadius": 0.19243740574341214,
+        "nees": 1.283148451583184,
+        "crossCovarianceNorm": 0.020484643477840004
+      },
+      "counts": {
+        "relativeAvailable": 20,
+        "relativeUsed": 20,
+        "anchorAvailable": 20,
+        "anchorUsed": 20
+      }
+    },
+    {
+      "method": "independent",
+      "scenario": "anchored",
+      "priorShift": "none",
+      "seed": 7,
+      "methodLabel": "Independent Kalman filters",
+      "scenarioLabel": "Regular A1 absolute fixes",
+      "steps": 80,
+      "time": 20,
+      "metrics": {
+        "positionRmse": 2.08025948010395,
+        "relativeError": 2.885804977927027,
+        "centerError": 1.4985032238554752,
+        "positionRmsRadius": 1.083358230118579,
+        "relativeRmsRadius": 1.5320999019422066,
+        "centerRmsRadius": 0.7660499509711033,
+        "nees": 7.657368547755057,
+        "crossCovarianceNorm": 0
+      },
+      "counts": {
+        "relativeAvailable": 20,
+        "relativeUsed": 0,
+        "anchorAvailable": 20,
+        "anchorUsed": 20
+      }
+    },
+    {
+      "method": "joint",
+      "scenario": "unanchored",
+      "priorShift": "none",
+      "seed": 7,
+      "methodLabel": "Joint-state Kalman filter",
+      "scenarioLabel": "No absolute fixes",
+      "steps": 80,
+      "time": 20,
+      "metrics": {
+        "positionRmse": 1.589511483627763,
+        "relativeError": 0.10069846450039147,
+        "centerError": 1.5887138544735953,
+        "positionRmsRadius": 1.0772448785716915,
+        "relativeRmsRadius": 0.18391876912309063,
+        "centerRmsRadius": 1.0733126291998991,
+        "nees": 4.9815122661001645,
+        "crossCovarianceNorm": 0.808607343343646
+      },
+      "counts": {
+        "relativeAvailable": 20,
+        "relativeUsed": 20,
+        "anchorAvailable": 0,
+        "anchorUsed": 0
+      }
+    },
+    {
+      "method": "independent",
+      "scenario": "unanchored",
+      "priorShift": "none",
+      "seed": 7,
+      "methodLabel": "Independent Kalman filters",
+      "scenarioLabel": "No absolute fixes",
+      "steps": 80,
+      "time": 20,
+      "metrics": {
+        "positionRmse": 2.20463816643605,
+        "relativeError": 3.057069010349721,
+        "centerError": 1.5887138544735968,
+        "positionRmsRadius": 1.5178932768808202,
+        "relativeRmsRadius": 2.146625258399795,
+        "centerRmsRadius": 1.0733126291998976,
+        "nees": 8.438245564073824,
+        "crossCovarianceNorm": 0
+      },
+      "counts": {
+        "relativeAvailable": 20,
+        "relativeUsed": 0,
+        "anchorAvailable": 0,
+        "anchorUsed": 0
+      }
+    },
+    {
+      "method": "joint",
+      "scenario": "anchor-restored",
+      "priorShift": "none",
+      "seed": 7,
+      "methodLabel": "Joint-state Kalman filter",
+      "scenarioLabel": "A1 absolute fixes start at 10 s",
+      "steps": 80,
+      "time": 20,
+      "metrics": {
+        "positionRmse": 0.13684138259684853,
+        "relativeError": 0.04095004137654424,
+        "centerError": 0.13530091470064756,
+        "positionRmsRadius": 0.21235721401887545,
+        "relativeRmsRadius": 0.1795829835405564,
+        "centerRmsRadius": 0.19243979409552103,
+        "nees": 1.2864107109679148,
+        "crossCovarianceNorm": 0.020485281097560034
+      },
+      "counts": {
+        "relativeAvailable": 20,
+        "relativeUsed": 20,
+        "anchorAvailable": 11,
+        "anchorUsed": 11
+      }
+    },
+    {
+      "method": "independent",
+      "scenario": "anchor-restored",
+      "priorShift": "none",
+      "seed": 7,
+      "methodLabel": "Independent Kalman filters",
+      "scenarioLabel": "A1 absolute fixes start at 10 s",
+      "steps": 80,
+      "time": 20,
+      "metrics": {
+        "positionRmse": 2.080260244027996,
+        "relativeError": 2.8857560347856177,
+        "centerError": 1.4985278475250348,
+        "positionRmsRadius": 1.083358231154976,
+        "relativeRmsRadius": 1.5320999034078935,
+        "centerRmsRadius": 0.7660499517039467,
+        "nees": 7.657661937783133,
+        "crossCovarianceNorm": 0
+      },
+      "counts": {
+        "relativeAvailable": 20,
+        "relativeUsed": 0,
+        "anchorAvailable": 11,
+        "anchorUsed": 11
+      }
+    },
+    {
+      "method": "joint",
+      "scenario": "relative-outage",
+      "priorShift": "none",
+      "seed": 7,
+      "methodLabel": "Joint-state Kalman filter",
+      "scenarioLabel": "Relative samples absent from 5 to 10 s",
+      "steps": 80,
+      "time": 20,
+      "metrics": {
+        "positionRmse": 0.13697168771088056,
+        "relativeError": 0.04078404065424441,
+        "centerError": 0.13544522413634683,
+        "positionRmsRadius": 0.2123555822018329,
+        "relativeRmsRadius": 0.17958283942699396,
+        "centerRmsRadius": 0.19243802700639503,
+        "nees": 1.2883257653566171,
+        "crossCovarianceNorm": 0.020484809334833598
+      },
+      "counts": {
+        "relativeAvailable": 15,
+        "relativeUsed": 15,
+        "anchorAvailable": 20,
+        "anchorUsed": 20
+      }
+    },
+    {
+      "method": "independent",
+      "scenario": "relative-outage",
+      "priorShift": "none",
+      "seed": 7,
+      "methodLabel": "Independent Kalman filters",
+      "scenarioLabel": "Relative samples absent from 5 to 10 s",
+      "steps": 80,
+      "time": 20,
+      "metrics": {
+        "positionRmse": 2.08025948010395,
+        "relativeError": 2.885804977927027,
+        "centerError": 1.4985032238554752,
+        "positionRmsRadius": 1.083358230118579,
+        "relativeRmsRadius": 1.5320999019422066,
+        "centerRmsRadius": 0.7660499509711033,
+        "nees": 7.657368547755057,
+        "crossCovarianceNorm": 0
+      },
+      "counts": {
+        "relativeAvailable": 15,
+        "relativeUsed": 0,
+        "anchorAvailable": 20,
+        "anchorUsed": 20
+      }
+    },
+    {
+      "method": "joint",
+      "scenario": "unanchored",
+      "priorShift": "shared",
+      "seed": 7,
+      "methodLabel": "Joint-state Kalman filter",
+      "scenarioLabel": "No absolute fixes",
+      "steps": 80,
+      "time": 20,
+      "metrics": {
+        "positionRmse": 3.9038035302490934,
+        "relativeError": 0.10069846450039119,
+        "centerError": 3.9034788276096872,
+        "positionRmsRadius": 1.0772448785716915,
+        "relativeRmsRadius": 0.18391876912309063,
+        "centerRmsRadius": 1.0733126291998991,
+        "nees": 27.052927624087584,
+        "crossCovarianceNorm": 0.808607343343646
+      },
+      "counts": {
+        "relativeAvailable": 20,
+        "relativeUsed": 20,
+        "anchorAvailable": 0,
+        "anchorUsed": 0
+      }
+    },
+    {
+      "method": "independent",
+      "scenario": "unanchored",
+      "priorShift": "shared",
+      "seed": 7,
+      "methodLabel": "Independent Kalman filters",
+      "scenarioLabel": "No absolute fixes",
+      "steps": 80,
+      "time": 20,
+      "metrics": {
+        "positionRmse": 4.192083573965013,
+        "relativeError": 3.057069010349722,
+        "centerError": 3.903478827609689,
+        "positionRmsRadius": 1.5178932768808202,
+        "relativeRmsRadius": 2.146625258399795,
+        "centerRmsRadius": 1.0733126291998976,
+        "nees": 30.509660922061315,
+        "crossCovarianceNorm": 0
+      },
+      "counts": {
+        "relativeAvailable": 20,
+        "relativeUsed": 0,
+        "anchorAvailable": 0,
+        "anchorUsed": 0
+      }
+    },
+    {
+      "method": "joint",
+      "scenario": "anchor-restored",
+      "priorShift": "shared",
+      "seed": 7,
+      "methodLabel": "Joint-state Kalman filter",
+      "scenarioLabel": "A1 absolute fixes start at 10 s",
+      "steps": 80,
+      "time": 20,
+      "metrics": {
+        "positionRmse": 0.13766617900758496,
+        "relativeError": 0.04073552021728084,
+        "centerError": 0.13615113363723896,
+        "positionRmsRadius": 0.21235721401887545,
+        "relativeRmsRadius": 0.1795829835405564,
+        "centerRmsRadius": 0.19243979409552103,
+        "nees": 1.2984555568838376,
+        "crossCovarianceNorm": 0.020485281097560034
+      },
+      "counts": {
+        "relativeAvailable": 20,
+        "relativeUsed": 20,
+        "anchorAvailable": 11,
+        "anchorUsed": 11
+      }
+    },
+    {
+      "method": "independent",
+      "scenario": "anchor-restored",
+      "priorShift": "shared",
+      "seed": 7,
+      "methodLabel": "Independent Kalman filters",
+      "scenarioLabel": "A1 absolute fixes start at 10 s",
+      "steps": 80,
+      "time": 20,
+      "metrics": {
+        "positionRmse": 3.4238282214064246,
+        "relativeError": 4.795427999811185,
+        "centerError": 2.444088227612867,
+        "positionRmsRadius": 1.083358231154976,
+        "relativeRmsRadius": 1.5320999034078935,
+        "centerRmsRadius": 0.7660499517039467,
+        "nees": 20.496484304090135,
+        "crossCovarianceNorm": 0
+      },
+      "counts": {
+        "relativeAvailable": 20,
+        "relativeUsed": 0,
+        "anchorAvailable": 11,
+        "anchorUsed": 11
+      }
+    }
+  ],
+  "ensembles": [
+    {
+      "scenario": "anchored",
+      "priorShift": "none",
+      "firstSeed": 1,
+      "count": 200,
+      "endpointSeconds": 20,
+      "expectedNees": 4,
+      "expectedNis": 2,
+      "methods": {
+        "joint": {
+          "positionErrorRms": 0.20687947354384056,
+          "relativeErrorRms": 0.18653436410690113,
+          "centerErrorRms": 0.1846627989758228,
+          "agentPositionErrorRms": [
+            0.18968473555330975,
+            0.22275083444428265
+          ],
+          "meanNees": 4.037865957450886,
+          "meanRelativeNis": 2.010460396505945,
+          "meanAnchorNis": 1.9601990241593739,
+          "relativeUpdateCount": 4000,
+          "anchorUpdateCount": 4000,
+          "reported": {
+            "positionRmsRadius": 0.21235500849231306,
+            "relativeRmsRadius": 0.17958278873562167,
+            "centerRmsRadius": 0.19243740574341214
+          }
+        },
+        "independent": {
+          "positionErrorRms": 1.0769593593087619,
+          "relativeErrorRms": 1.5039756594501201,
+          "centerErrorRms": 0.7709447227578206,
+          "agentPositionErrorRms": [
+            0.20836475704948362,
+            1.5087302778247629
+          ],
+          "meanNees": 3.9798848211182847,
+          "meanRelativeNis": null,
+          "meanAnchorNis": 1.9756110731540473,
+          "relativeUpdateCount": 0,
+          "anchorUpdateCount": 4000,
+          "reported": {
+            "positionRmsRadius": 1.083358230118579,
+            "relativeRmsRadius": 1.5320999019422066,
+            "centerRmsRadius": 0.7660499509711033
+          }
+        }
+      },
+      "paired": {
+        "jointLowerPositionError": 195,
+        "jointNotLowerPositionSeeds": [
+          20,
+          25,
+          37,
+          50,
+          170
+        ],
+        "jointLowerRelativeError": 198,
+        "independentMinusJointMeanSquaredPositionError": 1.1170423450289624,
+        "meanSquaredDifferenceStandardError": 0.06924912995400519
+      },
+      "interpretation": "Endpoint errors and NEES are averaged across independent seeded trials; NIS is pooled across actually applied two-dimensional updates. Reported radii are covariance RMS radii, not confidence bounds. A correct covariance or smaller expected error does not guarantee smaller realized error on every seed."
+    },
+    {
+      "scenario": "unanchored",
+      "priorShift": "none",
+      "firstSeed": 1,
+      "count": 200,
+      "endpointSeconds": 20,
+      "expectedNees": 4,
+      "expectedNis": 2,
+      "methods": {
+        "joint": {
+          "positionErrorRms": 1.0812736975040325,
+          "relativeErrorRms": 0.1927343298317057,
+          "centerErrorRms": 1.0769708345355147,
+          "agentPositionErrorRms": [
+            1.0846109897844898,
+            1.0779260729135343
+          ],
+          "meanNees": 4.20997874422482,
+          "meanRelativeNis": 2.007258149305237,
+          "meanAnchorNis": null,
+          "relativeUpdateCount": 4000,
+          "anchorUpdateCount": 0,
+          "reported": {
+            "positionRmsRadius": 1.0772448785716915,
+            "relativeRmsRadius": 0.18391876912309063,
+            "centerRmsRadius": 1.0733126291998991
+          }
+        },
+        "independent": {
+          "positionErrorRms": 1.5110555196146278,
+          "relativeErrorRms": 2.119832639542763,
+          "centerErrorRms": 1.0769708345355147,
+          "agentPositionErrorRms": [
+            1.5133771887703606,
+            1.5087302778247629
+          ],
+          "meanNees": 3.9640430266629147,
+          "meanRelativeNis": null,
+          "meanAnchorNis": null,
+          "relativeUpdateCount": 0,
+          "anchorUpdateCount": 0,
+          "reported": {
+            "positionRmsRadius": 1.5178932768808202,
+            "relativeRmsRadius": 2.146625258399795,
+            "centerRmsRadius": 1.0733126291998976
+          }
+        }
+      },
+      "paired": {
+        "jointLowerPositionError": 198,
+        "jointNotLowerPositionSeeds": [
+          1,
+          103
+        ],
+        "jointLowerRelativeError": 198,
+        "independentMinusJointMeanSquaredPositionError": 1.1141359744437904,
+        "meanSquaredDifferenceStandardError": 0.07324122580753656
+      },
+      "interpretation": "Endpoint errors and NEES are averaged across independent seeded trials; NIS is pooled across actually applied two-dimensional updates. Reported radii are covariance RMS radii, not confidence bounds. A correct covariance or smaller expected error does not guarantee smaller realized error on every seed."
+    },
+    {
+      "scenario": "anchor-restored",
+      "priorShift": "none",
+      "firstSeed": 1,
+      "count": 200,
+      "endpointSeconds": 20,
+      "expectedNees": 4,
+      "expectedNis": 2,
+      "methods": {
+        "joint": {
+          "positionErrorRms": 0.20690434919270767,
+          "relativeErrorRms": 0.186518136216384,
+          "centerErrorRms": 0.18469476422045517,
+          "agentPositionErrorRms": [
+            0.18973648774214533,
+            0.22275296776696515
+          ],
+          "meanNees": 4.038367748614826,
+          "meanRelativeNis": 2.008780999502986,
+          "meanAnchorNis": 1.9395180903591192,
+          "relativeUpdateCount": 4000,
+          "anchorUpdateCount": 2200,
+          "reported": {
+            "positionRmsRadius": 0.21235721401887545,
+            "relativeRmsRadius": 0.1795829835405564,
+            "centerRmsRadius": 0.19243979409552103
+          }
+        },
+        "independent": {
+          "positionErrorRms": 1.0769595766103708,
+          "relativeErrorRms": 1.5039771210725823,
+          "centerErrorRms": 0.7709443134723453,
+          "agentPositionErrorRms": [
+            0.20836700333879749,
+            1.5087302778247629
+          ],
+          "meanNees": 3.9799278212383746,
+          "meanRelativeNis": null,
+          "meanAnchorNis": 1.9469744670388958,
+          "relativeUpdateCount": 0,
+          "anchorUpdateCount": 2200,
+          "reported": {
+            "positionRmsRadius": 1.083358231154976,
+            "relativeRmsRadius": 1.5320999034078935,
+            "centerRmsRadius": 0.7660499517039467
+          }
+        }
+      },
+      "paired": {
+        "jointLowerPositionError": 195,
+        "jointNotLowerPositionSeeds": [
+          20,
+          25,
+          37,
+          50,
+          170
+        ],
+        "jointLowerRelativeError": 198,
+        "independentMinusJointMeanSquaredPositionError": 1.1170325199379305,
+        "meanSquaredDifferenceStandardError": 0.06924898795584201
+      },
+      "interpretation": "Endpoint errors and NEES are averaged across independent seeded trials; NIS is pooled across actually applied two-dimensional updates. Reported radii are covariance RMS radii, not confidence bounds. A correct covariance or smaller expected error does not guarantee smaller realized error on every seed."
+    },
+    {
+      "scenario": "relative-outage",
+      "priorShift": "none",
+      "firstSeed": 1,
+      "count": 200,
+      "endpointSeconds": 20,
+      "expectedNees": 4,
+      "expectedNis": 2,
+      "methods": {
+        "joint": {
+          "positionErrorRms": 0.20693624623973053,
+          "relativeErrorRms": 0.1865438194263809,
+          "centerErrorRms": 0.18472401269527697,
+          "agentPositionErrorRms": [
+            0.1897215889138725,
+            0.22282490595886348
+          ],
+          "meanNees": 4.039103914034284,
+          "meanRelativeNis": 1.992522627611334,
+          "meanAnchorNis": 1.9629978875060552,
+          "relativeUpdateCount": 3000,
+          "anchorUpdateCount": 4000,
+          "reported": {
+            "positionRmsRadius": 0.2123555822018329,
+            "relativeRmsRadius": 0.17958283942699396,
+            "centerRmsRadius": 0.19243802700639503
+          }
+        },
+        "independent": {
+          "positionErrorRms": 1.0769593593087619,
+          "relativeErrorRms": 1.5039756594501201,
+          "centerErrorRms": 0.7709447227578206,
+          "agentPositionErrorRms": [
+            0.20836475704948362,
+            1.5087302778247629
+          ],
+          "meanNees": 3.9798848211182847,
+          "meanRelativeNis": null,
+          "meanAnchorNis": 1.9756110731540473,
+          "relativeUpdateCount": 0,
+          "anchorUpdateCount": 4000,
+          "reported": {
+            "positionRmsRadius": 1.083358230118579,
+            "relativeRmsRadius": 1.5320999019422066,
+            "centerRmsRadius": 0.7660499509711033
+          }
+        }
+      },
+      "paired": {
+        "jointLowerPositionError": 195,
+        "jointNotLowerPositionSeeds": [
+          20,
+          25,
+          37,
+          50,
+          170
+        ],
+        "jointLowerRelativeError": 198,
+        "independentMinusJointMeanSquaredPositionError": 1.1170188515949484,
+        "meanSquaredDifferenceStandardError": 0.06924867600503053
+      },
+      "interpretation": "Endpoint errors and NEES are averaged across independent seeded trials; NIS is pooled across actually applied two-dimensional updates. Reported radii are covariance RMS radii, not confidence bounds. A correct covariance or smaller expected error does not guarantee smaller realized error on every seed."
+    }
+  ]
+}
