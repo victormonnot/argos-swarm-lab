@@ -4,10 +4,11 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** four local workshops with explanations, linked 2D/3D views, step
+**Available:** five local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
 **Artificial Potential Fields**, **task allocation with finite-state
-execution**, and **decision architectures under network partition**. Other modules in the
+execution**, **decision architectures under network partition**, and **A* path
+planning with waypoint execution**. Other modules in the
 [catalog](docs/learning-path.md) remain proposals.
 
 ## Run locally
@@ -24,8 +25,14 @@ Open the URL printed by Vite, normally [http://127.0.0.1:5173](http://127.0.0.1:
 The server binds to loopback. No account, backend or external service is needed.
 Dependencies and the optional test browser need a network connection to install;
 the workshops load their assets locally. Use the workshop links to switch pages;
-the additional workshops are at `/movement/`, `/mission/`, and `/architecture/`. Navigation
+the additional workshops are at `/movement/`, `/mission/`, `/architecture/`, and
+`/pathfinding/`. Navigation
 starts a new run.
+
+If the local server has stopped after sleep or shutdown, run `npm run dev` again
+from this project directory and keep that terminal open. To reuse a chosen port,
+run `npm run dev -- --port 4175 --strictPort`, then open the URL printed by Vite.
+If the server is running but an embedded preview is stale, reopen that URL.
 
 ```sh
 npm test                         # mathematical properties, failures and replay
@@ -33,6 +40,7 @@ npm run compare                  # consensus reference cases as JSON, with metad
 npm run compare:movement         # potential-field reference cases as JSON
 npm run compare:missions         # allocation and failure reference cases as JSON
 npm run compare:architectures    # authority and network partition cases as JSON
+npm run compare:pathfinding      # A*, Dijkstra and direct-motion cases as JSON
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -44,8 +52,9 @@ On a Linux installation missing browser system libraries, use
 The browser checks use software WebGL for reproducibility; they do not measure
 hardware rendering performance. The [consensus results](docs/lessons/01-consensus-results.md),
 [potential-field results](docs/lessons/02-potential-fields-results.md),
-[mission results](docs/lessons/03-mission-allocation-results.md) and
-[architecture results](docs/lessons/04-decision-architectures-results.md) list the checks
+[mission results](docs/lessons/03-mission-allocation-results.md),
+[architecture results](docs/lessons/04-decision-architectures-results.md) and
+[pathfinding results](docs/lessons/05-pathfinding-results.md) list the checks
 actually run and their limitations.
 
 ## First workshop: distributed average consensus
@@ -166,14 +175,43 @@ The [module specification](docs/lessons/04-decision-architectures.md) declares
 authority, report contents, synchronization and transport assumptions. The custom
 peer protocol does not implement Raft, Paxos or Lamport logical clocks.
 
+## Fifth workshop: A* path planning and waypoint execution
+
+**How do you get around a wall, then actually reach the goal?** One point robot
+uses a complete static occupancy grid and exact position. **A* (A-star)** with
+the **Manhattan heuristic** finds a shortest four-neighbor route. **Dijkstra**
+solves the same graph problem using a zero heuristic. Both feed the same
+constant-speed **waypoint follower**; a direct-to-goal baseline skips planning.
+
+1. Load **A* around the U**. Inspect the 17 m route before any motion occurs.
+2. Replay the recorded search: `g` is discovered distance from start, `h` is a
+   remaining lower bound and `f=g+h` determines the next cell to pop. The final
+   route stays visible separately; inspecting search history does not move the robot.
+3. Compare Dijkstra: the same 17 m shortest route takes 95 pops instead of 30
+   for A* on this map. Counts include the goal pop and do not measure runtime.
+4. Execute the route; arrival occurs after 17 s. Direct motion into the U wall
+   instead makes contact after 1.5 m. Planning and following have different roles.
+5. Seal the enclosure. Both graph searches exhaust six reachable cells and report
+   no path. The robot stays at the start; no route is different from arrival.
+
+Select cells to inspect frontier/settled state, g/h/f and predecessors. Compare
+the dashed planned route with the actual trail, waypoint, pose and goal distance.
+All execution controls and both views observe one run. This single-agent baseline
+is the first part of the motion/estimation module; shared estimates remain proposed.
+The graph's shortest route is not necessarily a shortest continuous-space path or
+a feasible vehicle trajectory. There is no body radius, turning constraint,
+obstacle discovery or synthetic pose error. See the
+[specification](docs/lessons/05-pathfinding.md) for search, motion and contact semantics.
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
   model and page controller. `src/model.js`, `src/movement-model.js`,
-  `src/mission-model.js` and `src/architecture-model.js` contain deterministic transitions without DOM, rendering
+  `src/mission-model.js`, `src/architecture-model.js` and `src/pathfinding-model.js`
+  contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with four explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with five explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -184,7 +222,8 @@ peer protocol does not implement Raft, Paxos or Lamport logical clocks.
   for both the consensus page and its command-line result exporter. Movement
   references similarly use `compareMovement()` in `src/movement-model.js`;
   mission references use `compareMissions()` in `src/mission-model.js`; architecture
-  references use `compareArchitectures()` in `src/architecture-model.js`.
+  references use `compareArchitectures()` in `src/architecture-model.js`; pathfinding
+  references use `comparePaths()` in `src/pathfinding-model.js`.
 
 Official dependency documentation was checked on 2026-09-14. Dependencies are
 shared by the workshops; robotics middleware and flight dynamics are outside
@@ -201,5 +240,6 @@ their scope.
 | [Potential-field results](docs/lessons/02-potential-fields-results.md) | Measured arrival, stalls and contact failures. |
 | [Mission results](docs/lessons/03-mission-allocation-results.md) | Assignment costs, completion and reallocation after agent loss. |
 | [Architecture results](docs/lessons/04-decision-architectures-results.md) | Physical completion, delivered knowledge and partition recovery. |
+| [Pathfinding results](docs/lessons/05-pathfinding-results.md) | Grid shortest routes, search effort, waypoint execution and contact. |
 
 Additional modules and integrations need their own specifications and validation.

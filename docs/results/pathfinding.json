@@ -1,0 +1,264 @@
+{
+  "generatedAt": "2026-09-14T11:44:47.574Z",
+  "runtime": "v22.22.1",
+  "revision": "0f0ab89970debb91d5dd884c8b0636246e45bfe0",
+  "workingTreeModified": true,
+  "sourceHashes": {
+    "src/pathfinding-model.js": "059d724820a6dbf3602ad07e93027fe4a771af6e0115c81f25aea5c7312a27df"
+  },
+  "model": {
+    "lengthUnit": "m",
+    "timeUnit": "s",
+    "cellSize": 1,
+    "maps": {
+      "open": {
+        "width": 12,
+        "height": 9,
+        "blocked": [],
+        "start": 51,
+        "goal": 58
+      },
+      "u": {
+        "width": 12,
+        "height": 9,
+        "blocked": [
+          26,
+          27,
+          28,
+          29,
+          41,
+          53,
+          65,
+          74,
+          75,
+          76,
+          77
+        ],
+        "start": 51,
+        "goal": 58
+      },
+      "sealed": {
+        "width": 12,
+        "height": 9,
+        "blocked": [
+          26,
+          27,
+          28,
+          29,
+          38,
+          41,
+          50,
+          53,
+          62,
+          65,
+          74,
+          75,
+          76,
+          77
+        ],
+        "start": 51,
+        "goal": 58
+      }
+    },
+    "cellConvention": "id = y * width + x; y increases upward. Centers at (x+0.5,y+0.5) m.",
+    "dt": 0.1,
+    "speed": 1,
+    "budget": 400,
+    "graph": "Four-neighbor free cell centers; cardinal edges cost 1 m; no diagonals or smoothing.",
+    "heuristics": {
+      "astar": "Manhattan distance to goal, consistent for the declared unit edges",
+      "dijkstra": "Zero"
+    },
+    "search": "Select lexicographic minimum (f,h,cell ID); f=g+h. Relax strictly smaller g only; keep the predecessor on ties. Closed nodes do not reopen under the consistent heuristic. Stop on goal pop or empty frontier.",
+    "expansionCount": "Number of popped/settled cells, including the goal; goal neighbors are not relaxed. No graph pops for direct baseline.",
+    "implementation": "Array-based frontier selection with recorded full snapshots; at most 400 cells. Counts are not runtime or universal optimal expansion counts.",
+    "architecture": "Single onboard planner with complete static map/start/goal; no messages or network.",
+    "executorInputs": "Exact own position, current waypoint, constant speed and dt; no map, search frontier or obstacle avoidance.",
+    "execution": "Plan at initialization in zero modeled motion time. Follow each waypoint for at most v*dt per step, clamping arrival. One target per update; instant turns and no carry-over beyond a waypoint.",
+    "direct": "Only the goal is supplied as a waypoint; planned length is an unchecked Euclidean segment, not a valid graph route claim.",
+    "collision": "Evaluator intersects the attempted segment with closed occupied-cell squares; stop and clip at earliest contact. Model time is the end of the contact-containing interval.",
+    "stopping": "Goal reached without contact; or first collision; or unreachable graph with no motion at t=0; or 400 motion updates.",
+    "fidelity": "Point robot in a known static planar map with perfect localization. No body radius, turning limits, dynamics, uncertainty, replanning or shared estimates."
+  },
+  "results": [
+    {
+      "map": "open",
+      "method": "astar",
+      "status": "reached",
+      "step": 70,
+      "time": 7,
+      "plannedLength": 7,
+      "travelled": 7,
+      "expanded": 8,
+      "goalDistance": 0,
+      "path": [
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58
+      ],
+      "contact": null
+    },
+    {
+      "map": "open",
+      "method": "dijkstra",
+      "status": "reached",
+      "step": 70,
+      "time": 7,
+      "plannedLength": 7,
+      "travelled": 7,
+      "expanded": 74,
+      "goalDistance": 0,
+      "path": [
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58
+      ],
+      "contact": null
+    },
+    {
+      "map": "open",
+      "method": "direct",
+      "status": "reached",
+      "step": 70,
+      "time": 7,
+      "plannedLength": 7,
+      "travelled": 7,
+      "expanded": 0,
+      "goalDistance": 0,
+      "path": [],
+      "contact": null
+    },
+    {
+      "map": "u",
+      "method": "astar",
+      "status": "reached",
+      "step": 170,
+      "time": 17,
+      "plannedLength": 17,
+      "travelled": 16.999999999999993,
+      "expanded": 30,
+      "goalDistance": 0,
+      "path": [
+        51,
+        39,
+        38,
+        37,
+        25,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        34,
+        46,
+        58
+      ],
+      "contact": null
+    },
+    {
+      "map": "u",
+      "method": "dijkstra",
+      "status": "reached",
+      "step": 170,
+      "time": 17,
+      "plannedLength": 17,
+      "travelled": 16.999999999999993,
+      "expanded": 95,
+      "goalDistance": 0,
+      "path": [
+        51,
+        39,
+        38,
+        37,
+        25,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        34,
+        46,
+        58
+      ],
+      "contact": null
+    },
+    {
+      "map": "u",
+      "method": "direct",
+      "status": "collision",
+      "step": 15,
+      "time": 1.5,
+      "plannedLength": 7,
+      "travelled": 1.4999999999999964,
+      "expanded": 0,
+      "goalDistance": 5.5000000000000036,
+      "path": [],
+      "contact": {
+        "cell": 53,
+        "fraction": 1
+      }
+    },
+    {
+      "map": "sealed",
+      "method": "astar",
+      "status": "no-path",
+      "step": 0,
+      "time": 0,
+      "plannedLength": null,
+      "travelled": 0,
+      "expanded": 6,
+      "goalDistance": 7,
+      "path": [],
+      "contact": null
+    },
+    {
+      "map": "sealed",
+      "method": "dijkstra",
+      "status": "no-path",
+      "step": 0,
+      "time": 0,
+      "plannedLength": null,
+      "travelled": 0,
+      "expanded": 6,
+      "goalDistance": 7,
+      "path": [],
+      "contact": null
+    },
+    {
+      "map": "sealed",
+      "method": "direct",
+      "status": "collision",
+      "step": 15,
+      "time": 1.5,
+      "plannedLength": 7,
+      "travelled": 1.4999999999999964,
+      "expanded": 0,
+      "goalDistance": 5.5000000000000036,
+      "path": [],
+      "contact": {
+        "cell": 53,
+        "fraction": 1
+      }
+    }
+  ]
+}

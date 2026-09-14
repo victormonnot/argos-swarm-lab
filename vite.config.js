@@ -9,6 +9,7 @@ export default defineConfig({
         movement: resolve(import.meta.dirname, 'movement/index.html'),
         mission: resolve(import.meta.dirname, 'mission/index.html'),
         architecture: resolve(import.meta.dirname, 'architecture/index.html'),
+        pathfinding: resolve(import.meta.dirname, 'pathfinding/index.html'),
       },
     },
   },

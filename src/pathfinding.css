@@ -1,0 +1,59 @@
+.path-intro { padding: 25px 0 30px; max-width: 1000px; }
+.path-intro h1 { font-size: 2.45rem; line-height: 1.2; letter-spacing: -.06rem; margin: 12px 0; }
+.path-intro h1 br { display: none; }
+.path-intro>p:not(.eyebrow) { font-size: 1rem; color: var(--muted); }
+.path-intro .path-predict { margin-top: 12px; color: var(--ink); }
+.path-lab { display: grid; grid-template-columns: minmax(0,1fr) 320px; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+#path-viewport { position: relative; width: 100%; min-width: 0; height: 530px; min-height: 440px; flex: 1; }
+.path-svg,.path-three { position: absolute; inset: 0; width: 100%; height: 100%; }
+.path-three[hidden] { display: none; }
+.path-three canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+.path-labels { position: absolute; inset: 0; pointer-events: none; }
+.path-labels span { position: absolute; transform: translate(-50%,-100%); font-size: .8125rem; padding: 2px 4px; white-space: nowrap; color: #e9f4e9; background: #18362ad9; border-radius: 3px; }
+.path-labels span[hidden] { display: none; }
+.path-labels .path-agent-label { transform: translate(calc(-100% - 9px),calc(-100% - 9px)); }
+.path-labels .path-site-label { transform: translate(9px,7px); }
+.path-labels .path-waypoint-label { transform: translate(calc(-100% - 12px),-30%); }
+.path-labels .path-search-label { transform: translate(-50%,-50%); background: transparent; padding: 0; font-size: .6875rem; }
+.path-webgl-message { padding: 30px; font-size: 1rem; line-height: 1.7; }
+.path-svg [role=button] { cursor: pointer; outline: none; }
+.path-svg [role=button]:focus-visible rect { stroke: white; stroke-width: 3; }
+.path-legend { display: flex; flex-wrap: wrap; gap: 8px 15px; font-size: .8125rem; color: #b6c9be; padding: 8px 22px 0; }
+.path-config { padding: 24px; min-width: 0; background: white; }
+.path-config>label { display: block; font-size: .875rem; font-weight: 600; margin-bottom: 10px; }
+.path-config>select { width: 100%; font-size: .875rem; }
+.path-config>p { font-size: .875rem; color: var(--muted); margin: 12px 0 24px; }
+.path-config .wide { font-size: .875rem; }
+.path-contract { border-top: 1px solid var(--line); padding-top: 20px; margin-top: 22px; }
+.path-contract strong,.path-contract p { font-size: .875rem; }
+.path-contract p { margin: 10px 0 15px; color: var(--muted); }
+.path-contract span { font-size: .8125rem; color: var(--muted); line-height: 1.8; }
+.path-page .mission-outcome[data-status=collision],.path-page .mission-outcome[data-status=no-path] { background: #f8ecdd; border-color: #b57b4e; color: #775027; }
+.path-inspection { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); gap: 22px; }
+.path-search,.path-execution { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 24px; min-width: 0; }
+.path-search h3,.path-execution h3 { margin: 6px 0 14px; }
+#path-search-summary { font-size: .9375rem; margin-bottom: 10px; }
+.path-trace-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 14px; margin-top: 22px; font-size: .875rem; }
+.path-checkbox { display: flex; align-items: center; gap: 7px; }
+#path-show-search { margin: 0; accent-color: #377355; }
+#path-trace { width: 100%; accent-color: #377355; margin: 18px 0; padding: 0; }
+.path-trace-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.path-trace-buttons button { font-size: .8125rem; }
+#path-frontier { margin: 12px 0; }
+.path-cell-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 20px; font-size: .875rem; }
+.path-cell-heading select { max-width: 230px; font-size: .8125rem; }
+.path-details { margin: 14px 0 18px; }
+.path-details>div { display: flex; justify-content: space-between; gap: 15px; border-bottom: 1px solid var(--line); padding: 9px 0; font-size: .875rem; }
+.path-details dd { text-align: right; margin: 0; font-family: ui-monospace,monospace; }
+#path-chart svg { width: 100%; height: auto; margin: 8px 0; }
+.path-route { margin-top: 20px; font-size: .875rem; }
+.path-route summary { cursor: pointer; font-weight: 600; }
+#path-waypoints { max-height: 220px; overflow: auto; margin: 16px 0; padding-left: 25px; }
+#path-waypoints li { padding: 4px 0; }
+#path-waypoints li[aria-current=step] { color: var(--teal); font-weight: 600; }
+.path-profile { margin: 32px 0 44px; }
+.path-cases .exercise-grid { grid-template-columns: repeat(3,minmax(0,1fr)); margin-top: 25px; }
+.path-equation { font-size: 1rem; line-height: 1.9; }
+@media(max-width:1050px) { .path-lab { grid-template-columns: minmax(0,1fr) 280px; } .path-config { padding: 20px; } .path-inspection { grid-template-columns: 1fr; } }
+@media(max-width:850px) { .path-lab { grid-template-columns: 1fr; } #path-viewport { flex: auto; height: 480px; } .path-cases .exercise-grid { grid-template-columns: 1fr; } }
+@media(max-width:580px) { .path-intro h1 { font-size: 2rem; } .path-intro h1 br { display: block; } #path-viewport { height: 325px; min-height: 325px; } .path-search,.path-execution { padding: 16px; } .path-trace-buttons button { padding: 9px 10px; } .path-legend { padding: 8px 15px 0; font-size: .75rem; } .path-equation { font-size: .875rem; padding: 14px; } }

@@ -115,7 +115,7 @@ test('playback speeds, both views and camera motion preserve one numerical seque
   expect(await snapshot(page)).toEqual(slow);
 });
 
-test('keyboard selection, mobile layout and all four workshop links remain usable', async ({ page }) => {
+test('keyboard selection, mobile layout and all workshop links remain usable', async ({ page }) => {
   await page.keyboard.press('Tab'); await expect(page.locator('.skip-link')).toBeFocused();
   await page.keyboard.press('Enter');
   const node = page.locator('[data-observer-node="2"]');
@@ -127,8 +127,8 @@ test('keyboard selection, mobile layout and all four workshop links remain usabl
   await page.locator('#arch-cut').click();
   await expect(page.locator('#arch-step-count')).toHaveText('20');
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(4);
-  for (const [name, id] of [['01 / Average consensus', '#step-count'], ['02 / Potential fields', '#movement-step-count'], ['03 / Task allocation', '#mission-step-count'], ['04 / Decision architectures', '#arch-step-count']]) {
+  await expect(navigation.getByRole('link')).toHaveCount(5);
+  for (const [name, id] of [['01 / Average consensus', '#step-count'], ['02 / Potential fields', '#movement-step-count'], ['03 / Task allocation', '#mission-step-count'], ['04 / Decision architectures', '#arch-step-count'], ['05 / A* path planning', '#path-step-count']]) {
     await page.getByRole('navigation', { name: 'Workshops', exact: true }).getByRole('link', { name, exact: true }).click();
     await expect(page.locator(id)).toHaveText('0');
   }

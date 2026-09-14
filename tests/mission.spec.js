@@ -137,7 +137,7 @@ test('keyboard, mobile layout and navigation keep all workshops usable', async (
   await page.locator('#mission-boundary').click();
   await expect(page.locator('#mission-step-count')).toHaveText('50');
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(4);
+  await expect(navigation.getByRole('link')).toHaveCount(5);
   await navigation.getByRole('link', { name: '02 / Potential fields', exact: true }).click();
   await expect(page.locator('#movement-step-count')).toHaveText('0');
   await page.getByRole('link', { name: '03 / Task allocation', exact: true }).click();
