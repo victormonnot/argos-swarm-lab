@@ -19,7 +19,8 @@
     "compare:orca": "node scripts/compare-orca.js",
     "compare:cbba": "node scripts/compare-cbba.js",
     "compare:behavior": "node scripts/compare-behavior.js",
-    "compare:cooperative": "node scripts/compare-cooperative.js"
+    "compare:cooperative": "node scripts/compare-cooperative.js",
+    "compare:slam": "node scripts/compare-slam.js"
   },
   "engines": {
     "node": ">=22.12.0"

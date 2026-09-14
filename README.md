@@ -4,15 +4,16 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** eleven local workshops with explanations, linked 2D/3D views, step
+**Available:** twelve local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
 **Artificial Potential Fields**, **task allocation with finite-state
 execution**, **decision architectures under network partition**, **A* path
 planning with waypoint execution**, **linear Kalman position filtering**,
 **shared estimates with Covariance Intersection**, **Optimal Reciprocal
 Collision Avoidance (ORCA)**, **Consensus-Based Bundle Algorithm (CBBA)**,
-**Behavior Trees versus finite-state machines (FSM)**, and **cooperative
-localization with a joint-state Kalman filter**.
+**Behavior Trees versus finite-state machines (FSM)**, **cooperative
+localization with a joint-state Kalman filter**, and **Extended Kalman Filter
+SLAM with supplied landmark identities**.
 Other modules in the
 [catalog](docs/learning-path.md) remain proposals.
 
@@ -31,8 +32,8 @@ The server binds to loopback. No account, backend or external service is needed.
 Dependencies and the optional test browser need a network connection to install;
 the workshops load their assets locally. Use the workshop links to switch pages;
 the additional workshops are at `/movement/`, `/mission/`, `/architecture/`,
-`/pathfinding/`, `/localization/`, `/fusion/`, `/orca/`, `/cbba/`, `/behavior/`, and
-`/cooperative/`. Navigation starts a new run.
+`/pathfinding/`, `/localization/`, `/fusion/`, `/orca/`, `/cbba/`, `/behavior/`,
+`/cooperative/`, and `/slam/`. Navigation starts a new run.
 
 If the local server has stopped after sleep or shutdown, run `npm run dev` again
 from this project directory and keep that terminal open. To reuse a chosen port,
@@ -52,6 +53,7 @@ npm run compare:orca             # disk crossing, symmetry and sensing cases as 
 npm run compare:cbba             # task bundles, partition and recovery as JSON
 npm run compare:behavior         # execution, interruption and recovery as JSON
 npm run compare:cooperative      # joint localization, missing anchors and paired seeds
+npm run compare:slam             # EKF map growth, reobservations and sensor failures
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -70,8 +72,9 @@ hardware rendering performance. The [consensus results](docs/lessons/01-consensu
 [shared-estimation results](docs/lessons/07-shared-estimates-results.md),
 [ORCA results](docs/lessons/08-orca-results.md),
 [CBBA results](docs/lessons/09-cbba-results.md),
-[execution results](docs/lessons/10-behavior-trees-results.md) and
+[execution results](docs/lessons/10-behavior-trees-results.md),
 [cooperative-localization results](docs/lessons/11-cooperative-localization-results.md)
+and [EKF-SLAM results](docs/lessons/12-ekf-slam-results.md)
 list the checks actually run and their limitations.
 
 ## First workshop: distributed average consensus
@@ -375,17 +378,45 @@ uncertainty, including the intentionally misspecified common-prior offset.
 See the [specification](docs/lessons/11-cooperative-localization.md) for the
 coordinate-frame, sensing, covariance and observability assumptions.
 
+## Twelfth workshop: Extended Kalman Filter SLAM
+
+**Can a robot build a map and use it to locate itself?** One robot starts at a
+known pose with an empty map. **Extended Kalman Filter SLAM (EKF-SLAM)** jointly
+estimates x, y, heading and static landmark coordinates from noisy travel/turn
+increments and body-relative range/bearing observations. Landmark IDs are
+supplied; their positions are unknown to the estimator.
+
+A first observation initializes a landmark and its correlations with the pose
+and existing map. A later observation can correct the robot and other correlated
+landmarks. Inspect the inverse observation, Jacobians, innovation and full joint
+covariance. Compare odometry mapping that initializes the same points but omits
+all reobservation corrections. The two methods share the same physical path and
+sensor samples.
+
+Cut landmark observations from 12 through 19 s or inject a fixed range bias.
+At restoration, discovering new points is distinct from correcting against
+already known points. Map coverage, pose/heading/map errors and reported
+uncertainty expose that distinction. Six reference cases and paired seeds
+qualify single-run results.
+
+The detailed 3D drone and landmark yard follow the same planar state as the 2D
+map. Heading is modeled; altitude is fixed for display. The exact initial pose
+defines the reference frame. Camera/LiDAR processing, unknown data association,
+pose-graph optimization and flight control remain outside this model. See the
+[specification](docs/lessons/12-ekf-slam.md) for the nonlinear model and limits.
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
   model and page controller. `src/model.js`, `src/movement-model.js`,
   `src/mission-model.js`, `src/architecture-model.js`, `src/pathfinding-model.js`,
   `src/localization-model.js`, `src/fusion-model.js`, `src/orca-model.js`,
-  `src/cbba-model.js`, `src/behavior-model.js` and `src/cooperative-model.js`
+  `src/cbba-model.js`, `src/behavior-model.js`, `src/cooperative-model.js`
+  and `src/slam-model.js`
   contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with eleven explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with twelve explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -403,7 +434,8 @@ coordinate-frame, sensing, covariance and observability assumptions.
   `referenceComparisons()` in `src/orca-model.js`; task-bundle references use
   `referenceComparisons()` in `src/cbba-model.js`; execution references use
   `referenceComparisons()` in `src/behavior-model.js`; cooperative localization
-  uses `referenceComparisons()` and `compareSeeds()` in `src/cooperative-model.js`.
+  uses `referenceComparisons()` and `compareSeeds()` in `src/cooperative-model.js`;
+  EKF-SLAM uses the same helper names in `src/slam-model.js`.
 
 Official dependency documentation was checked on 2026-09-14. Dependencies are
 shared by the workshops; robotics middleware and flight dynamics are outside
@@ -427,5 +459,6 @@ their scope.
 | [CBBA results](docs/lessons/09-cbba-results.md) | Bundle conflicts, neighbor agreement, partition recovery and allocation quality. |
 | [Execution results](docs/lessons/10-behavior-trees-results.md) | Matched BT/FSM behavior, interruption, memory semantics and recovery outcomes. |
 | [Cooperative-localization results](docs/lessons/11-cooperative-localization-results.md) | Joint covariance, missing references, shared prior offsets and paired-seed estimation errors. |
+| [EKF-SLAM results](docs/lessons/12-ekf-slam-results.md) | Map initialization, pose/map corrections, sensor loss, bias and paired-seed errors. |
 
 Additional modules and integrations need their own specifications and validation.
