@@ -1,12 +1,11 @@
 # Module catalog
 
 Consensus, Artificial Potential Fields, task allocation/execution, decision
-architectures, A* path planning, individual Kalman position estimation, shared
-target estimates, ORCA, CBBA, Behavior Trees/FSM, cooperative localization and
-EKF-SLAM are implemented local workshops (1–12). The proposed main sequence
-continues with algorithm workshop 13, distributed software in workshops 14–17
-and flight simulation in workshops 18–21. ORCA, CBBA, Behavior Trees, cooperative localization and two introductions to SLAM are included in
-the program. Only workshops 1–12 are implemented.
+architectures, A* planning, individual Kalman estimation, shared target
+estimates, ORCA, CBBA, Behavior Trees/FSM, cooperative localization, EKF-SLAM
+and pose-graph SLAM are implemented local workshops **1–13**. The proposed
+sequence continues with distributed software in workshops 14–17 and flight
+simulation in workshops 18–21. These later integrations remain proposals.
 
 A **phase** groups related subjects. A **workshop** answers one bounded question
 with an experiment. Its **lesson page** explains the method, exposes controls
@@ -29,23 +28,15 @@ and displays the observed results. Each follows the
 | 10. [Behavior Trees and finite-state machines](lessons/10-behavior-trees.md) | What happens when a running action is interrupted? | One fixed drone inspection mission with identical actions: reactive BT, guarded FSM and a memory-root BT; temporary/persistent hold and inspection failure. | Tick traversal, Success/Failure/Running, action cancellation, reactive versus memory semantics, recovery versus mission success, and 3D kinematics. |
 | 11. [Cooperative localization](lessons/11-cooperative-localization.md) | Can robots improve their own positions by observing each other? | Independent position Kalman filters versus a joint four-state KF; relative Cartesian observations, A1-only absolute fixes, absent/restored reference and a shared prior offset. | Cross-covariance, indirect corrections, known coordinate frame, common-translation observability, error versus uncertainty and paired seeded trials. |
 | 12. [Extended Kalman Filter SLAM](lessons/12-ekf-slam.md) | How can a robot map landmarks and locate itself together? | One planar pose and unknown landmark positions with supplied IDs; range/bearing, correlated map initialization and reobservation corrections versus odometry mapping. | Nonlinear Jacobians, pose/map cross-covariance, fixed start frame, map coverage, sensor loss and biased measurements. |
+| 13. [Pose-graph SLAM](lessons/13-pose-graph-slam.md) | How does revisiting a place constrain an accumulated trajectory? | An anchored 25-pose SE(2) graph with noisy relative constraints; Gauss–Newton with backtracking and supplied correct/incorrect loop IDs. | Retrospective corrections, nonlinear weighted least squares, local residuals, gauge anchoring, optimization versus association and cost versus accuracy. |
 
-## Proposed main sequence: algorithms and estimation
+## Algorithm sequence and method context
 
-These are proposed workshop boundaries and ordering, not implemented features
-or an exhaustive curriculum. The next proposal is workshop 13,
-pose-graph SLAM with supplied loop associations. Each lesson will
-define its exact variant, assumptions and acceptance criteria before its
-experiment is built.
-
-The ordering groups motion, task allocation and execution, followed by joint
-estimation and mapping. These subjects extend the existing browser models and
-can be studied before installing robotics middleware. This is a learning order,
-not a claim that every algorithm is a technical prerequisite for ROS 2 or flight.
-
-| No. | Proposed workshop | Question | Bounded experiment |
-| --- | --- | --- | --- |
-| 13 | Graph-based SLAM — pose graphs and loop closure | How does revisiting a place constrain an accumulated trajectory? | Optimize a small anchored pose graph with noisy relative-motion constraints. Compare no loop, one correctly supplied loop association and a controlled incorrect association. Inspect residuals and trajectory changes; do not claim automatic place recognition. |
+The implemented examples cover motion, task allocation/execution and estimation,
+including two bounded SLAM approaches. They are not an exhaustive curriculum.
+The next proposed workshop is **14: ROS 2 nodes, topics and explicit rounds**.
+It will move a known algorithm into actual processes after its own specification,
+dependency choices and acceptance criteria are defined.
 
 ORCA selects a locally suitable velocity under its model; global route planning,
 physical feasibility and eventual mission completion remain separate questions.
@@ -69,12 +60,14 @@ linear Cartesian measurement model, supplied frame and information boundaries.
 
 SLAM means simultaneous localization and mapping; it is a problem family, not one
 algorithm. [Workshop 12](lessons/12-ekf-slam.md) implements a bounded filtering
-example; proposed workshop 13 introduces graph optimization. They do not implement a complete camera/LiDAR SLAM system,
+example; [workshop 13](lessons/13-pose-graph-slam.md) implements a pose-graph
+optimizer with supplied associations. They do not implement a complete
+camera/LiDAR SLAM system,
 unknown data association, collaborative SLAM or every SLAM method. The
 [Durrant-Whyte/Bailey tutorial](https://www-personal.acfr.usyd.edu.au/tbailey/publications/slamtutorial1.htm)
 and [Grisetti et al. graph-based tutorial](https://iris.uniroma1.it/handle/11573/137105)
-provide the method context. The estimator, solver and supplied observation
-associations must be named explicitly when each experiment is specified.
+provide the method context. Their lesson specifications name the estimators,
+solvers and supplied observation associations explicitly.
 
 ## Proposed main sequence: distributed software
 
@@ -128,7 +121,7 @@ trace; its 2D/3D views must not run a separate browser approximation presented a
 ROS 2 or autopilot execution. A small adapter can be introduced when needed by
 that specific experiment. Software versions, installation/resource requirements,
 supported vehicle counts and acceptance criteria must be verified before delivery.
-None of workshops 10–21 is implemented by the current browser lab.
+None of workshops 14–21 is implemented by the current browser lab.
 
 ## Comparisons must answer a specific question
 
@@ -160,7 +153,7 @@ The [experiment guide](experiment-guide.md) defines the reporting rules.
 
 ## Further extensions
 
-The numbered proposal includes ORCA, CBBA, Behavior Trees, cooperative
+The numbered sequence includes ORCA, CBBA, Behavior Trees, cooperative
 localization and introductory SLAM. Further work may deepen any of those topics,
 for example automatic data association, visual/LiDAR sensing or collaborative
 SLAM, but these are not silently included in the small initial experiments.

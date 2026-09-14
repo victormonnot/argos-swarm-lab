@@ -17,6 +17,7 @@ export default defineConfig({
         behavior: resolve(import.meta.dirname, 'behavior/index.html'),
         cooperative: resolve(import.meta.dirname, 'cooperative/index.html'),
         slam: resolve(import.meta.dirname, 'slam/index.html'),
+        poseGraph: resolve(import.meta.dirname, 'pose-graph/index.html'),
       },
     },
   },

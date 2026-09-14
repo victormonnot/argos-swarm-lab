@@ -20,7 +20,8 @@
     "compare:cbba": "node scripts/compare-cbba.js",
     "compare:behavior": "node scripts/compare-behavior.js",
     "compare:cooperative": "node scripts/compare-cooperative.js",
-    "compare:slam": "node scripts/compare-slam.js"
+    "compare:slam": "node scripts/compare-slam.js",
+    "compare:pose-graph": "node scripts/compare-pose-graph.js"
   },
   "engines": {
     "node": ">=22.12.0"

@@ -4,7 +4,7 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** twelve local workshops with explanations, linked 2D/3D views, step
+**Available:** thirteen local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
 **Artificial Potential Fields**, **task allocation with finite-state
 execution**, **decision architectures under network partition**, **A* path
@@ -12,8 +12,9 @@ planning with waypoint execution**, **linear Kalman position filtering**,
 **shared estimates with Covariance Intersection**, **Optimal Reciprocal
 Collision Avoidance (ORCA)**, **Consensus-Based Bundle Algorithm (CBBA)**,
 **Behavior Trees versus finite-state machines (FSM)**, **cooperative
-localization with a joint-state Kalman filter**, and **Extended Kalman Filter
-SLAM with supplied landmark identities**.
+localization with a joint-state Kalman filter**, **Extended Kalman Filter
+SLAM with supplied landmark identities**, and **pose-graph SLAM with
+Gauss–Newton optimization**.
 Other modules in the
 [catalog](docs/learning-path.md) remain proposals.
 
@@ -33,7 +34,7 @@ Dependencies and the optional test browser need a network connection to install;
 the workshops load their assets locally. Use the workshop links to switch pages;
 the additional workshops are at `/movement/`, `/mission/`, `/architecture/`,
 `/pathfinding/`, `/localization/`, `/fusion/`, `/orca/`, `/cbba/`, `/behavior/`,
-`/cooperative/`, and `/slam/`. Navigation starts a new run.
+`/cooperative/`, `/slam/`, and `/pose-graph/`. Navigation starts a new run.
 
 If the local server has stopped after sleep or shutdown, run `npm run dev` again
 from this project directory and keep that terminal open. To reuse a chosen port,
@@ -54,6 +55,7 @@ npm run compare:cbba             # task bundles, partition and recovery as JSON
 npm run compare:behavior         # execution, interruption and recovery as JSON
 npm run compare:cooperative      # joint localization, missing anchors and paired seeds
 npm run compare:slam             # EKF map growth, reobservations and sensor failures
+npm run compare:pose-graph       # pose optimization, supplied loops and paired seeds
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -73,9 +75,9 @@ hardware rendering performance. The [consensus results](docs/lessons/01-consensu
 [ORCA results](docs/lessons/08-orca-results.md),
 [CBBA results](docs/lessons/09-cbba-results.md),
 [execution results](docs/lessons/10-behavior-trees-results.md),
-[cooperative-localization results](docs/lessons/11-cooperative-localization-results.md)
-and [EKF-SLAM results](docs/lessons/12-ekf-slam-results.md)
-list the checks actually run and their limitations.
+[cooperative-localization results](docs/lessons/11-cooperative-localization-results.md),
+[EKF-SLAM results](docs/lessons/12-ekf-slam-results.md) and
+[pose-graph results](docs/lessons/13-pose-graph-slam-results.md) list the checks actually run and their limitations.
 
 ## First workshop: distributed average consensus
 
@@ -405,18 +407,44 @@ defines the reference frame. Camera/LiDAR processing, unknown data association,
 pose-graph optimization and flight control remain outside this model. See the
 [specification](docs/lessons/12-ekf-slam.md) for the nonlinear model and limits.
 
+## Thirteenth workshop: pose-graph SLAM
+
+**How can a loop observation correct a whole recorded trajectory?** Optimize
+25 past planar poses with **Gauss–Newton nonlinear weighted least squares** and
+**Armijo backtracking**. A fixed first pose anchors 24 noisy odometry constraints.
+Compare no loop, a correctly supplied return association and a deliberately
+incorrect association using the same odometry and initial trajectory.
+
+One optimizer step can change poses recorded much earlier in the survey.
+Inspect the relative-pose measurement, prediction, wrapped residual and weighted
+cost of each edge; compare accepted cost reduction with evaluator trajectory
+error. An odometry chain can have nearly zero residual while drifting from
+truth. A wrong loop can reduce its objective while deforming the path.
+
+Optimization iterations are computation, not flight time. A pose selector
+inspects one recorded timestamp, represented by a detailed 3D drone; other graph
+nodes are its past poses. The linked 2D/3D views show truth, integrated odometry
+and optimized history from the same run. Three reference cases and paired
+seeds report errors, corrections and numerical termination separately.
+
+This is a small **pose-graph backend** with supplied associations and an exact
+anchor. It does not recognize places, extract camera/LiDAR features, reject
+outliers, estimate landmarks or control flight. See the
+[specification](docs/lessons/13-pose-graph-slam.md) for residual coordinates,
+solver conventions, backtracking and limits.
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
   model and page controller. `src/model.js`, `src/movement-model.js`,
   `src/mission-model.js`, `src/architecture-model.js`, `src/pathfinding-model.js`,
   `src/localization-model.js`, `src/fusion-model.js`, `src/orca-model.js`,
-  `src/cbba-model.js`, `src/behavior-model.js`, `src/cooperative-model.js`
-  and `src/slam-model.js`
+  `src/cbba-model.js`, `src/behavior-model.js`, `src/cooperative-model.js`,
+  `src/slam-model.js` and `src/pose-graph-model.js`
   contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with twelve explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with thirteen explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -435,7 +463,8 @@ pose-graph optimization and flight control remain outside this model. See the
   `referenceComparisons()` in `src/cbba-model.js`; execution references use
   `referenceComparisons()` in `src/behavior-model.js`; cooperative localization
   uses `referenceComparisons()` and `compareSeeds()` in `src/cooperative-model.js`;
-  EKF-SLAM uses the same helper names in `src/slam-model.js`.
+  EKF-SLAM uses the same helper names in `src/slam-model.js`, and pose-graph
+  optimization in `src/pose-graph-model.js`.
 
 Official dependency documentation was checked on 2026-09-14. Dependencies are
 shared by the workshops; robotics middleware and flight dynamics are outside
@@ -460,5 +489,6 @@ their scope.
 | [Execution results](docs/lessons/10-behavior-trees-results.md) | Matched BT/FSM behavior, interruption, memory semantics and recovery outcomes. |
 | [Cooperative-localization results](docs/lessons/11-cooperative-localization-results.md) | Joint covariance, missing references, shared prior offsets and paired-seed estimation errors. |
 | [EKF-SLAM results](docs/lessons/12-ekf-slam-results.md) | Map initialization, pose/map corrections, sensor loss, bias and paired-seed errors. |
+| [Pose-graph results](docs/lessons/13-pose-graph-slam-results.md) | Retrospective trajectory optimization, residuals, supplied correct/incorrect loops and paired-seed limits. |
 
 Additional modules and integrations need their own specifications and validation.
