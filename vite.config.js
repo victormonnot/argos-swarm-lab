@@ -13,6 +13,7 @@ export default defineConfig({
         localization: resolve(import.meta.dirname, 'localization/index.html'),
         fusion: resolve(import.meta.dirname, 'fusion/index.html'),
         orca: resolve(import.meta.dirname, 'orca/index.html'),
+        cbba: resolve(import.meta.dirname, 'cbba/index.html'),
       },
     },
   },

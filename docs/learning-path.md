@@ -1,12 +1,12 @@
 # Module catalog
 
 Consensus, Artificial Potential Fields, task allocation/execution, decision
-architectures, A* path planning, individual Kalman position estimation and shared
-target estimates and ORCA are implemented local workshops (1–8). The proposed main
-sequence continues with algorithm workshops 9–13, distributed software in
+architectures, A* path planning, individual Kalman position estimation, shared
+target estimates, ORCA and CBBA are implemented local workshops (1–9). The proposed
+main sequence continues with algorithm workshops 10–13, distributed software in
 workshops 14–17 and flight simulation in workshops 18–21. ORCA, CBBA, Behavior
 Trees, cooperative localization and two introductions to SLAM are included in
-the program. Only workshops 1–8 are implemented.
+the program. Only workshops 1–9 are implemented.
 
 A **phase** groups related subjects. A **workshop** answers one bounded question
 with an experiment. Its **lesson page** explains the method, exposes controls
@@ -25,11 +25,13 @@ and displays the observed results. Each follows the
 | 6. [Individual position estimation](lessons/06-localization.md) | What if the controller's position is wrong? | Exact reference, dead reckoning and linear Kalman filtering with synthetic odometry bias and missing absolute fixes. | Prediction/correction, assumed covariance versus true error, controller belief versus actual arrival. |
 | 7. [Shared estimates and Covariance Intersection](lessons/07-shared-estimates.md) | Does every received estimate contain new information? | Three agents observe one static target once. Compare no sharing, naive independent fusion, unique-measurement fusion and fixed-half Covariance Intersection under ring/cut/recovery delivery. | Source provenance, unknown cross-correlation, duplicate evidence, covariance consistency and communication cost. |
 | 8. [Optimal Reciprocal Collision Avoidance](lessons/08-orca.md) | How can moving agents share responsibility for avoiding a collision? | ORCA, APF and direct goal following on planar disk crossings; inspect velocity constraints and compare symmetry and unavailable peer sensing. | Half-responsibility, nearest feasible velocity, prediction horizon, swept clearance and arrival versus avoidance. |
+| 9. [Consensus-Based Bundle Algorithm](lessons/09-cbba.md) | How can peers resolve competing task bundles? | Three planners with additive utilities exchange timestamped winner beliefs over a chain, partition or recovery; compare independent greedy bundles and an evaluator's exact score reference. | Bundle acquisition, suffix release, local beliefs, conflicting claims, agreement and allocation quality versus execution. |
 
 ## Proposed main sequence: algorithms and estimation
 
 These are proposed workshop boundaries and ordering, not implemented features
-or an exhaustive curriculum. The next proposal is workshop 9, CBBA. Each lesson
+or an exhaustive curriculum. The next proposal is workshop 10, Behavior Trees
+versus a finite-state machine. Each lesson
 will define its exact variant, assumptions and acceptance criteria before its
 experiment is built.
 
@@ -40,7 +42,6 @@ not a claim that every algorithm is a technical prerequisite for ROS 2 or flight
 
 | No. | Proposed workshop | Question | Bounded experiment |
 | --- | --- | --- | --- |
-| 9 | CBBA — Consensus-Based Bundle Algorithm | How can peers resolve competing task bundles? | Use a small shared task set with declared bundle length and scoring. Inspect local bids, believed winners, conflict resolution and released bundle entries under connected and interrupted exchanges. Keep allocation quality separate from execution success. |
 | 10 | Behavior Trees versus a finite-state machine | How should execution react when an action is interrupted or fails? | Hold assignment and action behavior fixed; compare the existing FSM with a small tree of conditions, sequences, fallbacks and actions. Inspect ticks and Success/Failure/Running states, with explicit reactive or memory semantics. |
 | 11 | Cooperative localization — joint-state Kalman reference | Can robots improve their own position estimates by observing each other? | Start with two planar robots, noisy odometry and relative Cartesian displacement readings in a declared shared frame. Compare independent filtering with a joint position filter retaining cross-covariances. Declare the absolute reference and expose the unobservable common offset when it is absent. |
 | 12 | EKF-SLAM — pose and landmark estimation | How can a robot estimate a map while locating itself inside it? | Use one planar robot and a few unknown landmark positions with supplied landmark IDs. Introduce heading, a small nonlinear motion/sensor model and Extended Kalman Filter linearization. Inspect joint pose/map updates, cross-covariances and a fixed reference frame. |
@@ -127,7 +128,7 @@ trace; its 2D/3D views must not run a separate browser approximation presented a
 ROS 2 or autopilot execution. A small adapter can be introduced when needed by
 that specific experiment. Software versions, installation/resource requirements,
 supported vehicle counts and acceptance criteria must be verified before delivery.
-None of workshops 9–21 is implemented by the current browser lab.
+None of workshops 10–21 is implemented by the current browser lab.
 
 ## Comparisons must answer a specific question
 

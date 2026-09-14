@@ -1,0 +1,59 @@
+.cbba-intro { padding: 25px 0 30px; max-width: 1080px; }
+.cbba-intro h1 { font-size: 2.45rem; line-height: 1.2; letter-spacing: -.06rem; margin: 12px 0; }
+.cbba-intro h1 br { display: none; }
+.cbba-intro>p:not(.eyebrow) { font-size: 1rem; color: var(--muted); }
+.cbba-intro .cbba-predict { margin-top: 12px; color: var(--ink); }
+.cbba-lab { display: grid; grid-template-columns: minmax(0,1fr) 330px; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+#cbba-viewport { position: relative; width: 100%; min-width: 0; height: 510px; min-height: 410px; flex: 1; }
+.cbba-svg,.cbba-three { position: absolute; inset: 0; width: 100%; height: 100%; }
+.cbba-svg[hidden],.cbba-three[hidden] { display: none; }
+.cbba-three canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+.cbba-node { cursor: pointer; outline: none; }
+.cbba-node:focus-visible>circle { stroke: white; stroke-width: 3; }
+.cbba-labels { position: absolute; inset: 0; pointer-events: none; }
+.cbba-labels button { position: absolute; transform: translate(-50%,calc(-100% - 13px)); font-size: .75rem; padding: 3px 5px; background: #142c26ef; border: 1px solid #627d72; border-radius: 4px; pointer-events: auto; white-space: nowrap; }
+.cbba-labels button[aria-pressed=true] { border-color: white; }
+.cbba-labels button:hover:not(:disabled) { background: #29483e; }
+.cbba-task-label { position: absolute; transform: translate(10px,7px); color: #f4ead7; font-size: .75rem; padding: 2px 4px; background: #142c26ef; border-radius: 3px; white-space: nowrap; }
+.cbba-labels [hidden] { display: none; }
+.cbba-webgl-message { padding: 30px; font-size: 1rem; line-height: 1.7; }
+.cbba-legend { display: flex; flex-wrap: wrap; gap: 8px 15px; font-size: .8125rem; color: #b6c9be; padding: 10px 22px 0; }
+.cbba-config { background: white; padding: 22px; min-width: 0; }
+.cbba-config>label { display: block; font-size: .875rem; font-weight: 600; margin-bottom: 9px; }
+.cbba-config>select { width: 100%; font-size: .875rem; margin-bottom: 12px; }
+#cbba-description,#cbba-schedule-description { font-size: .875rem; color: var(--muted); margin: -3px 0 20px; }
+.cbba-contract { margin: 20px 0; padding-top: 17px; border-top: 1px solid var(--line); font-size: .875rem; }
+.cbba-contract p { color: var(--muted); margin-top: 9px; }
+.cbba-config .wide + .wide { margin-top: 10px; }
+.cbba-page .mission-outcome[data-status=conflict] { background: #f8ecdd; border-color: #b57b4e; color: #775027; }
+.cbba-network { font-size: .875rem; color: var(--muted); margin: -10px 0 24px; }
+.cbba-inspection { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 22px; }
+.cbba-panel { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 24px; min-width: 0; }
+.cbba-panel h3 { margin: 6px 0 14px; }
+.cbba-panel .panel-heading { flex-wrap: wrap; align-items: start; }
+#cbba-observer { font-size: .8125rem; }
+.cbba-details { margin: 14px 0 18px; }
+.cbba-details>div { display: flex; justify-content: space-between; gap: 15px; border-bottom: 1px solid var(--line); padding: 9px 0; font-size: .875rem; }
+.cbba-details dd { text-align: right; margin: 0; font-family: ui-monospace,monospace; overflow-wrap: anywhere; }
+.cbba-timestamps { font-size: .875rem; line-height: 1.8; margin: 17px 0 10px; overflow-wrap: anywhere; }
+.cbba-packets { margin: 20px 0; font-size: .875rem; }
+.cbba-packets article { background: #f4f6f1; border: 1px solid var(--line); border-radius: 5px; padding: 13px; margin: 10px 0; }
+.cbba-packets p { overflow-wrap: anywhere; margin-top: 7px; font-size: .8125rem; line-height: 1.8; }
+.cbba-reading { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 20px; }
+.cbba-reading h4 { font-size: 1rem; }
+.cbba-reading p { font-size: .875rem; color: var(--muted); margin-top: 12px; }
+.cbba-state { margin: 22px 0 40px; }
+.cbba-state .mission-small { margin-top: 15px; }
+.cbba-score { margin: 20px 0; padding: 15px; background: #edf3ec; border-left: 3px solid #6a8a67; font-size: .875rem; line-height: 1.8; }
+.cbba-state details { font-size: .875rem; }
+.cbba-state summary { cursor: pointer; }
+.cbba-events-title { font-size: 1rem; margin-top: 26px; }
+.cbba-events { margin: 13px 0 0; padding-left: 22px; font-size: .8125rem; color: var(--muted); line-height: 1.8; }
+.cbba-events li + li { margin-top: 6px; }
+.cbba-cases>p:not(.eyebrow) { font-size: .875rem; color: var(--muted); margin-top: 12px; }
+.cbba-cases .exercise-grid { grid-template-columns: repeat(3,minmax(0,1fr)); margin-top: 25px; }
+.cbba-equation { font-size: 1rem; line-height: 1.9; overflow-wrap: anywhere; }
+.cbba-page td[data-conflict=true] { color: #a14e2b; font-weight: 600; }
+@media(max-width:1050px) { .cbba-lab { grid-template-columns: minmax(0,1fr) 300px; } .cbba-config { padding: 20px; } .cbba-inspection { grid-template-columns: 1fr; } }
+@media(max-width:850px) { .cbba-lab { grid-template-columns: 1fr; } #cbba-viewport { flex: auto; height: 470px; } .cbba-cases .exercise-grid { grid-template-columns: 1fr 1fr; } }
+@media(max-width:580px) { .cbba-intro h1 { font-size: 2rem; } .cbba-intro h1 br { display: block; } #cbba-viewport { height: 355px; min-height: 355px; } .cbba-panel { padding: 18px; } .cbba-equation { font-size: .8125rem; } .cbba-legend { padding-left: 15px; padding-right: 15px; gap: 7px 11px; } .cbba-details>div { gap: 9px; font-size: .8125rem; } .cbba-cases .exercise-grid { grid-template-columns: 1fr; } }

@@ -1,0 +1,410 @@
+{
+  "generatedAt": "2026-09-14T17:09:06.878Z",
+  "runtime": "v22.22.1",
+  "revision": "fef94a8c9e6b6765bc37e6d08345a51269beabc7",
+  "workingTreeModified": true,
+  "sourceHashes": {
+    "src/cbba-model.js": "5c37e8084e8db0c47c645de5a985a9b91598aafc271a6c7770d0a7f8bea2e52e"
+  },
+  "model": {
+    "agents": 3,
+    "tasks": 6,
+    "capacity": 2,
+    "rounds": 12,
+    "restoreRound": 5,
+    "scoreUnit": "utility points",
+    "timeUnit": "communication round",
+    "layoutUnit": "abstract display coordinates",
+    "utilities": [
+      [
+        100,
+        99,
+        90,
+        20,
+        20,
+        20
+      ],
+      [
+        98,
+        3,
+        2,
+        80,
+        10,
+        9
+      ],
+      [
+        97,
+        3,
+        2,
+        79,
+        78,
+        77
+      ]
+    ],
+    "scoring": "S_i(path) is the sum of fixed nonnegative utilities in agent i own row. All initial scores are positive integers. A task marginal gain is independent of the existing bundle, satisfying diminishing marginal gains with equality. A bid must beat the believed winner, with lower agent ID winning equal bids. Highest eligible marginal gain is acquired next, lower task ID on ties. All insertion positions tie; append is the declared choice.",
+    "protocol": "Original CBBA bundle construction, all 17 timestamped Table 1 consensus rules, then suffix removal after the earliest lost acquisition and bundle rebuilding. A released task may be immediately reacquired; intermediate snapshots retain both events. Zero-based numeric IDs; -1 means no winner and its bid is zero.",
+    "transport": "Undirected chain A1 ↔ A2 ↔ A3. Each directed edge attempts one frozen previous-boundary winner/bid/timestamp packet per round. Process delivered packets in ascending sender ID, merging timestamp knowledge after each whole packet and stamping direct contact with the current receiving round. Cut drops both A2 ↔ A3 directions from round 1; recovery drops rounds 1–4 and restores round 5. No queue, delay, within-round relay or out-of-order delivery.",
+    "initial": "At round 0 each agent fills a two-task bundle before any communication, exposing competing claims. Task catalog and each own utility row remain fixed for the entire run.",
+    "local": "The baseline uses identical local bundle scoring with zero communication. Each agent retains its independently selected bundle.",
+    "agentInputs": "Own utility row, capacity, task IDs, current local bundle/path/winner/bid/timestamp state, and delivered neighbor packets. Agents receive no other utility rows, global conflicts, actual peer bundles, future link schedule or optimum.",
+    "evaluator": "Separately collect actual bundle claims. Enumerate all feasible complete task-owner assignments under capacity two to obtain the exact score benchmark. This all-row evaluator is not part of the decentralized controller.",
+    "metrics": "Conflicts count tasks claimed by more than one agent; unassigned counts tasks claimed by no agent; uniqueAssigned counts exactly-one-owner tasks. Agreement requires identical winner and winning-bid tables across every agent. firstAgreementRound is the first observed such boundary, not proof of distributed termination. Score and scoreRatio are null unless all six tasks have exactly one claimant. releaseCount sums all released bundle entries, including later reacquisitions.",
+    "traffic": "Attempted, delivered and dropped directed logical packets. Not measured bytes, network traffic, bandwidth or wall-clock runtime.",
+    "stopping": "Exactly 12 rounds for every case, even after agreement. The global evaluator does not control local decisions or stop the run.",
+    "fidelity": "One synchronous browser allocation model. Planners and task markers are stationary; layout does not affect scores or topology. No vehicle movement, path cost, timing windows, task service, mission completion, radio simulation, middleware, asynchronous CBBA or coupled constraints."
+  },
+  "methodSources": [
+    {
+      "title": "Choi, Brunet and How (2009), Consensus-Based Decentralized Auctions for Robust Task Allocation",
+      "url": "https://doi.org/10.1109/TRO.2009.2022423"
+    },
+    {
+      "title": "MIT open-access publication record",
+      "url": "https://dspace.mit.edu/handle/1721.1/52330"
+    },
+    {
+      "title": "MIT Aerospace Controls Laboratory CBBA project",
+      "url": "https://acl.mit.edu/projects/consensus-based-bundle-algorithm"
+    },
+    {
+      "title": "MIT July 2010 MATLAB reference: timestamped consensus and bundle removal",
+      "url": "https://acl.mit.edu/files/CBBA_MATLAB_ACLMIT_July13_2010.zip"
+    }
+  ],
+  "initial": {
+    "tasks": [
+      {
+        "id": 0,
+        "label": "T1",
+        "position": [
+          5,
+          1
+        ]
+      },
+      {
+        "id": 1,
+        "label": "T2",
+        "position": [
+          8,
+          1
+        ]
+      },
+      {
+        "id": 2,
+        "label": "T3",
+        "position": [
+          5,
+          3
+        ]
+      },
+      {
+        "id": 3,
+        "label": "T4",
+        "position": [
+          8,
+          3
+        ]
+      },
+      {
+        "id": 4,
+        "label": "T5",
+        "position": [
+          5,
+          5
+        ]
+      },
+      {
+        "id": 5,
+        "label": "T6",
+        "position": [
+          8,
+          5
+        ]
+      }
+    ],
+    "bundles": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        0,
+        3
+      ]
+    ],
+    "metrics": {
+      "claims": [
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          0
+        ],
+        [],
+        [
+          1,
+          2
+        ],
+        [],
+        []
+      ],
+      "conflicts": 2,
+      "unassigned": 3,
+      "uniqueAssigned": 1,
+      "agreement": false,
+      "agreementTasks": 3,
+      "fullAllocation": false,
+      "score": null,
+      "optimalScore": 522,
+      "scoreRatio": null,
+      "firstAgreementRound": null,
+      "releaseCount": 0
+    }
+  },
+  "exactOptimum": {
+    "score": 522,
+    "owners": [
+      1,
+      0,
+      0,
+      1,
+      2,
+      2
+    ]
+  },
+  "references": [
+    {
+      "id": "connected",
+      "label": "Connected CBBA",
+      "method": "cbba",
+      "schedule": "chain",
+      "capacity": 2,
+      "round": 12,
+      "claims": [
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ]
+      ],
+      "conflicts": 0,
+      "unassigned": 0,
+      "uniqueAssigned": 6,
+      "agreement": true,
+      "agreementTasks": 6,
+      "fullAllocation": true,
+      "score": 436,
+      "optimalScore": 522,
+      "scoreRatio": 0.8352490421455939,
+      "firstAgreementRound": 3,
+      "releaseCount": 5,
+      "counters": {
+        "attempted": 48,
+        "delivered": 48,
+        "dropped": 0
+      },
+      "bundles": [
+        [
+          0,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          5
+        ]
+      ]
+    },
+    {
+      "id": "local",
+      "label": "No sharing",
+      "method": "local",
+      "schedule": "chain",
+      "capacity": 2,
+      "round": 12,
+      "claims": [
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          0
+        ],
+        [],
+        [
+          1,
+          2
+        ],
+        [],
+        []
+      ],
+      "conflicts": 2,
+      "unassigned": 3,
+      "uniqueAssigned": 1,
+      "agreement": false,
+      "agreementTasks": 3,
+      "fullAllocation": false,
+      "score": null,
+      "optimalScore": 522,
+      "scoreRatio": null,
+      "firstAgreementRound": null,
+      "releaseCount": 0,
+      "counters": {
+        "attempted": 0,
+        "delivered": 0,
+        "dropped": 0
+      },
+      "bundles": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          3
+        ]
+      ]
+    },
+    {
+      "id": "partition",
+      "label": "Permanent partition",
+      "method": "cbba",
+      "schedule": "cut",
+      "capacity": 2,
+      "round": 12,
+      "claims": [
+        [
+          0,
+          2
+        ],
+        [
+          0
+        ],
+        [],
+        [
+          1,
+          2
+        ],
+        [
+          1
+        ],
+        []
+      ],
+      "conflicts": 2,
+      "unassigned": 2,
+      "uniqueAssigned": 2,
+      "agreement": false,
+      "agreementTasks": 2,
+      "fullAllocation": false,
+      "score": null,
+      "optimalScore": 522,
+      "scoreRatio": null,
+      "firstAgreementRound": null,
+      "releaseCount": 2,
+      "counters": {
+        "attempted": 48,
+        "delivered": 24,
+        "dropped": 24
+      },
+      "bundles": [
+        [
+          0,
+          1
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          0,
+          3
+        ]
+      ]
+    },
+    {
+      "id": "recovery",
+      "label": "Restore at round 5",
+      "method": "cbba",
+      "schedule": "recovery",
+      "capacity": 2,
+      "round": 12,
+      "claims": [
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ]
+      ],
+      "conflicts": 0,
+      "unassigned": 0,
+      "uniqueAssigned": 6,
+      "agreement": true,
+      "agreementTasks": 6,
+      "fullAllocation": true,
+      "score": 436,
+      "optimalScore": 522,
+      "scoreRatio": 0.8352490421455939,
+      "firstAgreementRound": 7,
+      "releaseCount": 5,
+      "counters": {
+        "attempted": 48,
+        "delivered": 40,
+        "dropped": 8
+      },
+      "bundles": [
+        [
+          0,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          5
+        ]
+      ]
+    }
+  ]
+}

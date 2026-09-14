@@ -4,13 +4,13 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** eight local workshops with explanations, linked 2D/3D views, step
+**Available:** nine local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
 **Artificial Potential Fields**, **task allocation with finite-state
 execution**, **decision architectures under network partition**, **A* path
 planning with waypoint execution**, **linear Kalman position filtering**,
-**shared estimates with Covariance Intersection**, and **Optimal Reciprocal
-Collision Avoidance (ORCA)**.
+**shared estimates with Covariance Intersection**, **Optimal Reciprocal
+Collision Avoidance (ORCA)**, and **Consensus-Based Bundle Algorithm (CBBA)**.
 Other modules in the
 [catalog](docs/learning-path.md) remain proposals.
 
@@ -29,7 +29,7 @@ The server binds to loopback. No account, backend or external service is needed.
 Dependencies and the optional test browser need a network connection to install;
 the workshops load their assets locally. Use the workshop links to switch pages;
 the additional workshops are at `/movement/`, `/mission/`, `/architecture/`,
-`/pathfinding/`, `/localization/`, `/fusion/`, and `/orca/`. Navigation
+`/pathfinding/`, `/localization/`, `/fusion/`, `/orca/`, and `/cbba/`. Navigation
 starts a new run.
 
 If the local server has stopped after sleep or shutdown, run `npm run dev` again
@@ -47,6 +47,7 @@ npm run compare:pathfinding      # A*, Dijkstra and direct-motion cases as JSON
 npm run compare:localization     # position filters and 200 seeded trials as JSON
 npm run compare:fusion           # shared estimates and 1,000 seeded trials as JSON
 npm run compare:orca             # disk crossing, symmetry and sensing cases as JSON
+npm run compare:cbba             # task bundles, partition and recovery as JSON
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -61,9 +62,10 @@ hardware rendering performance. The [consensus results](docs/lessons/01-consensu
 [mission results](docs/lessons/03-mission-allocation-results.md),
 [architecture results](docs/lessons/04-decision-architectures-results.md),
 [pathfinding results](docs/lessons/05-pathfinding-results.md),
-[localization results](docs/lessons/06-localization-results.md) and
-[shared-estimation results](docs/lessons/07-shared-estimates-results.md) and
-[ORCA results](docs/lessons/08-orca-results.md) list the checks
+[localization results](docs/lessons/06-localization-results.md),
+[shared-estimation results](docs/lessons/07-shared-estimates-results.md),
+[ORCA results](docs/lessons/08-orca-results.md) and
+[CBBA results](docs/lessons/09-cbba-results.md) list the checks
 actually run and their limitations.
 
 ## First workshop: distributed average consensus
@@ -291,16 +293,40 @@ avoidance does not supply a global route or guarantee eventual arrival. The
 [specification](docs/lessons/08-orca.md) defines the solver, information boundary,
 stopping criteria and primary method sources.
 
+## Ninth workshop: Consensus-Based Bundle Algorithm
+
+**How can agents agree on task ownership without one coordinator?** Three
+stationary planners build task bundles using **CBBA — Consensus-Based Bundle
+Algorithm**, with static additive utilities and a two-task capacity. They
+exchange their local winner IDs, bids and source timestamps with neighbors.
+Losing an earlier task releases that task and the later entries in its bundle
+before the agent builds again.
+
+Inspect competing initial claims, then follow a connected chain, a lasting
+partition or restoration at round 5. Compare the same local greedy choices
+without any exchange. Select an agent to read its own utility row, winner
+beliefs, received packets and released bundle suffix. A separate evaluator
+reports conflicting claims, agreement and allocation quality against an exact
+centralized reference for this small scoring problem.
+
+Both views display task locations and current plans; no vehicle executes a task.
+Bundle order records acquisition, and these static utilities do not score travel
+or path insertion. Conflict-free allocation, agreement, optimal score and
+completed work are distinct concepts. See the
+[specification](docs/lessons/09-cbba.md) for the score, consensus protocol,
+information boundary and limitations.
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
   model and page controller. `src/model.js`, `src/movement-model.js`,
   `src/mission-model.js`, `src/architecture-model.js`, `src/pathfinding-model.js`,
-  `src/localization-model.js`, `src/fusion-model.js` and `src/orca-model.js`
+  `src/localization-model.js`, `src/fusion-model.js`, `src/orca-model.js` and
+  `src/cbba-model.js`
   contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with eight explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with nine explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -315,7 +341,8 @@ stopping criteria and primary method sources.
   references use `comparePaths()` in `src/pathfinding-model.js`; localization uses
   `compareLocalization()` and the paired-seed `compareLocalizationSeeds()`;
   shared estimation uses `compareFusion()` and `compareFusionSeeds()`; ORCA uses
-  `referenceComparisons()` in `src/orca-model.js`.
+  `referenceComparisons()` in `src/orca-model.js`; task-bundle references use
+  `referenceComparisons()` in `src/cbba-model.js`.
 
 Official dependency documentation was checked on 2026-09-14. Dependencies are
 shared by the workshops; robotics middleware and flight dynamics are outside
@@ -336,5 +363,6 @@ their scope.
 | [Localization results](docs/lessons/06-localization-results.md) | Position error, assumed uncertainty, missing fixes and false arrival. |
 | [Shared-estimation results](docs/lessons/07-shared-estimates-results.md) | Repeated evidence, covariance consistency and communication cost. |
 | [ORCA results](docs/lessons/08-orca-results.md) | Reciprocal avoidance, clearance, arrival and failures under missing sensing. |
+| [CBBA results](docs/lessons/09-cbba-results.md) | Bundle conflicts, neighbor agreement, partition recovery and allocation quality. |
 
 Additional modules and integrations need their own specifications and validation.
