@@ -125,7 +125,7 @@ test('keyboard cell navigation, mobile controls and all workshop links remain us
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.locator('#path-step').click(); await expect(page.locator('#path-step-count')).toHaveText('1');
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(9);
+  await expect(navigation.getByRole('link')).toHaveCount(10);
   await navigation.getByRole('link', { name: '04 / Decision architectures', exact: true }).click();
   await expect(page.locator('#arch-step-count')).toHaveText('0');
   await page.getByRole('navigation', { name: 'Workshops', exact: true }).getByRole('link', { name: '05 / A* path planning', exact: true }).click();

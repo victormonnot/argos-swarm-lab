@@ -1,0 +1,1455 @@
+{
+  "generatedAt": "2026-09-14T17:42:58.941Z",
+  "runtime": "v22.22.1",
+  "revision": "a3699f1c5a516d5ecbed2bdaa28165c9d938838d",
+  "workingTreeModified": true,
+  "sourceHashes": {
+    "src/behavior-model.js": "f77da3ac432ed583ed3fe674fbe370c90949fcd6ea9434725d6cb84068df7b39"
+  },
+  "model": {
+    "agents": 1,
+    "commandIntervalSeconds": 0.25,
+    "speedMetresPerSecond": 1.5,
+    "inspectionSeconds": 3,
+    "timeBudgetSeconds": 30,
+    "coordinates": "Cartesian metres, z is altitude; vehicle attitude is presentation only.",
+    "home": [
+      0,
+      0,
+      0
+    ],
+    "homeHover": [
+      0,
+      0,
+      3
+    ],
+    "station": [
+      6,
+      0,
+      3
+    ],
+    "mission": "Take off to home hover, fly to the inspection station, inspect for three uninterrupted seconds, return to home hover, and land. Completed actions latch Success and do not execute again.",
+    "timing": "Each control tick samples current Hold and sensor inputs, traverses the controller, selects at most one Running action, then integrates one 0.25-second command interval. A completed action returns Success at the next tick, which can select the following action at that same physical boundary. A final controller-Success observation tick selects no action and advances no physical time. Thus nominal execution has 60 physical intervals and 61 control ticks, finishing at 15 seconds.",
+    "controllers": "Reactive BT: root fallback reevaluates Hold sequence before mission/recovery on every tick. FSM: equivalent global Hold guard and explicit phase transitions. Memory BT: only the root fallback resumes its previously Running child; all sequences and the inner fallback are reactive. This particular root memory placement skips a newly raised higher-priority Hold condition; it is not a universal limitation of Behavior Trees or memory nodes.",
+    "tree": "Root fallback: [reactive sequence(Hold requested?, Hold), reactive fallback(reactive sequence(Takeoff, Fly, Inspect, Return, Land), reactive sequence(Abort return, Abort land))]. Sequence returns the first non-Success result; fallback returns the first non-Failure result. Unticked nodes are Idle in the trace.",
+    "interruption": "Hold cancels the prior Running action before the next command. Position is retained. An interrupted partial inspection is discarded and restarts from zero after Hold releases. Successful actions remain latched. Hold itself returns Running until it is no longer selected.",
+    "failure": "In the sensor-failure case, the input fails at 7 seconds. An active Inspect returns Failure and discards partial inspection; the fallback/FSM selects Abort return in the same tick, then Abort land. Recovery root Success is an aborted mission, not successful inspection. A previously completed inspection is not retroactively failed by a later unavailable input.",
+    "schedules": "Nominal: no disruption. Pause: Hold sample true at 7 <= t < 10 seconds. Persistent: Hold true from 7 seconds until the 30-second budget. Sensor failure: inspection sensor unavailable from 7 seconds. Inputs are perfect and instantaneous at the sampling boundary; no communication delay or detection inference is modeled.",
+    "agentInputs": "Own exact 3D pose, action completion latches and service progress, fixed waypoints and current Hold/sensor samples. Controllers cannot read the evaluator schedule or future disruption times.",
+    "evaluator": "Inject scheduled input values; measure travel distance, terminal mission outcome, discarded partial inspection, productive-action preemptions and command intervals in which a Hold input was ignored. Evaluator metrics are not controller inputs.",
+    "metrics": "completionTime is seconds only for a successfully inspected-and-landed mission; otherwise null. terminationTime is the observed terminal time, including aborted recovery or budget timeout. holdIgnoredSeconds sums 0.25-second executed intervals with Hold true and selected action other than Hold, even if velocity is zero during inspection. discardedInspectionSeconds includes partial progress lost to Hold or inspection failure. interruptions counts productive actions preempted by Hold, excluding action failure and release of Hold. Distance is accumulated Euclidean displacement in metres.",
+    "stopping": "Stop on observed controller completion or after integrating to the 30-second budget. Ignored-Hold exposure ends at terminal completion; persistent-hold memory thus records 8 seconds before it finishes at 15 seconds, not all remaining time to the budget. At timeout the final Running command remains in the trace and no further interval is executed.",
+    "fidelity": "One deterministic browser executor and a true 3D point-kinematic trajectory. The drone shape and scene are visualization. No flight dynamics, acceleration limits, battery, obstacle avoidance, physics contacts, allocation, radio, middleware, commercial BT runtime or autopilot integration."
+  },
+  "methodSources": [
+    {
+      "title": "Colledanchise and Ogren, Behavior Trees in Robotics and AI: An Introduction",
+      "url": "https://arxiv.org/abs/1709.00084"
+    },
+    {
+      "title": "BehaviorTree.CPP official fallback-node semantics",
+      "url": "https://www.behaviortree.dev/docs/nodes-library/FallbackNode/"
+    },
+    {
+      "title": "BehaviorTree.CPP official sequence-node semantics",
+      "url": "https://www.behaviortree.dev/docs/nodes-library/SequenceNode/"
+    },
+    {
+      "title": "BehaviorTree.CPP asynchronous actions and halting",
+      "url": "https://www.behaviortree.dev/docs/tutorial-basics/tutorial_04_sequence/"
+    }
+  ],
+  "references": [
+    {
+      "id": "nominal-bt-reactive",
+      "label": "Uninterrupted inspection · Behavior Tree · reactive priority",
+      "method": "bt-reactive",
+      "scenario": "nominal",
+      "metrics": {
+        "completed": true,
+        "aborted": false,
+        "timedOut": false,
+        "completionTime": 15,
+        "terminationTime": 15,
+        "distance": 18,
+        "holdIgnoredSeconds": 0,
+        "discardedInspectionSeconds": 0,
+        "interruptions": 0,
+        "inspectionCompleted": true,
+        "controlTicks": 61
+      },
+      "final": {
+        "step": 61,
+        "time": 15,
+        "status": "completed",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "inspectionProgress": 3
+      },
+      "events": [
+        {
+          "step": 1,
+          "time": 0,
+          "type": "action-start",
+          "message": "Take off is the selected action.",
+          "action": "takeoff"
+        },
+        {
+          "step": 8,
+          "time": 2,
+          "type": "action-complete",
+          "message": "Take off reached its completion condition.",
+          "action": "takeoff"
+        },
+        {
+          "step": 9,
+          "time": 2,
+          "type": "action-start",
+          "message": "Fly to station is the selected action.",
+          "action": "fly"
+        },
+        {
+          "step": 24,
+          "time": 6,
+          "type": "action-complete",
+          "message": "Fly to station reached its completion condition.",
+          "action": "fly"
+        },
+        {
+          "step": 25,
+          "time": 6,
+          "type": "action-start",
+          "message": "Inspect is the selected action.",
+          "action": "inspect"
+        },
+        {
+          "step": 36,
+          "time": 9,
+          "type": "action-complete",
+          "message": "Inspect reached its completion condition.",
+          "action": "inspect"
+        },
+        {
+          "step": 37,
+          "time": 9,
+          "type": "action-start",
+          "message": "Return home is the selected action.",
+          "action": "return"
+        },
+        {
+          "step": 52,
+          "time": 13,
+          "type": "action-complete",
+          "message": "Return home reached its completion condition.",
+          "action": "return"
+        },
+        {
+          "step": 53,
+          "time": 13,
+          "type": "action-start",
+          "message": "Land is the selected action.",
+          "action": "land"
+        },
+        {
+          "step": 60,
+          "time": 15,
+          "type": "action-complete",
+          "message": "Land reached its completion condition.",
+          "action": "land"
+        },
+        {
+          "step": 61,
+          "time": 15,
+          "type": "completed",
+          "message": "Inspection mission completed and the drone landed."
+        }
+      ]
+    },
+    {
+      "id": "nominal-fsm",
+      "label": "Uninterrupted inspection · Finite-state machine · global hold guard",
+      "method": "fsm",
+      "scenario": "nominal",
+      "metrics": {
+        "completed": true,
+        "aborted": false,
+        "timedOut": false,
+        "completionTime": 15,
+        "terminationTime": 15,
+        "distance": 18,
+        "holdIgnoredSeconds": 0,
+        "discardedInspectionSeconds": 0,
+        "interruptions": 0,
+        "inspectionCompleted": true,
+        "controlTicks": 61
+      },
+      "final": {
+        "step": 61,
+        "time": 15,
+        "status": "completed",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "inspectionProgress": 3
+      },
+      "events": [
+        {
+          "step": 1,
+          "time": 0,
+          "type": "action-start",
+          "message": "Take off is the selected action.",
+          "action": "takeoff"
+        },
+        {
+          "step": 8,
+          "time": 2,
+          "type": "action-complete",
+          "message": "Take off reached its completion condition.",
+          "action": "takeoff"
+        },
+        {
+          "step": 9,
+          "time": 2,
+          "type": "action-start",
+          "message": "Fly to station is the selected action.",
+          "action": "fly"
+        },
+        {
+          "step": 24,
+          "time": 6,
+          "type": "action-complete",
+          "message": "Fly to station reached its completion condition.",
+          "action": "fly"
+        },
+        {
+          "step": 25,
+          "time": 6,
+          "type": "action-start",
+          "message": "Inspect is the selected action.",
+          "action": "inspect"
+        },
+        {
+          "step": 36,
+          "time": 9,
+          "type": "action-complete",
+          "message": "Inspect reached its completion condition.",
+          "action": "inspect"
+        },
+        {
+          "step": 37,
+          "time": 9,
+          "type": "action-start",
+          "message": "Return home is the selected action.",
+          "action": "return"
+        },
+        {
+          "step": 52,
+          "time": 13,
+          "type": "action-complete",
+          "message": "Return home reached its completion condition.",
+          "action": "return"
+        },
+        {
+          "step": 53,
+          "time": 13,
+          "type": "action-start",
+          "message": "Land is the selected action.",
+          "action": "land"
+        },
+        {
+          "step": 60,
+          "time": 15,
+          "type": "action-complete",
+          "message": "Land reached its completion condition.",
+          "action": "land"
+        },
+        {
+          "step": 61,
+          "time": 15,
+          "type": "completed",
+          "message": "Inspection mission completed and the drone landed."
+        }
+      ]
+    },
+    {
+      "id": "nominal-bt-memory",
+      "label": "Uninterrupted inspection · Behavior Tree · root fallback memory",
+      "method": "bt-memory",
+      "scenario": "nominal",
+      "metrics": {
+        "completed": true,
+        "aborted": false,
+        "timedOut": false,
+        "completionTime": 15,
+        "terminationTime": 15,
+        "distance": 18,
+        "holdIgnoredSeconds": 0,
+        "discardedInspectionSeconds": 0,
+        "interruptions": 0,
+        "inspectionCompleted": true,
+        "controlTicks": 61
+      },
+      "final": {
+        "step": 61,
+        "time": 15,
+        "status": "completed",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "inspectionProgress": 3
+      },
+      "events": [
+        {
+          "step": 1,
+          "time": 0,
+          "type": "action-start",
+          "message": "Take off is the selected action.",
+          "action": "takeoff"
+        },
+        {
+          "step": 8,
+          "time": 2,
+          "type": "action-complete",
+          "message": "Take off reached its completion condition.",
+          "action": "takeoff"
+        },
+        {
+          "step": 9,
+          "time": 2,
+          "type": "action-start",
+          "message": "Fly to station is the selected action.",
+          "action": "fly"
+        },
+        {
+          "step": 24,
+          "time": 6,
+          "type": "action-complete",
+          "message": "Fly to station reached its completion condition.",
+          "action": "fly"
+        },
+        {
+          "step": 25,
+          "time": 6,
+          "type": "action-start",
+          "message": "Inspect is the selected action.",
+          "action": "inspect"
+        },
+        {
+          "step": 36,
+          "time": 9,
+          "type": "action-complete",
+          "message": "Inspect reached its completion condition.",
+          "action": "inspect"
+        },
+        {
+          "step": 37,
+          "time": 9,
+          "type": "action-start",
+          "message": "Return home is the selected action.",
+          "action": "return"
+        },
+        {
+          "step": 52,
+          "time": 13,
+          "type": "action-complete",
+          "message": "Return home reached its completion condition.",
+          "action": "return"
+        },
+        {
+          "step": 53,
+          "time": 13,
+          "type": "action-start",
+          "message": "Land is the selected action.",
+          "action": "land"
+        },
+        {
+          "step": 60,
+          "time": 15,
+          "type": "action-complete",
+          "message": "Land reached its completion condition.",
+          "action": "land"
+        },
+        {
+          "step": 61,
+          "time": 15,
+          "type": "completed",
+          "message": "Inspection mission completed and the drone landed."
+        }
+      ]
+    },
+    {
+      "id": "pause-bt-reactive",
+      "label": "Hold from 7 to 10 s · Behavior Tree · reactive priority",
+      "method": "bt-reactive",
+      "scenario": "pause",
+      "metrics": {
+        "completed": true,
+        "aborted": false,
+        "timedOut": false,
+        "completionTime": 19,
+        "terminationTime": 19,
+        "distance": 18,
+        "holdIgnoredSeconds": 0,
+        "discardedInspectionSeconds": 1,
+        "interruptions": 1,
+        "inspectionCompleted": true,
+        "controlTicks": 77
+      },
+      "final": {
+        "step": 77,
+        "time": 19,
+        "status": "completed",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "inspectionProgress": 3
+      },
+      "events": [
+        {
+          "step": 1,
+          "time": 0,
+          "type": "action-start",
+          "message": "Take off is the selected action.",
+          "action": "takeoff"
+        },
+        {
+          "step": 8,
+          "time": 2,
+          "type": "action-complete",
+          "message": "Take off reached its completion condition.",
+          "action": "takeoff"
+        },
+        {
+          "step": 9,
+          "time": 2,
+          "type": "action-start",
+          "message": "Fly to station is the selected action.",
+          "action": "fly"
+        },
+        {
+          "step": 24,
+          "time": 6,
+          "type": "action-complete",
+          "message": "Fly to station reached its completion condition.",
+          "action": "fly"
+        },
+        {
+          "step": 25,
+          "time": 6,
+          "type": "action-start",
+          "message": "Inspect is the selected action.",
+          "action": "inspect"
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "hold-requested",
+          "message": "The current input requests Hold."
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "halt",
+          "message": "Inspect was halted before Hold position.",
+          "action": "inspect",
+          "nextAction": "hold"
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "action-start",
+          "message": "Hold position is the selected action.",
+          "action": "hold"
+        },
+        {
+          "step": 41,
+          "time": 10,
+          "type": "hold-released",
+          "message": "The current input releases Hold."
+        },
+        {
+          "step": 41,
+          "time": 10,
+          "type": "halt",
+          "message": "Hold position was halted before Inspect.",
+          "action": "hold",
+          "nextAction": "inspect"
+        },
+        {
+          "step": 41,
+          "time": 10,
+          "type": "action-start",
+          "message": "Inspect is the selected action.",
+          "action": "inspect"
+        },
+        {
+          "step": 52,
+          "time": 13,
+          "type": "action-complete",
+          "message": "Inspect reached its completion condition.",
+          "action": "inspect"
+        },
+        {
+          "step": 53,
+          "time": 13,
+          "type": "action-start",
+          "message": "Return home is the selected action.",
+          "action": "return"
+        },
+        {
+          "step": 68,
+          "time": 17,
+          "type": "action-complete",
+          "message": "Return home reached its completion condition.",
+          "action": "return"
+        },
+        {
+          "step": 69,
+          "time": 17,
+          "type": "action-start",
+          "message": "Land is the selected action.",
+          "action": "land"
+        },
+        {
+          "step": 76,
+          "time": 19,
+          "type": "action-complete",
+          "message": "Land reached its completion condition.",
+          "action": "land"
+        },
+        {
+          "step": 77,
+          "time": 19,
+          "type": "completed",
+          "message": "Inspection mission completed and the drone landed."
+        }
+      ]
+    },
+    {
+      "id": "pause-fsm",
+      "label": "Hold from 7 to 10 s · Finite-state machine · global hold guard",
+      "method": "fsm",
+      "scenario": "pause",
+      "metrics": {
+        "completed": true,
+        "aborted": false,
+        "timedOut": false,
+        "completionTime": 19,
+        "terminationTime": 19,
+        "distance": 18,
+        "holdIgnoredSeconds": 0,
+        "discardedInspectionSeconds": 1,
+        "interruptions": 1,
+        "inspectionCompleted": true,
+        "controlTicks": 77
+      },
+      "final": {
+        "step": 77,
+        "time": 19,
+        "status": "completed",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "inspectionProgress": 3
+      },
+      "events": [
+        {
+          "step": 1,
+          "time": 0,
+          "type": "action-start",
+          "message": "Take off is the selected action.",
+          "action": "takeoff"
+        },
+        {
+          "step": 8,
+          "time": 2,
+          "type": "action-complete",
+          "message": "Take off reached its completion condition.",
+          "action": "takeoff"
+        },
+        {
+          "step": 9,
+          "time": 2,
+          "type": "action-start",
+          "message": "Fly to station is the selected action.",
+          "action": "fly"
+        },
+        {
+          "step": 24,
+          "time": 6,
+          "type": "action-complete",
+          "message": "Fly to station reached its completion condition.",
+          "action": "fly"
+        },
+        {
+          "step": 25,
+          "time": 6,
+          "type": "action-start",
+          "message": "Inspect is the selected action.",
+          "action": "inspect"
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "hold-requested",
+          "message": "The current input requests Hold."
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "halt",
+          "message": "Inspect was halted before Hold position.",
+          "action": "inspect",
+          "nextAction": "hold"
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "action-start",
+          "message": "Hold position is the selected action.",
+          "action": "hold"
+        },
+        {
+          "step": 41,
+          "time": 10,
+          "type": "hold-released",
+          "message": "The current input releases Hold."
+        },
+        {
+          "step": 41,
+          "time": 10,
+          "type": "halt",
+          "message": "Hold position was halted before Inspect.",
+          "action": "hold",
+          "nextAction": "inspect"
+        },
+        {
+          "step": 41,
+          "time": 10,
+          "type": "action-start",
+          "message": "Inspect is the selected action.",
+          "action": "inspect"
+        },
+        {
+          "step": 52,
+          "time": 13,
+          "type": "action-complete",
+          "message": "Inspect reached its completion condition.",
+          "action": "inspect"
+        },
+        {
+          "step": 53,
+          "time": 13,
+          "type": "action-start",
+          "message": "Return home is the selected action.",
+          "action": "return"
+        },
+        {
+          "step": 68,
+          "time": 17,
+          "type": "action-complete",
+          "message": "Return home reached its completion condition.",
+          "action": "return"
+        },
+        {
+          "step": 69,
+          "time": 17,
+          "type": "action-start",
+          "message": "Land is the selected action.",
+          "action": "land"
+        },
+        {
+          "step": 76,
+          "time": 19,
+          "type": "action-complete",
+          "message": "Land reached its completion condition.",
+          "action": "land"
+        },
+        {
+          "step": 77,
+          "time": 19,
+          "type": "completed",
+          "message": "Inspection mission completed and the drone landed."
+        }
+      ]
+    },
+    {
+      "id": "pause-bt-memory",
+      "label": "Hold from 7 to 10 s · Behavior Tree · root fallback memory",
+      "method": "bt-memory",
+      "scenario": "pause",
+      "metrics": {
+        "completed": true,
+        "aborted": false,
+        "timedOut": false,
+        "completionTime": 15,
+        "terminationTime": 15,
+        "distance": 18,
+        "holdIgnoredSeconds": 3,
+        "discardedInspectionSeconds": 0,
+        "interruptions": 0,
+        "inspectionCompleted": true,
+        "controlTicks": 61
+      },
+      "final": {
+        "step": 61,
+        "time": 15,
+        "status": "completed",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "inspectionProgress": 3
+      },
+      "events": [
+        {
+          "step": 1,
+          "time": 0,
+          "type": "action-start",
+          "message": "Take off is the selected action.",
+          "action": "takeoff"
+        },
+        {
+          "step": 8,
+          "time": 2,
+          "type": "action-complete",
+          "message": "Take off reached its completion condition.",
+          "action": "takeoff"
+        },
+        {
+          "step": 9,
+          "time": 2,
+          "type": "action-start",
+          "message": "Fly to station is the selected action.",
+          "action": "fly"
+        },
+        {
+          "step": 24,
+          "time": 6,
+          "type": "action-complete",
+          "message": "Fly to station reached its completion condition.",
+          "action": "fly"
+        },
+        {
+          "step": 25,
+          "time": 6,
+          "type": "action-start",
+          "message": "Inspect is the selected action.",
+          "action": "inspect"
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "hold-requested",
+          "message": "The current input requests Hold."
+        },
+        {
+          "step": 36,
+          "time": 9,
+          "type": "action-complete",
+          "message": "Inspect reached its completion condition.",
+          "action": "inspect"
+        },
+        {
+          "step": 37,
+          "time": 9,
+          "type": "action-start",
+          "message": "Return home is the selected action.",
+          "action": "return"
+        },
+        {
+          "step": 41,
+          "time": 10,
+          "type": "hold-released",
+          "message": "The current input releases Hold."
+        },
+        {
+          "step": 52,
+          "time": 13,
+          "type": "action-complete",
+          "message": "Return home reached its completion condition.",
+          "action": "return"
+        },
+        {
+          "step": 53,
+          "time": 13,
+          "type": "action-start",
+          "message": "Land is the selected action.",
+          "action": "land"
+        },
+        {
+          "step": 60,
+          "time": 15,
+          "type": "action-complete",
+          "message": "Land reached its completion condition.",
+          "action": "land"
+        },
+        {
+          "step": 61,
+          "time": 15,
+          "type": "completed",
+          "message": "Inspection mission completed and the drone landed."
+        }
+      ]
+    },
+    {
+      "id": "persistent-hold-bt-reactive",
+      "label": "Hold from 7 s onward · Behavior Tree · reactive priority",
+      "method": "bt-reactive",
+      "scenario": "persistent-hold",
+      "metrics": {
+        "completed": false,
+        "aborted": false,
+        "timedOut": true,
+        "completionTime": null,
+        "terminationTime": 30,
+        "distance": 9,
+        "holdIgnoredSeconds": 0,
+        "discardedInspectionSeconds": 1,
+        "interruptions": 1,
+        "inspectionCompleted": false,
+        "controlTicks": 120
+      },
+      "final": {
+        "step": 120,
+        "time": 30,
+        "status": "timed-out",
+        "position": [
+          6,
+          0,
+          3
+        ],
+        "inspectionProgress": 0
+      },
+      "events": [
+        {
+          "step": 1,
+          "time": 0,
+          "type": "action-start",
+          "message": "Take off is the selected action.",
+          "action": "takeoff"
+        },
+        {
+          "step": 8,
+          "time": 2,
+          "type": "action-complete",
+          "message": "Take off reached its completion condition.",
+          "action": "takeoff"
+        },
+        {
+          "step": 9,
+          "time": 2,
+          "type": "action-start",
+          "message": "Fly to station is the selected action.",
+          "action": "fly"
+        },
+        {
+          "step": 24,
+          "time": 6,
+          "type": "action-complete",
+          "message": "Fly to station reached its completion condition.",
+          "action": "fly"
+        },
+        {
+          "step": 25,
+          "time": 6,
+          "type": "action-start",
+          "message": "Inspect is the selected action.",
+          "action": "inspect"
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "hold-requested",
+          "message": "The current input requests Hold."
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "halt",
+          "message": "Inspect was halted before Hold position.",
+          "action": "inspect",
+          "nextAction": "hold"
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "action-start",
+          "message": "Hold position is the selected action.",
+          "action": "hold"
+        },
+        {
+          "step": 120,
+          "time": 30,
+          "type": "timeout",
+          "message": "The 30-second experiment budget expired before controller completion."
+        }
+      ]
+    },
+    {
+      "id": "persistent-hold-fsm",
+      "label": "Hold from 7 s onward · Finite-state machine · global hold guard",
+      "method": "fsm",
+      "scenario": "persistent-hold",
+      "metrics": {
+        "completed": false,
+        "aborted": false,
+        "timedOut": true,
+        "completionTime": null,
+        "terminationTime": 30,
+        "distance": 9,
+        "holdIgnoredSeconds": 0,
+        "discardedInspectionSeconds": 1,
+        "interruptions": 1,
+        "inspectionCompleted": false,
+        "controlTicks": 120
+      },
+      "final": {
+        "step": 120,
+        "time": 30,
+        "status": "timed-out",
+        "position": [
+          6,
+          0,
+          3
+        ],
+        "inspectionProgress": 0
+      },
+      "events": [
+        {
+          "step": 1,
+          "time": 0,
+          "type": "action-start",
+          "message": "Take off is the selected action.",
+          "action": "takeoff"
+        },
+        {
+          "step": 8,
+          "time": 2,
+          "type": "action-complete",
+          "message": "Take off reached its completion condition.",
+          "action": "takeoff"
+        },
+        {
+          "step": 9,
+          "time": 2,
+          "type": "action-start",
+          "message": "Fly to station is the selected action.",
+          "action": "fly"
+        },
+        {
+          "step": 24,
+          "time": 6,
+          "type": "action-complete",
+          "message": "Fly to station reached its completion condition.",
+          "action": "fly"
+        },
+        {
+          "step": 25,
+          "time": 6,
+          "type": "action-start",
+          "message": "Inspect is the selected action.",
+          "action": "inspect"
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "hold-requested",
+          "message": "The current input requests Hold."
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "halt",
+          "message": "Inspect was halted before Hold position.",
+          "action": "inspect",
+          "nextAction": "hold"
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "action-start",
+          "message": "Hold position is the selected action.",
+          "action": "hold"
+        },
+        {
+          "step": 120,
+          "time": 30,
+          "type": "timeout",
+          "message": "The 30-second experiment budget expired before controller completion."
+        }
+      ]
+    },
+    {
+      "id": "persistent-hold-bt-memory",
+      "label": "Hold from 7 s onward · Behavior Tree · root fallback memory",
+      "method": "bt-memory",
+      "scenario": "persistent-hold",
+      "metrics": {
+        "completed": true,
+        "aborted": false,
+        "timedOut": false,
+        "completionTime": 15,
+        "terminationTime": 15,
+        "distance": 18,
+        "holdIgnoredSeconds": 8,
+        "discardedInspectionSeconds": 0,
+        "interruptions": 0,
+        "inspectionCompleted": true,
+        "controlTicks": 61
+      },
+      "final": {
+        "step": 61,
+        "time": 15,
+        "status": "completed",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "inspectionProgress": 3
+      },
+      "events": [
+        {
+          "step": 1,
+          "time": 0,
+          "type": "action-start",
+          "message": "Take off is the selected action.",
+          "action": "takeoff"
+        },
+        {
+          "step": 8,
+          "time": 2,
+          "type": "action-complete",
+          "message": "Take off reached its completion condition.",
+          "action": "takeoff"
+        },
+        {
+          "step": 9,
+          "time": 2,
+          "type": "action-start",
+          "message": "Fly to station is the selected action.",
+          "action": "fly"
+        },
+        {
+          "step": 24,
+          "time": 6,
+          "type": "action-complete",
+          "message": "Fly to station reached its completion condition.",
+          "action": "fly"
+        },
+        {
+          "step": 25,
+          "time": 6,
+          "type": "action-start",
+          "message": "Inspect is the selected action.",
+          "action": "inspect"
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "hold-requested",
+          "message": "The current input requests Hold."
+        },
+        {
+          "step": 36,
+          "time": 9,
+          "type": "action-complete",
+          "message": "Inspect reached its completion condition.",
+          "action": "inspect"
+        },
+        {
+          "step": 37,
+          "time": 9,
+          "type": "action-start",
+          "message": "Return home is the selected action.",
+          "action": "return"
+        },
+        {
+          "step": 52,
+          "time": 13,
+          "type": "action-complete",
+          "message": "Return home reached its completion condition.",
+          "action": "return"
+        },
+        {
+          "step": 53,
+          "time": 13,
+          "type": "action-start",
+          "message": "Land is the selected action.",
+          "action": "land"
+        },
+        {
+          "step": 60,
+          "time": 15,
+          "type": "action-complete",
+          "message": "Land reached its completion condition.",
+          "action": "land"
+        },
+        {
+          "step": 61,
+          "time": 15,
+          "type": "completed",
+          "message": "Inspection mission completed and the drone landed."
+        }
+      ]
+    },
+    {
+      "id": "sensor-failure-bt-reactive",
+      "label": "Inspection sensor fails at 7 s · Behavior Tree · reactive priority",
+      "method": "bt-reactive",
+      "scenario": "sensor-failure",
+      "metrics": {
+        "completed": false,
+        "aborted": true,
+        "timedOut": false,
+        "completionTime": null,
+        "terminationTime": 13,
+        "distance": 18,
+        "holdIgnoredSeconds": 0,
+        "discardedInspectionSeconds": 1,
+        "interruptions": 0,
+        "inspectionCompleted": false,
+        "controlTicks": 53
+      },
+      "final": {
+        "step": 53,
+        "time": 13,
+        "status": "aborted",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "inspectionProgress": 0
+      },
+      "events": [
+        {
+          "step": 1,
+          "time": 0,
+          "type": "action-start",
+          "message": "Take off is the selected action.",
+          "action": "takeoff"
+        },
+        {
+          "step": 8,
+          "time": 2,
+          "type": "action-complete",
+          "message": "Take off reached its completion condition.",
+          "action": "takeoff"
+        },
+        {
+          "step": 9,
+          "time": 2,
+          "type": "action-start",
+          "message": "Fly to station is the selected action.",
+          "action": "fly"
+        },
+        {
+          "step": 24,
+          "time": 6,
+          "type": "action-complete",
+          "message": "Fly to station reached its completion condition.",
+          "action": "fly"
+        },
+        {
+          "step": 25,
+          "time": 6,
+          "type": "action-start",
+          "message": "Inspect is the selected action.",
+          "action": "inspect"
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "sensor-failed",
+          "message": "The inspection sensor input is now unavailable."
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "action-failed",
+          "message": "Inspect returned Failure: its current sensor input is unavailable.",
+          "action": "inspect",
+          "discardedInspectionSeconds": 1
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "action-start",
+          "message": "Abort: return home is the selected action.",
+          "action": "abort-return"
+        },
+        {
+          "step": 44,
+          "time": 11,
+          "type": "action-complete",
+          "message": "Abort: return home reached its completion condition.",
+          "action": "abort-return"
+        },
+        {
+          "step": 45,
+          "time": 11,
+          "type": "action-start",
+          "message": "Abort: land is the selected action.",
+          "action": "abort-land"
+        },
+        {
+          "step": 52,
+          "time": 13,
+          "type": "action-complete",
+          "message": "Abort: land reached its completion condition.",
+          "action": "abort-land"
+        },
+        {
+          "step": 53,
+          "time": 13,
+          "type": "aborted",
+          "message": "Recovery completed and the drone landed; the inspection mission was aborted."
+        }
+      ]
+    },
+    {
+      "id": "sensor-failure-fsm",
+      "label": "Inspection sensor fails at 7 s · Finite-state machine · global hold guard",
+      "method": "fsm",
+      "scenario": "sensor-failure",
+      "metrics": {
+        "completed": false,
+        "aborted": true,
+        "timedOut": false,
+        "completionTime": null,
+        "terminationTime": 13,
+        "distance": 18,
+        "holdIgnoredSeconds": 0,
+        "discardedInspectionSeconds": 1,
+        "interruptions": 0,
+        "inspectionCompleted": false,
+        "controlTicks": 53
+      },
+      "final": {
+        "step": 53,
+        "time": 13,
+        "status": "aborted",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "inspectionProgress": 0
+      },
+      "events": [
+        {
+          "step": 1,
+          "time": 0,
+          "type": "action-start",
+          "message": "Take off is the selected action.",
+          "action": "takeoff"
+        },
+        {
+          "step": 8,
+          "time": 2,
+          "type": "action-complete",
+          "message": "Take off reached its completion condition.",
+          "action": "takeoff"
+        },
+        {
+          "step": 9,
+          "time": 2,
+          "type": "action-start",
+          "message": "Fly to station is the selected action.",
+          "action": "fly"
+        },
+        {
+          "step": 24,
+          "time": 6,
+          "type": "action-complete",
+          "message": "Fly to station reached its completion condition.",
+          "action": "fly"
+        },
+        {
+          "step": 25,
+          "time": 6,
+          "type": "action-start",
+          "message": "Inspect is the selected action.",
+          "action": "inspect"
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "sensor-failed",
+          "message": "The inspection sensor input is now unavailable."
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "action-failed",
+          "message": "Inspect returned Failure: its current sensor input is unavailable.",
+          "action": "inspect",
+          "discardedInspectionSeconds": 1
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "action-start",
+          "message": "Abort: return home is the selected action.",
+          "action": "abort-return"
+        },
+        {
+          "step": 44,
+          "time": 11,
+          "type": "action-complete",
+          "message": "Abort: return home reached its completion condition.",
+          "action": "abort-return"
+        },
+        {
+          "step": 45,
+          "time": 11,
+          "type": "action-start",
+          "message": "Abort: land is the selected action.",
+          "action": "abort-land"
+        },
+        {
+          "step": 52,
+          "time": 13,
+          "type": "action-complete",
+          "message": "Abort: land reached its completion condition.",
+          "action": "abort-land"
+        },
+        {
+          "step": 53,
+          "time": 13,
+          "type": "aborted",
+          "message": "Recovery completed and the drone landed; the inspection mission was aborted."
+        }
+      ]
+    },
+    {
+      "id": "sensor-failure-bt-memory",
+      "label": "Inspection sensor fails at 7 s · Behavior Tree · root fallback memory",
+      "method": "bt-memory",
+      "scenario": "sensor-failure",
+      "metrics": {
+        "completed": false,
+        "aborted": true,
+        "timedOut": false,
+        "completionTime": null,
+        "terminationTime": 13,
+        "distance": 18,
+        "holdIgnoredSeconds": 0,
+        "discardedInspectionSeconds": 1,
+        "interruptions": 0,
+        "inspectionCompleted": false,
+        "controlTicks": 53
+      },
+      "final": {
+        "step": 53,
+        "time": 13,
+        "status": "aborted",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "inspectionProgress": 0
+      },
+      "events": [
+        {
+          "step": 1,
+          "time": 0,
+          "type": "action-start",
+          "message": "Take off is the selected action.",
+          "action": "takeoff"
+        },
+        {
+          "step": 8,
+          "time": 2,
+          "type": "action-complete",
+          "message": "Take off reached its completion condition.",
+          "action": "takeoff"
+        },
+        {
+          "step": 9,
+          "time": 2,
+          "type": "action-start",
+          "message": "Fly to station is the selected action.",
+          "action": "fly"
+        },
+        {
+          "step": 24,
+          "time": 6,
+          "type": "action-complete",
+          "message": "Fly to station reached its completion condition.",
+          "action": "fly"
+        },
+        {
+          "step": 25,
+          "time": 6,
+          "type": "action-start",
+          "message": "Inspect is the selected action.",
+          "action": "inspect"
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "sensor-failed",
+          "message": "The inspection sensor input is now unavailable."
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "action-failed",
+          "message": "Inspect returned Failure: its current sensor input is unavailable.",
+          "action": "inspect",
+          "discardedInspectionSeconds": 1
+        },
+        {
+          "step": 29,
+          "time": 7,
+          "type": "action-start",
+          "message": "Abort: return home is the selected action.",
+          "action": "abort-return"
+        },
+        {
+          "step": 44,
+          "time": 11,
+          "type": "action-complete",
+          "message": "Abort: return home reached its completion condition.",
+          "action": "abort-return"
+        },
+        {
+          "step": 45,
+          "time": 11,
+          "type": "action-start",
+          "message": "Abort: land is the selected action.",
+          "action": "abort-land"
+        },
+        {
+          "step": 52,
+          "time": 13,
+          "type": "action-complete",
+          "message": "Abort: land reached its completion condition.",
+          "action": "abort-land"
+        },
+        {
+          "step": 53,
+          "time": 13,
+          "type": "aborted",
+          "message": "Recovery completed and the drone landed; the inspection mission was aborted."
+        }
+      ]
+    }
+  ]
+}

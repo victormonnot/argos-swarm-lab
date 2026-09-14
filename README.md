@@ -4,13 +4,14 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** nine local workshops with explanations, linked 2D/3D views, step
+**Available:** ten local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
 **Artificial Potential Fields**, **task allocation with finite-state
 execution**, **decision architectures under network partition**, **A* path
 planning with waypoint execution**, **linear Kalman position filtering**,
 **shared estimates with Covariance Intersection**, **Optimal Reciprocal
-Collision Avoidance (ORCA)**, and **Consensus-Based Bundle Algorithm (CBBA)**.
+Collision Avoidance (ORCA)**, **Consensus-Based Bundle Algorithm (CBBA)**,
+and **Behavior Trees versus finite-state machines (FSM)**.
 Other modules in the
 [catalog](docs/learning-path.md) remain proposals.
 
@@ -29,7 +30,7 @@ The server binds to loopback. No account, backend or external service is needed.
 Dependencies and the optional test browser need a network connection to install;
 the workshops load their assets locally. Use the workshop links to switch pages;
 the additional workshops are at `/movement/`, `/mission/`, `/architecture/`,
-`/pathfinding/`, `/localization/`, `/fusion/`, `/orca/`, and `/cbba/`. Navigation
+`/pathfinding/`, `/localization/`, `/fusion/`, `/orca/`, `/cbba/`, and `/behavior/`. Navigation
 starts a new run.
 
 If the local server has stopped after sleep or shutdown, run `npm run dev` again
@@ -48,6 +49,7 @@ npm run compare:localization     # position filters and 200 seeded trials as JSO
 npm run compare:fusion           # shared estimates and 1,000 seeded trials as JSON
 npm run compare:orca             # disk crossing, symmetry and sensing cases as JSON
 npm run compare:cbba             # task bundles, partition and recovery as JSON
+npm run compare:behavior         # execution, interruption and recovery as JSON
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -64,8 +66,9 @@ hardware rendering performance. The [consensus results](docs/lessons/01-consensu
 [pathfinding results](docs/lessons/05-pathfinding-results.md),
 [localization results](docs/lessons/06-localization-results.md),
 [shared-estimation results](docs/lessons/07-shared-estimates-results.md),
-[ORCA results](docs/lessons/08-orca-results.md) and
-[CBBA results](docs/lessons/09-cbba-results.md) list the checks
+[ORCA results](docs/lessons/08-orca-results.md),
+[CBBA results](docs/lessons/09-cbba-results.md) and
+[execution results](docs/lessons/10-behavior-trees-results.md) list the checks
 actually run and their limitations.
 
 ## First workshop: distributed average consensus
@@ -316,17 +319,45 @@ completed work are distinct concepts. See the
 [specification](docs/lessons/09-cbba.md) for the score, consensus protocol,
 information boundary and limitations.
 
+## Tenth workshop: Behavior Trees and finite-state machines
+
+**What happens when an action is interrupted?** One drone follows a fixed
+inspection mission: take off, travel, inspect, return and land. Compare a
+**Behavior Tree (BT) with reactive priority fallback**, an equivalently guarded
+**finite-state machine (FSM)**, and a **BT with memory at the root fallback**.
+All three use identical movement and inspection primitives.
+
+Step through a temporary hold at 7 s. Inspect whether the hold condition is
+visited, which action is halted and how partial inspection work is discarded.
+Compare persistent hold with a sensor failure that causes a return and landing.
+A successful recovery action does not mean the inspection succeeded. The
+memory-root variant demonstrates how resuming a running child can skip a newly
+changed higher-priority condition; it is one explicit tree design, not a claim
+that memory nodes are always unsuitable.
+
+The tree and FSM inspectors expose actual evaluated nodes, returned statuses,
+transitions and local observations. Independent reference runs separate task
+completion from hold compliance. The reactive BT and FSM implement the same
+policy, so equal physical behavior is an intended result.
+
+This workshop models altitude with three-dimensional point kinematics. The
+volumetric view includes a quadrotor, inspection structure, landing pad and a
+clear flight corridor; the 2D side elevation observes the same trajectory.
+There is no flight physics or collision-avoidance controller. See the
+[specification](docs/lessons/10-behavior-trees.md) for tick timing, action lifecycle
+and the information boundary.
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
   model and page controller. `src/model.js`, `src/movement-model.js`,
   `src/mission-model.js`, `src/architecture-model.js`, `src/pathfinding-model.js`,
-  `src/localization-model.js`, `src/fusion-model.js`, `src/orca-model.js` and
-  `src/cbba-model.js`
+  `src/localization-model.js`, `src/fusion-model.js`, `src/orca-model.js`,
+  `src/cbba-model.js` and `src/behavior-model.js`
   contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with nine explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with ten explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -342,7 +373,8 @@ information boundary and limitations.
   `compareLocalization()` and the paired-seed `compareLocalizationSeeds()`;
   shared estimation uses `compareFusion()` and `compareFusionSeeds()`; ORCA uses
   `referenceComparisons()` in `src/orca-model.js`; task-bundle references use
-  `referenceComparisons()` in `src/cbba-model.js`.
+  `referenceComparisons()` in `src/cbba-model.js`; execution references use
+  `referenceComparisons()` in `src/behavior-model.js`.
 
 Official dependency documentation was checked on 2026-09-14. Dependencies are
 shared by the workshops; robotics middleware and flight dynamics are outside
@@ -364,5 +396,6 @@ their scope.
 | [Shared-estimation results](docs/lessons/07-shared-estimates-results.md) | Repeated evidence, covariance consistency and communication cost. |
 | [ORCA results](docs/lessons/08-orca-results.md) | Reciprocal avoidance, clearance, arrival and failures under missing sensing. |
 | [CBBA results](docs/lessons/09-cbba-results.md) | Bundle conflicts, neighbor agreement, partition recovery and allocation quality. |
+| [Execution results](docs/lessons/10-behavior-trees-results.md) | Matched BT/FSM behavior, interruption, memory semantics and recovery outcomes. |
 
 Additional modules and integrations need their own specifications and validation.

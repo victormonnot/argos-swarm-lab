@@ -17,7 +17,8 @@
     "compare:localization": "node scripts/compare-localization.js",
     "compare:fusion": "node scripts/compare-fusion.js",
     "compare:orca": "node scripts/compare-orca.js",
-    "compare:cbba": "node scripts/compare-cbba.js"
+    "compare:cbba": "node scripts/compare-cbba.js",
+    "compare:behavior": "node scripts/compare-behavior.js"
   },
   "engines": {
     "node": ">=22.12.0"

@@ -14,6 +14,7 @@ export default defineConfig({
         fusion: resolve(import.meta.dirname, 'fusion/index.html'),
         orca: resolve(import.meta.dirname, 'orca/index.html'),
         cbba: resolve(import.meta.dirname, 'cbba/index.html'),
+        behavior: resolve(import.meta.dirname, 'behavior/index.html'),
       },
     },
   },
