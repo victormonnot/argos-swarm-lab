@@ -424,7 +424,9 @@ truth. A wrong loop can reduce its objective while deforming the path.
 Optimization iterations are computation, not flight time. A pose selector
 inspects one recorded timestamp, represented by a detailed 3D drone; other graph
 nodes are its past poses. The linked 2D/3D views show truth, integrated odometry
-and optimized history from the same run. Three reference cases and paired
+and optimized history from the same run. A short transition, correction arrows
+and Before / After comparison make changes to historical poses visible while
+the inspectors retain the actual computed estimates. Three reference cases and paired
 seeds report errors, corrections and numerical termination separately.
 
 This is a small **pose-graph backend** with supplied associations and an exact

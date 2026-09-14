@@ -185,6 +185,31 @@ and correction. The recorded optimizer history tracks objective and evaluator
 error independently. Camera movement, selection and 2D/3D switching preserve
 the active optimization state. Reference copies do not replace it.
 
+To make small corrections visible, both views share a presentation transition
+between the previously displayed poses and the newly computed poses. It lasts
+**900 ms** for a manual step or at one iteration per second, and **225 ms** at
+four iterations per second. Positions interpolate linearly and headings take
+the shortest wrapped angular difference. Intermediate frames are illustrations
+between estimates, not additional optimizer iterations or flown poses. Metrics,
+residuals, pose tables and histories always retain the actual computed result,
+as identified by the note next to the scene.
+
+**Before / After** compares the initial integrated odometry with the latest
+computed estimate, including after the optimizer stops. Either button pauses
+automatic iteration playback. Step, Play and Optimize to stop condition return
+to After. The initial amber trajectory and correction arrows are visible by
+default; the displayed correction magnitude uses metres, centimetres or
+millimetres so later small updates remain interpretable. Finishing optimization
+shows one transition to its final result rather than replaying skipped steps.
+
+Changing views, inspecting a pose or edge, moving the camera and toggling
+overlays preserve the current presentation progress. Rapid actions redirect
+the scene from its currently displayed poses toward the latest target. Reset
+or a new seed/scenario cancels the old transition and immediately displays the
+new initial graph. Reduced-motion preferences also select immediate updates.
+Pausing iterations lets a transition already in progress finish; it does not
+advance the solver. An unchanged estimate creates no extra movement.
+
 Evaluator trajectory RMSE is
 `sqrt(sum(k=1..24, ||pk_est−pk_true||²)/24)`: the fixed anchor is excluded and
 the other 24 equally weighted positions are included. Endpoint position and

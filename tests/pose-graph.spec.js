@@ -12,8 +12,41 @@ const snapshot = async page => ({
   cost: await page.locator('#graph-cost').textContent(),
   error: await page.locator('#graph-trajectory-error').textContent(),
   endpoint: await page.locator('#graph-endpoint-error').textContent(),
+  endpointHeading: await page.locator('#graph-endpoint-heading').textContent(),
   correction: await page.locator('#graph-max-correction').textContent(),
 });
+
+const displayedGraph = page => page.locator('#graph-viewport').evaluate(viewport => ({
+  poses: JSON.parse(viewport.dataset.displayPoses),
+  progress: Number(viewport.dataset.transitionProgress),
+  animating: viewport.dataset.animating,
+  comparison: viewport.dataset.comparison,
+}));
+const wrappedAngle = value => Math.atan2(Math.sin(value), Math.cos(value));
+function expectInterpolatedPoses(display, from, to) {
+  expect(display.animating).toBe('true');
+  expect(display.progress).toBeGreaterThan(0);
+  expect(display.progress).toBeLessThan(1);
+  expect(display.poses).not.toEqual(from);
+  expect(display.poses).not.toEqual(to);
+  expect(display.poses[0]).toEqual(from[0]);
+  for (let index = 0; index < from.length; index++) {
+    for (const axis of [0, 1]) {
+      expect(display.poses[index][axis]).toBeCloseTo(from[index][axis] + display.progress * (to[index][axis] - from[index][axis]), 9);
+    }
+    const headingChange = wrappedAngle(to[index][2] - from[index][2]);
+    expect(wrappedAngle(display.poses[index][2] - from[index][2])).toBeCloseTo(display.progress * headingChange, 9);
+  }
+}
+async function animationClock(page) {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+  await page.clock.pauseAt(new Date('2026-01-01T00:01:00Z'));
+  await page.reload();
+  await expect(page.locator('#graph-iteration')).toHaveText('0');
+  await expect(page.locator('#graph-viewport canvas')).toBeVisible();
+  await page.locator('#graph-2d').click();
+}
 
 test.beforeEach(async ({ page }) => {
   const errors = []; errorsByPage.set(page, errors);
@@ -203,4 +236,193 @@ test('mobile navigation and unavailable WebGL keep inspectors and controls usabl
   await expect(page.locator('#slam-step-count')).toHaveText('0');
   await page.goBack(); await expect(page.locator('#graph-iteration')).toHaveText('0');
   await page.locator('#graph-step').click(); await expect(page.locator('#graph-iteration')).toHaveText('1');
+});
+
+test('accepted steps interpolate fixed solver results and retarget from the currently displayed historical poses', async ({ page }) => {
+  await animationClock(page);
+  await expect(page.locator('#graph-show-corrections')).toBeChecked();
+  const initial = await poses(page), measurement = await edgeMeasurement(page);
+  const truth = await raw(page, '#graph-pose-truth', 'data-pose');
+  const initialPath = await page.locator('[data-graph-current-path]').getAttribute('points');
+  const initialMarker = await page.locator('[data-graph-svg-pose="12"]').getAttribute('transform');
+  await page.locator('#graph-step').click();
+  const solved = await snapshot(page);
+  expect(solved.iteration).toBe('1');
+  expect(solved.poses).not.toEqual(initial);
+  await expect(page.locator('#graph-after')).toHaveAttribute('aria-pressed', 'true');
+  await page.clock.runFor(400);
+  const halfway = await displayedGraph(page);
+  expectInterpolatedPoses(halfway, initial, solved.poses);
+  const renderedPoses = await page.locator('[data-graph-svg-pose]').evaluateAll(nodes => nodes.map(node => JSON.parse(node.dataset.pose)));
+  expect(renderedPoses).toEqual(halfway.poses);
+  expect(await page.locator('[data-graph-current-path]').getAttribute('points')).not.toEqual(initialPath);
+  expect(await page.locator('[data-graph-svg-pose="12"]').getAttribute('transform')).not.toEqual(initialMarker);
+  const correction = page.locator('[data-graph-correction-arrow="12"]');
+  await expect(correction.locator('path')).toBeVisible();
+  expect(JSON.parse(await correction.getAttribute('data-from'))).toEqual(initial[12]);
+  expect(JSON.parse(await correction.getAttribute('data-to'))).toEqual(halfway.poses[12]);
+  expect(await snapshot(page)).toEqual(solved);
+  expect(await edgeMeasurement(page)).toEqual(measurement);
+  expect(await raw(page, '#graph-pose-truth', 'data-pose')).toEqual(truth);
+  await expect(page.locator('#graph-presentation-status')).not.toBeEmpty();
+  await expect(page.locator('#graph-presentation-note')).not.toBeEmpty();
+  await page.locator('#graph-step').click();
+  const solvedAgain = await snapshot(page);
+  expect(solvedAgain.iteration).toBe('2');
+  expect((await displayedGraph(page)).poses).toEqual(halfway.poses);
+  await page.clock.runFor(400);
+  expectInterpolatedPoses(await displayedGraph(page), halfway.poses, solvedAgain.poses);
+  expect(await snapshot(page)).toEqual(solvedAgain);
+  expect(await edgeMeasurement(page)).toEqual(measurement);
+  await page.clock.runFor(550);
+  const finished = await displayedGraph(page);
+  expect(finished.animating).toBe('false');
+  expect(finished.progress).toBe(1);
+  expect(finished.poses).toEqual(solvedAgain.poses);
+  expect(await snapshot(page)).toEqual(solvedAgain);
+});
+
+test('before and after compare the initial and solved recordings without changing results and both stop playback', async ({ page }) => {
+  await animationClock(page);
+  const initial = await poses(page), measurement = await edgeMeasurement(page);
+  await page.locator('#graph-finish').click();
+  const solved = await snapshot(page);
+  await page.clock.runFor(1000);
+  expect((await displayedGraph(page)).poses).toEqual(solved.poses);
+  await page.locator('#graph-before').click();
+  await expect(page.locator('#graph-before')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#graph-after')).toHaveAttribute('aria-pressed', 'false');
+  await page.clock.runFor(400);
+  expectInterpolatedPoses(await displayedGraph(page), solved.poses, initial);
+  expect(await snapshot(page)).toEqual(solved);
+  await page.clock.runFor(600);
+  const beforeDisplay = await displayedGraph(page);
+  expect(beforeDisplay.comparison).toBe('before');
+  expect(beforeDisplay.poses).toEqual(initial);
+  expect(beforeDisplay.animating).toBe('false');
+  expect(await edgeMeasurement(page)).toEqual(measurement);
+  await page.locator('#graph-after').click();
+  await expect(page.locator('#graph-after')).toHaveAttribute('aria-pressed', 'true');
+  await page.clock.runFor(1000);
+  expect((await displayedGraph(page)).poses).toEqual(solved.poses);
+  expect(await snapshot(page)).toEqual(solved);
+
+  for (const comparison of ['before', 'after']) {
+    await page.locator('#graph-reset').click();
+    await page.locator('#graph-play').click();
+    await page.clock.runFor(1010);
+    await expect(page.locator('#graph-iteration')).toHaveText('1');
+    await page.locator(`#graph-${comparison}`).click();
+    const paused = await snapshot(page);
+    await expect(page.locator('#graph-play')).toContainText('Play');
+    await page.clock.runFor(2100);
+    expect(await snapshot(page)).toEqual(paused);
+    const display = await displayedGraph(page);
+    expect(display.comparison).toBe(comparison);
+    expect(display.animating).toBe('false');
+    expect(display.poses).toEqual(comparison === 'before' ? initial : paused.poses);
+  }
+});
+
+test('view switches, inspection and context loss preserve a transition while faster playback uses the shorter display interval', async ({ page }) => {
+  await animationClock(page);
+  await page.locator('#graph-step').click();
+  const solved = await snapshot(page);
+  await page.clock.runFor(140);
+  await page.locator('#graph-pose-index').fill('12');
+  const persistentMarker = await page.locator('[data-graph-svg-pose="0"]').elementHandle();
+  const fixedPose = await page.locator('[data-graph-svg-pose="0"] circle').boundingBox();
+  await page.mouse.move(fixedPose.x + fixedPose.width / 2, fixedPose.y + fixedPose.height / 2);
+  await page.mouse.down();
+  await page.clock.runFor(100);
+  await page.mouse.up();
+  await expect(page.locator('#graph-pose-index')).toHaveValue('0');
+  expect(await persistentMarker.evaluate(node => node.isConnected && document.activeElement === node)).toBe(true);
+  expect(await snapshot(page)).toEqual(solved);
+  const in2d = await displayedGraph(page);
+  expect(in2d.animating).toBe('true');
+  await page.locator('#graph-3d').click();
+  await expect(page.locator('#graph-viewport canvas')).toBeVisible();
+  expect(await displayedGraph(page)).toEqual(in2d);
+  await page.locator('#graph-pose-index').fill('12');
+  await page.locator('#graph-edge').selectOption('O12');
+  await page.locator('#graph-show-corrections').uncheck();
+  await page.locator('#graph-show-truth').uncheck();
+  expect(await displayedGraph(page)).toEqual(in2d);
+  expect(await snapshot(page)).toEqual(solved);
+  await page.clock.runFor(160);
+  const later = await displayedGraph(page);
+  expect(later.progress).toBeGreaterThan(in2d.progress);
+  await page.locator('#graph-2d').click();
+  expect(await displayedGraph(page)).toEqual(later);
+  await page.locator('#graph-3d').click();
+  const canvas = page.locator('#graph-viewport canvas');
+  await expect(canvas).toBeVisible();
+  await canvas.dispatchEvent('webglcontextlost');
+  await expect(page.locator('.graph-svg')).toBeVisible();
+  expect(await displayedGraph(page)).toEqual(later);
+  await page.clock.runFor(550);
+  expect((await displayedGraph(page)).poses).toEqual(solved.poses);
+  await expect(page.locator('#graph-viewport')).toHaveAttribute('data-animating', 'false');
+
+  await page.locator('#graph-reset').click();
+  await page.locator('#graph-speed').selectOption('4');
+  await page.locator('#graph-play').click();
+  await page.clock.runFor(350);
+  await expect(page.locator('#graph-iteration')).toHaveText('1');
+  const fastSolved = await snapshot(page), fastDisplay = await displayedGraph(page);
+  expect(fastDisplay.animating).toBe('true');
+  expect(fastDisplay.progress).toBeGreaterThan(0);
+  expect(fastDisplay.progress).toBeLessThan(1);
+  await page.clock.runFor(140);
+  await page.locator('#graph-play').click();
+  await expect(page.locator('#graph-iteration')).toHaveText('1');
+  expect((await displayedGraph(page)).poses).toEqual(fastSolved.poses);
+  await expect(page.locator('#graph-viewport')).toHaveAttribute('data-animating', 'false');
+  expect(await snapshot(page)).toEqual(fastSolved);
+});
+
+test('reset, replacement runs, unchanged estimates and reduced motion snap without resurrecting an earlier animation', async ({ page }) => {
+  await animationClock(page);
+  const initial = await poses(page);
+  await page.locator('#graph-step').click();
+  await page.clock.runFor(200);
+  await expect(page.locator('#graph-viewport')).toHaveAttribute('data-animating', 'true');
+  await page.locator('#graph-reset').click();
+  await expect(page.locator('#graph-after')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#graph-iteration')).toHaveText('0');
+  expect((await displayedGraph(page)).poses).toEqual(initial);
+  await expect(page.locator('#graph-viewport')).toHaveAttribute('data-animating', 'false');
+  const reset = await snapshot(page);
+  await page.clock.runFor(1200);
+  expect((await displayedGraph(page)).poses).toEqual(initial);
+  expect(await snapshot(page)).toEqual(reset);
+
+  await page.locator('#graph-step').click(); await page.clock.runFor(100);
+  await page.locator('#graph-scenario').selectOption('wrong-loop');
+  await expect(page.locator('#graph-iteration')).toHaveText('0');
+  await expect(page.locator('#graph-viewport')).toHaveAttribute('data-animating', 'false');
+  expect((await displayedGraph(page)).poses).toEqual(await poses(page));
+  await page.locator('#graph-step').click(); await page.clock.runFor(100);
+  await page.locator('#graph-seed').fill('42'); await page.locator('#graph-seed').press('Tab');
+  await expect(page.locator('#graph-iteration')).toHaveText('0');
+  await expect(page.locator('#graph-viewport')).toHaveAttribute('data-animating', 'false');
+  expect((await displayedGraph(page)).poses).toEqual(await poses(page));
+
+  await page.locator('#graph-scenario').selectOption('no-loop');
+  const unchanged = await poses(page);
+  await page.locator('#graph-finish').click();
+  await expect(page.locator('#graph-accepted-steps')).toHaveText('0');
+  await expect(page.locator('#graph-viewport')).toHaveAttribute('data-animating', 'false');
+  expect((await displayedGraph(page)).poses).toEqual(unchanged);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.locator('#graph-scenario').selectOption('correct-loop');
+  await page.locator('#graph-step').click();
+  await expect(page.locator('#graph-iteration')).toHaveText('1');
+  const reduced = await snapshot(page);
+  await expect(page.locator('#graph-viewport')).toHaveAttribute('data-animating', 'false');
+  expect((await displayedGraph(page)).poses).toEqual(reduced.poses);
+  await page.clock.runFor(1200);
+  expect(await snapshot(page)).toEqual(reduced);
+  expect((await displayedGraph(page)).poses).toEqual(reduced.poses);
 });

@@ -128,6 +128,45 @@ a material change in the reconstructed trajectory.
   were inspected. This software-WebGL check does not establish hardware
   rendering performance.
 
+## Presentation follow-up — 2026-09-14
+
+The seed-7 correct-loop reference changes a historical position by at most
+**0.5620 m** in its first iteration, **2.54 mm** in its second, then much less.
+The initial instantaneous display therefore concealed much of the distinction
+between the starting and optimized trajectories.
+
+Both views now share a **900 ms transition** (225 ms at four iterations per
+second), a more visible amber initial path and directional correction arrows.
+Before / After compares the initial estimate and the current computed result,
+including after numerical termination. The scene's annotation distinguishes
+intermediate presentation poses from actual solver output. Metrics, residuals,
+recorded history and evaluator truth are never interpolated.
+
+The presentation change leaves the optimization model and saved numerical
+reference export unchanged; the model source hash still matches that export.
+The 13 pose-graph Chromium tests passed, with a further targeted pass after
+strengthening the intermediate SVG/arrow assertions. Four new tests cover
+intermediate position and wrapped-heading interpolation, rapid retargeting,
+initial/current comparison and playback pause, unchanged computed results,
+switching views and losing WebGL during a transition, 225 ms playback, reset,
+seed/scenario replacement and reduced motion.
+
+The final expanded full suite passed **93/94 checks**, including all 13
+pose-graph checks. An existing movement-to-consensus navigation check observed
+step 0 after its first click. Its trace shows that the click preceded JavaScript
+initialization: waiting for the static counter did not establish that the button
+handler was ready. It passed when rerun in isolation without a code change.
+This full-suite result is recorded separately from the passing targeted
+animation checks. The final checks also verify that SVG marker elements and
+keyboard focus persist across animation frames, including a held pointer press.
+
+The production build passed all 13 HTML entries. Production-preview checks
+verified intermediate frames in both views, exact initial/current endpoints,
+the 2.54 mm second correction, comparison after stopping, reset and the 390 px
+layout with no page, console or HTTP errors. Before, during and after frames,
+wrong-loop geometry and mobile screenshots were inspected. No dependency was
+added or installed; software WebGL remains a functional rendering check.
+
 ## Limits
 
 This is a small anchored planar optimization backend with synthetic relative

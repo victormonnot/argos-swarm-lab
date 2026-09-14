@@ -17,8 +17,10 @@ const descriptions = {
   'wrong-loop': 'The same measurement of the return at pose 24 is wrongly attached to pose 18. The optimizer receives that false association as an ordinary trusted edge.',
 };
 let run = createRun(), playing = false, timer, selectedPose = 24, selectedEdge = 'loop';
-const overlays = () => ({ pose: selectedPose, edge: selectedEdge, truth: $('#graph-show-truth').checked, initial: $('#graph-show-initial').checked, corrections: $('#graph-show-corrections').checked });
+let comparison = 'after', durationMs = 900;
+const overlays = () => ({ pose: selectedPose, edge: selectedEdge, comparison, durationMs, truth: $('#graph-show-truth').checked, initial: $('#graph-show-initial').checked, corrections: $('#graph-show-corrections').checked });
 const view = createPoseGraphView($('#graph-viewport'), {
+  onPresentationChange: renderPresentation,
   onSelectPose(index) { selectedPose = index; renderPose(); view.update(run, overlays()); },
   onModeChange(mode, message) {
     for (const id of ['2d', '3d']) $(`#graph-${id}`).setAttribute('aria-pressed', String(mode === id));
@@ -27,10 +29,24 @@ const view = createPoseGraphView($('#graph-viewport'), {
       : 'Top-down x/y positions and heading arrows. Every graph marker is a historical pose of the same drone. Selecting a pose changes inspection; one optimizer iteration can revise many past estimates.');
   },
 });
+function renderPresentation({ comparison: shown, animating }) {
+  const write = (selector, text) => { const element = $(selector); if (element.textContent !== text) element.textContent = text; };
+  for (const id of ['before', 'after']) {
+    const button = $(`#graph-${id}`), pressed = String(shown === id);
+    if (button.getAttribute('aria-pressed') !== pressed) button.setAttribute('aria-pressed', pressed);
+  }
+  const destination = shown === 'before' ? 'Before / initial estimate' : `After / iteration ${run.iteration}`;
+  write('#graph-presentation-status', `${animating ? 'Transition → ' : ''}${destination}`);
+  write('#graph-presentation-note', animating
+    ? `The scene moves between estimates. Metrics and inspectors show the computed result at iteration ${run.iteration}.`
+    : shown === 'before'
+      ? `The scene shows the initial estimate. Metrics and inspectors retain the computed result at iteration ${run.iteration}.`
+      : 'Green: current estimate. Amber: initial odometry. Arrows show the correction from the initial estimate.');
+}
 function stop() { playing = false; clearTimeout(timer); }
-function schedule() { clearTimeout(timer); if (!playing || !active(run)) return; timer = setTimeout(() => { stepRun(run); if (!active(run)) stop(); render(); schedule(); }, 1000 / Number($('#graph-speed').value)); }
+function schedule() { clearTimeout(timer); if (!playing || !active(run)) return; timer = setTimeout(() => { durationMs = 900 / Number($('#graph-speed').value); stepRun(run); if (!active(run)) stop(); render(); schedule(); }, 1000 / Number($('#graph-speed').value)); }
 function start(config) {
-  stop(); run = createRun(config); selectedEdge = run.edges.some((edge) => edge.id === 'loop') ? 'loop' : run.edges.at(-1).id;
+  stop(); comparison = 'after'; durationMs = 900; run = createRun(config); selectedEdge = run.edges.some((edge) => edge.id === 'loop') ? 'loop' : run.edges.at(-1).id;
   $('#graph-scenario').value = run.config.scenario; $('#graph-seed').value = String(run.config.seed);
   $('#graph-edge').innerHTML = run.edges.map((edge) => `<option value="${edge.id}">${edge.id === 'loop' ? 'Loop' : edge.id} / P${edge.from} → P${edge.to}</option>`).join('');
   render();
@@ -61,6 +77,9 @@ function renderEdge() {
 }
 function renderStep() {
   const step = run.lastStep; $('#graph-max-correction').textContent = `${fmt(run.metrics.maxPositionCorrection)} m`;
+  const distance = (metres) => metres >= 1 || metres === 0 ? `${fmt(metres)} m` : metres >= .01 ? `${fmt(metres * 100, 1)} cm` : metres >= .0001 ? `${fmt(metres * 1000, 2)} mm` : `${fmt(metres, 5)} m`;
+  const latest = step ? Math.max(...step.corrections.map(([x, y]) => Math.hypot(x, y))) : 0;
+  $('#graph-displacement-summary').textContent = `Largest position change: ${distance(run.metrics.maxPositionCorrection)} from the start · ${distance(latest)} in the latest step`;
   $('#graph-step-result').textContent = !step ? 'Not iterated' : step.accepted ? 'Step accepted' : 'No pose update applied';
   $('#graph-step-note').textContent = step ? `Attempt ${run.iteration}: ${step.reason} Applied corrections below are zero when no update was accepted. Component norms mix meter and radian coordinates; they are solver diagnostics, not physical distances.` : 'No optimization attempt yet. Step once to inspect the local direction, backtracking trials and whether a new set of historical poses is accepted.';
   $('#graph-step-details').innerHTML = step ? `<div><dt>Cost before → after attempt</dt><dd>${fmt(step.costBefore)} → ${fmt(step.costAfter)}</dd></div><div><dt>Accepted fraction α</dt><dd>${step.alpha === null ? 'None' : fmt(step.alpha, 5)}</dd></div><div><dt>Backtracking trials</dt><dd>${step.trials.length}</dd></div><div><dt>‖JᵀΩr‖∞ / coordinate dependent</dt><dd>${fmt(step.gradientInfinity, 5)}</dd></div><div><dt>Proposed component step ‖δ‖∞</dt><dd>${fmt(step.proposedStepInfinity, 5)}</dd></div><div><dt>Applied component step ‖αδ‖∞</dt><dd>${fmt(step.stepInfinity, 5)}</dd></div><div><dt>Actual objective reduction</dt><dd>${fmt(step.actualReduction, 5)}</dd></div><div><dt>Relative objective reduction</dt><dd>${fmt(step.relativeCostChange, 5)}</dd></div>` : '<div><dt>Unknown vector</dt><dd>72 coordinates / poses 1–24</dd></div><div><dt>Fixed anchor</dt><dd>Pose 0 / excluded from the solve</dd></div>';
@@ -94,7 +113,12 @@ $('#graph-presets').innerHTML = PRESETS.map((preset, index) => `<article><span c
 $('#graph-noise-contract').textContent = `Declared independent Gaussian edge noise: odometry translation σ = ${fmt(ODOM_TRANSLATION_STD, 2)} m per local axis and heading σ = ${fmt(deg(ODOM_HEADING_STD), 1)}°; supplied loop translation σ = ${fmt(LOOP_TRANSLATION_STD, 2)} m per local axis and heading σ = ${fmt(deg(LOOP_HEADING_STD), 1)}°. The wrong association changes only the target ID, not the underlying loop measurement or information weights. The solver has a ${MAX_ITERATIONS}-attempt budget and explicit numerical stopping conditions.`;
 $('#graph-scenario').addEventListener('change', () => start({ ...run.config, scenario: $('#graph-scenario').value }));
 $('#graph-seed').addEventListener('change', () => { const seed = Math.min(999999, Math.max(1, Math.trunc(Number($('#graph-seed').value)) || 7)); start({ ...run.config, seed }); });
-$('#graph-play').addEventListener('click', () => { if (playing) stop(); else playing = true; render(); schedule(); }); $('#graph-step').addEventListener('click', () => { stop(); stepRun(run); render(); }); $('#graph-reset').addEventListener('click', () => start(run.config)); $('#graph-finish').addEventListener('click', () => { stop(); runToEnd(run); render(); }); $('#graph-speed').addEventListener('change', () => { if (playing) schedule(); });
+$('#graph-play').addEventListener('click', () => { if (playing) stop(); else { comparison = 'after'; durationMs = 900 / Number($('#graph-speed').value); playing = true; } render(); schedule(); });
+$('#graph-step').addEventListener('click', () => { stop(); comparison = 'after'; durationMs = 900; stepRun(run); render(); });
+$('#graph-reset').addEventListener('click', () => start(run.config));
+$('#graph-finish').addEventListener('click', () => { stop(); comparison = 'after'; durationMs = 900; runToEnd(run); render(); });
+$('#graph-speed').addEventListener('change', () => { if (playing) schedule(); });
+for (const state of ['before', 'after']) $(`#graph-${state}`).addEventListener('click', () => { stop(); comparison = state; durationMs = 900; render(); });
 $('#graph-pose-index').addEventListener('input', () => { selectedPose = Number($('#graph-pose-index').value); renderPose(); view.update(run, overlays()); });
 $('#graph-pose-previous').addEventListener('click', () => { selectedPose = Math.max(0, selectedPose - 1); renderPose(); view.update(run, overlays()); }); $('#graph-pose-next').addEventListener('click', () => { selectedPose = Math.min(24, selectedPose + 1); renderPose(); view.update(run, overlays()); });
 $('#graph-pose-table').addEventListener('click', (event) => { const button = event.target.closest('[data-graph-pose]'); if (!button) return; selectedPose = Number(button.dataset.graphPose); renderPose(); view.update(run, overlays()); });
