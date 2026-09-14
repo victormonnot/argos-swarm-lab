@@ -7,9 +7,10 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --test tests/model.test.js",
+    "test": "node --test tests/*.test.js",
     "test:e2e": "playwright test",
-    "compare": "node scripts/compare.js"
+    "compare": "node scripts/compare.js",
+    "compare:movement": "node scripts/compare-movement.js"
   },
   "engines": {
     "node": ">=22.12.0"

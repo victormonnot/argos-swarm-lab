@@ -1,0 +1,279 @@
+{
+  "generatedAt": "2026-09-14T09:30:37.158Z",
+  "runtime": "v22.22.1",
+  "revision": "2975625c469f7dd2d9609f22d36fade500fbfea3",
+  "workingTreeModified": true,
+  "sourceHashes": {
+    "src/movement-model.js": "f562232239414ca7254f596782fe0aac029a3a23a6f8c534d5239a4416fefa0f"
+  },
+  "model": {
+    "algorithm": "Artificial Potential Fields; capped first-order velocity adaptation",
+    "lengthUnit": "m",
+    "timeUnit": "s",
+    "starts": [
+      [
+        -4,
+        -0.6
+      ],
+      [
+        -4,
+        0
+      ],
+      [
+        -4,
+        0.6
+      ]
+    ],
+    "goal": [
+      4,
+      0
+    ],
+    "gains": {
+      "attraction": 0.6,
+      "obstacle": 0.15,
+      "separation": 0.02
+    },
+    "agentRadius": 0.12,
+    "wallRadius": 0.1,
+    "goalRadius": 0.8,
+    "maximumSpeed": 1,
+    "dt": 0.02,
+    "budget": 2000,
+    "obstacleInfluence": 1,
+    "peerInfluence": 0.7,
+    "stall": {
+      "updates": 100,
+      "maximumSpeedBelow": 0.005,
+      "maximumGoalDistanceChangeBelow": 0.01
+    },
+    "maps": {
+      "open": {
+        "label": "Open field",
+        "walls": []
+      },
+      "corridor": {
+        "label": "Open corridor",
+        "walls": [
+          [
+            [
+              -1.8,
+              -1.3
+            ],
+            [
+              1,
+              -1.3
+            ]
+          ],
+          [
+            [
+              -1.8,
+              1.3
+            ],
+            [
+              1,
+              1.3
+            ]
+          ]
+        ]
+      },
+      "trap": {
+        "label": "U-shaped trap",
+        "walls": [
+          [
+            [
+              -1.8,
+              -1.3
+            ],
+            [
+              1,
+              -1.3
+            ]
+          ],
+          [
+            [
+              -1.8,
+              1.3
+            ],
+            [
+              1,
+              1.3
+            ]
+          ],
+          [
+            [
+              1,
+              -1.3
+            ],
+            [
+              1,
+              1.3
+            ]
+          ]
+        ]
+      }
+    },
+    "contact": "Nonpositive swept surface clearance; terminal time and positions are at the end of the first update containing contact."
+  },
+  "results": [
+    {
+      "label": "Open field",
+      "initial": {
+        "preset": "open",
+        "gains": {
+          "attraction": 0.6,
+          "obstacle": 0.15,
+          "separation": 0.02
+        }
+      },
+      "status": "arrived",
+      "step": 406,
+      "time": 8.120000000000001,
+      "arrived": 3,
+      "maxGoalDistance": 0.7969178632498504,
+      "minimumClearance": 0.31898710400940156,
+      "totalPathLength": 22.2999201533139,
+      "finalPositions": [
+        [
+          3.432005170239223,
+          -0.5589811751139149
+        ],
+        [
+          3.4351482542761596,
+          0
+        ],
+        [
+          3.432005170239223,
+          0.5589811751139149
+        ]
+      ]
+    },
+    {
+      "label": "Open corridor",
+      "initial": {
+        "preset": "corridor",
+        "gains": {
+          "attraction": 0.6,
+          "obstacle": 0.15,
+          "separation": 0.02
+        }
+      },
+      "status": "arrived",
+      "step": 407,
+      "time": 8.14,
+      "arrived": 3,
+      "maxGoalDistance": 0.7979605584564282,
+      "minimumClearance": 0.26744455909135145,
+      "totalPathLength": 22.324085112530703,
+      "finalPositions": [
+        [
+          3.430119109486773,
+          -0.5585488550520412
+        ],
+        [
+          3.4574229872252125,
+          0
+        ],
+        [
+          3.430119109486773,
+          0.5585488550520412
+        ]
+      ]
+    },
+    {
+      "label": "U-shaped trap",
+      "initial": {
+        "preset": "trap",
+        "gains": {
+          "attraction": 0.6,
+          "obstacle": 0.15,
+          "separation": 0.02
+        }
+      },
+      "status": "stalled",
+      "step": 330,
+      "time": 6.6000000000000005,
+      "arrived": 0,
+      "maxGoalDistance": 3.611619624035494,
+      "minimumClearance": 0.26744235933532734,
+      "totalPathLength": 13.276616662731099,
+      "finalPositions": [
+        [
+          0.42420680251496357,
+          -0.5074439058044006
+        ],
+        [
+          0.42420680251496357,
+          7.318798685465873e-17
+        ],
+        [
+          0.42420680251496357,
+          0.5074439058044007
+        ]
+      ]
+    },
+    {
+      "label": "Open field, separation off",
+      "initial": {
+        "preset": "open",
+        "gains": {
+          "attraction": 0.6,
+          "obstacle": 0.15,
+          "separation": 0
+        }
+      },
+      "status": "collision",
+      "step": 241,
+      "time": 4.82,
+      "arrived": 0,
+      "maxGoalDistance": 3.2024684480526204,
+      "minimumClearance": -0.00010742974148114648,
+      "totalPathLength": 14.460000000000022,
+      "finalPositions": [
+        [
+          0.8065006736623709,
+          -0.23951244947532163
+        ],
+        [
+          0.8200000000000037,
+          0
+        ],
+        [
+          0.8065006736623709,
+          0.23951244947532163
+        ]
+      ]
+    },
+    {
+      "label": "U-shaped trap, obstacle repulsion off",
+      "initial": {
+        "preset": "trap",
+        "gains": {
+          "attraction": 0.6,
+          "obstacle": 0,
+          "separation": 0.02
+        }
+      },
+      "status": "collision",
+      "step": 239,
+      "time": 4.78,
+      "arrived": 0,
+      "maxGoalDistance": 3.2685419036666308,
+      "minimumClearance": -3.6914915568786455e-15,
+      "totalPathLength": 14.339999999999968,
+      "finalPositions": [
+        [
+          0.7796192219555922,
+          -0.559029355603777
+        ],
+        [
+          0.7800000000000037,
+          0
+        ],
+        [
+          0.7796192219555922,
+          0.559029355603777
+        ]
+      ]
+    }
+  ]
+}

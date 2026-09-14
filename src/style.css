@@ -26,3 +26,9 @@
 .equation-key dd{margin:0;font-size:.875rem;color:#546963;line-height:1.65}
 @media(max-width:1000px){.method-aspects{grid-template-columns:1fr 1fr;gap:20px 28px}}
 @media(max-width:580px){.method-profile{padding:18px}.method-profile-heading{align-items:flex-start;flex-direction:column;gap:9px}.method-aspects{grid-template-columns:1fr;gap:18px}.method-aspects dt{margin-bottom:4px}.method-aspects p{margin-top:4px}.equation-key{grid-template-columns:1fr}}
+
+.lesson-switcher{display:flex;align-items:center;flex-wrap:wrap;gap:12px 24px;padding:18px 0;border-bottom:1px solid var(--line)}
+.lesson-switcher a{font-size:14px;text-decoration:none;padding:7px 0;color:var(--muted)}
+.lesson-switcher a[aria-current=page]{color:var(--teal);font-weight:650;border-bottom:2px solid var(--teal)}
+.lesson-switcher span{margin-left:auto;font-size:12px;color:var(--muted)}
+@media(max-width:580px){.lesson-switcher{gap:4px 18px;padding:12px 0}.lesson-switcher a{font-size:13px}.lesson-switcher span{width:100%;margin-left:0;font-size:12px}}

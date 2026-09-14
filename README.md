@@ -4,9 +4,10 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** a local consensus workshop with explanations, linked 2D/3D views,
-step controls, link editing, replay and measured reference comparisons. Other
-modules in the [catalog](docs/learning-path.md) remain proposals.
+**Available:** two local workshops with explanations, linked 2D/3D views, step
+controls and measured comparisons: **distributed average consensus** and
+**Artificial Potential Fields**. Other modules in the
+[catalog](docs/learning-path.md) remain proposals.
 
 ## Run locally
 
@@ -21,11 +22,13 @@ npm run dev
 Open the URL printed by Vite, normally [http://127.0.0.1:5173](http://127.0.0.1:5173).
 The server binds to loopback. No account, backend or external service is needed.
 Dependencies and the optional test browser need a network connection to install;
-the lesson loads its assets locally.
+the workshops load their assets locally. Use the workshop links to switch pages;
+the second workshop is at `/movement/`. Navigation starts a new run.
 
 ```sh
-npm test                         # mathematical properties and replay
-npm run compare                  # measured reference cases as JSON, with metadata
+npm test                         # mathematical properties, failures and replay
+npm run compare                  # consensus reference cases as JSON, with metadata
+npm run compare:movement         # potential-field reference cases as JSON
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -35,8 +38,9 @@ npm run preview                  # serve that build locally
 On a Linux installation missing browser system libraries, use
 `npx playwright install --with-deps chromium` for Playwright's documented setup.
 The browser checks use software WebGL for reproducibility; they do not measure
-hardware rendering performance. The [result record](docs/lessons/01-consensus-results.md)
-lists the checks actually run and their limitations.
+hardware rendering performance. The [consensus results](docs/lessons/01-consensus-results.md)
+and [potential-field results](docs/lessons/02-potential-fields-results.md) list the
+checks actually run and their limitations.
 
 ## First workshop: distributed average consensus
 
@@ -76,31 +80,59 @@ and are lost on page reload.
 See the [module specification](docs/lessons/01-consensus.md) for the exact model,
 assumptions, controls and acceptance criteria.
 
+## Second workshop: Artificial Potential Fields
+
+**How can simple local motion rules arrive, collide or get stuck?** Three disk
+agents head toward one goal region using **Artificial Potential Fields (APF)**:
+quadratic goal attraction plus finite-range surface repulsion. This velocity
+controller is **decentralized and reactive**, with **synchronous, discrete-time**
+updates. Each agent knows the static map and senses only nearby peers. No message
+network or shared route planner is modeled.
+
+1. Compare open ground with a corridor. Both reference runs reach the region.
+2. Load the U-shaped trap. The agents stall before arrival; inspect attraction
+   and repulsion cancelling near the closing wall.
+3. Disable agent separation on open ground. The disks contact before arrival.
+4. Disable obstacle repulsion in the U. Moving forward leads to wall contact.
+
+Inspect individual velocity contributions, positions, paths, goal distance and
+minimum swept clearance. Change gains, advance one `0.02 s` step or run directly
+to an evaluated outcome. A speed cap is not a collision-avoidance guarantee.
+The 3D view observes the same planar state and adds no vertical escape or flight
+physics. It requires WebGL 2; the 2D map and numerical controls work without it.
+
+See the [module specification](docs/lessons/02-potential-fields.md) for geometry,
+equations, sensing assumptions and stopping criteria.
+
 ## Implementation
 
-- **Plain JavaScript modules and HTML/CSS:** a single lesson does not need a UI
-  framework. `src/model.js` contains deterministic state transitions without DOM,
-  rendering or wall-clock dependencies; `src/main.js` connects controls to it.
+- **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
+  model and page controller. `src/model.js` and `src/movement-model.js` contain
+  deterministic transitions without DOM, rendering or wall-clock dependencies.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds. The lockfile records exact installed versions.
+  builds, with two explicit HTML entries in `vite.config.js`. The lockfile records
+  exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
-  2D nodes and a spatial view with orbit controls. Both receive the same snapshot.
+  2D diagrams and spatial views with orbit controls. Each pair receives the same
+  experiment snapshot; Three.js loads when a 3D view is requested.
 - **[Node's test runner](https://nodejs.org/docs/latest-v22.x/api/test.html) and
   [Playwright](https://playwright.dev/docs/intro):** mathematical checks separately
   from browser interactions. `src/comparisons.js` runs the five reference cases
-  for both the page and the command-line result exporter.
+  for both the consensus page and its command-line result exporter. Movement
+  references similarly use `compareMovement()` in `src/movement-model.js`.
 
 Official dependency documentation was checked on 2026-09-14. Dependencies are
-limited to the first workshop; robotics middleware and flight dynamics are outside
-its scope.
+shared by both workshops; robotics middleware and flight dynamics are outside
+their scope.
 
 ## Read next
 
 | Document | Purpose |
 | --- | --- |
 | [Project scope](docs/charter.md) | Purpose, design principles and implementation boundaries. |
-| [Module catalog](docs/learning-path.md) | Available initial module and proposed extensions. |
+| [Module catalog](docs/learning-path.md) | Available modules and proposed extensions. |
 | [Experiment guide](docs/experiment-guide.md) | Lesson format, comparisons and failure-model rules. |
 | [Consensus results](docs/lessons/01-consensus-results.md) | Observed outcomes, verification and limits. |
+| [Potential-field results](docs/lessons/02-potential-fields-results.md) | Measured arrival, stalls and contact failures. |
 
 Additional modules and integrations need their own specifications and validation.
