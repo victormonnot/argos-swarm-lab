@@ -124,7 +124,7 @@ test('both views, camera motion and timed playback preserve the mission sequence
   expect(await snapshot(page)).toEqual(slow);
 });
 
-test('keyboard, mobile layout and navigation keep all three workshops usable', async ({ page }) => {
+test('keyboard, mobile layout and navigation keep all workshops usable', async ({ page }) => {
   await page.keyboard.press('Tab');
   await expect(page.locator('.skip-link')).toBeFocused();
   await page.keyboard.press('Enter');
@@ -137,7 +137,7 @@ test('keyboard, mobile layout and navigation keep all three workshops usable', a
   await page.locator('#mission-boundary').click();
   await expect(page.locator('#mission-step-count')).toHaveText('50');
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(3);
+  await expect(navigation.getByRole('link')).toHaveCount(4);
   await navigation.getByRole('link', { name: '02 / Potential fields', exact: true }).click();
   await expect(page.locator('#movement-step-count')).toHaveText('0');
   await page.getByRole('link', { name: '03 / Task allocation', exact: true }).click();

@@ -1,7 +1,7 @@
 # Module catalog
 
-Consensus, Artificial Potential Fields, and task allocation/execution are
-implemented local modules. Entries 4–7 are candidate extensions, not implemented
+Consensus, Artificial Potential Fields, task allocation/execution and decision
+architectures are implemented local modules. Entries 5–7 are candidate extensions, not implemented
 features. Each module combines an interactive
 experiment with explanations following the [experiment guide](experiment-guide.md).
 
@@ -10,7 +10,7 @@ experiment with explanations following the [experiment guide](experiment-guide.m
 | 1. Distributed average consensus | How can local exchanges produce agreement? | Linear consensus with constant edge gain on a complete graph, a chain and disconnected groups; remove and restore links. | Decentralized, leaderless decisions; synchronous discrete updates; communication topology and convergence assumptions. |
 | 2. [Artificial Potential Fields](lessons/02-potential-fields.md) | How do local motion rules produce useful or undesirable behavior? | Capped velocity commands from attraction/repulsion in a known map; compare arrival, a U-shaped trap and contact failures. | Decentralized reactive control; finite-range peer sensing; synchronous kinematics; tuning and local traps. |
 | 3. [Task allocation and finite-state execution](lessons/03-mission-allocation.md) | Who should do which task, and when is it complete? | Three agents service six points; compare fixed round-robin, nearest-pair greedy and Hungarian assignment under one central coordinator. Make A2 unavailable at 5 s. | Linear assignment versus mission execution; finite-state machines; exclusive ownership, reallocation and completion metrics. |
-| 4. Decision architectures | What changes when decision authority moves? | Reuse one task scenario with central allocation, subgroup coordinators and peer allocation. Introduce a network partition. | Information access, ownership, stale decisions and architecture tradeoffs. |
+| 4. [Decision architectures](lessons/04-decision-architectures.md) | What changes when decision authority moves? | Reuse nearest-pair greedy with a central allocator, fixed subgroup domains or replicated peer plans. Cut and restore links between {C,A1} and {A2,A3}. | Authority and eligibility, delivered report caches, retained reservations, full-roster barriers, physical completion versus confirmation. |
 | 5. Motion and shared estimates | How do movement constraints and uncertain knowledge affect decisions? | Separate small lessons on path/trajectory execution, local avoidance, and individual versus shared estimates. Add declared synthetic pose error. | Model assumptions, uncertainty, planning interfaces and avoiding double-counted evidence. |
 | 6. Distributed software | What changes when the same experiment runs across processes? | Reproduce a known scenario with ROS 2 and Python/C++ components. Compare DDS and Zenoh for a defined communication scenario. | Message contracts, process lifecycle, observability and middleware integration. |
 | 7. Flight simulation | Which simplifying assumptions break with an autopilot and vehicle dynamics? | Run a bounded scenario with Gazebo, ArduPilot SITL and MAVLink; document hardware requirements and supported fleet sizes. | Autopilot integration, simulation timing, execution feedback and realistic diagnostic limits. |

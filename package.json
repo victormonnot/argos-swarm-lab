@@ -11,7 +11,8 @@
     "test:e2e": "playwright test",
     "compare": "node scripts/compare.js",
     "compare:movement": "node scripts/compare-movement.js",
-    "compare:missions": "node scripts/compare-missions.js"
+    "compare:missions": "node scripts/compare-missions.js",
+    "compare:architectures": "node scripts/compare-architectures.js"
   },
   "engines": {
     "node": ">=22.12.0"

@@ -1,0 +1,465 @@
+{
+  "generatedAt": "2026-09-14T10:30:39.981Z",
+  "runtime": "v22.22.1",
+  "revision": "55a3c254c7ebde2c2c62cac1612c3c723180816c",
+  "workingTreeModified": true,
+  "sourceHashes": {
+    "src/architecture-model.js": "67d69644c27fe17e8f342eeec7c47a5a83cdfd0a1121b6f722d3e7f4b1a35845",
+    "src/assignment.js": "4baec0e7d293bef0153f01091c5c5cd4c3895ae5b00305180f1fb7b32499dc8a",
+    "src/mission-model.js": "f7895a2489d1e11f0c6c5fdb15d93ccfcdc162e7f955a5f7f5599eea67326ddf"
+  },
+  "model": {
+    "lengthUnit": "m",
+    "timeUnit": "s",
+    "starts": [
+      [
+        0,
+        0
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        0,
+        4
+      ]
+    ],
+    "tasks": [
+      [
+        0.8,
+        0
+      ],
+      [
+        -2,
+        0
+      ],
+      [
+        0,
+        6
+      ],
+      [
+        -5,
+        2
+      ],
+      [
+        5,
+        3
+      ],
+      [
+        2,
+        7
+      ]
+    ],
+    "dt": 0.1,
+    "speed": 1,
+    "serviceSteps": 20,
+    "budget": 600,
+    "nodeNames": [
+      "C",
+      "A1",
+      "A2",
+      "A3"
+    ],
+    "groups": [
+      {
+        "node": 1,
+        "agents": [
+          0
+        ],
+        "tasks": [
+          0,
+          3
+        ]
+      },
+      {
+        "node": 2,
+        "agents": [
+          1,
+          2
+        ],
+        "tasks": [
+          1,
+          2,
+          4,
+          5
+        ]
+      }
+    ],
+    "indexConvention": "Task and agent IDs are zero-based; node 0 is C, nodes 1–3 are A1–A3.",
+    "allocation": "Nearest-pair greedy, repeated over fresh idle reports and eligible unreserved tasks; stable agent/task ID ties.",
+    "authority": "C assigns globally; or A1/A2 coordinate fixed disjoint domains; or each peer replicates the plan and applies its own target after full-roster agreement.",
+    "network": {
+      "cutStep": 20,
+      "restoreStep": 80,
+      "partition": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "presets": [
+        "connected: all links active",
+        "partition: permanent cut at step 20",
+        "recovery: cut at step 20, restore at step 80"
+      ]
+    },
+    "transport": "Symmetric reliable active links, zero phase delay, fixed within a boundary; cut packets discarded, no forwarding or buffering.",
+    "report": "Own ID, sample step, exact own position/state/target and full own completion history. Own report is local; three remote sends per agent, nine attempts per boundary including zero.",
+    "knowledge": "Only delivered reports and own decisions enter each cache. Learned completions are monotone; reservations survive silence until completion is learned.",
+    "peerAgreement": "All three current reports plus three matching same-round plans (including own proposal). Nonempty plans only; two remote proposals per peer; no central ready flag, quorum or leader election.",
+    "eventOrder": [
+      "Execute one travel or service interval (except initial boundary zero)",
+      "Apply network schedule",
+      "Sample all own reports before new commands; deliver over active links",
+      "Compute plans from each separate cache and static scope",
+      "Exchange and compare nonempty peer plans",
+      "Apply permitted commands",
+      "Evaluate and snapshot"
+    ],
+    "servicePolicy": "Arrival enters servicing; twenty following intervals complete a task. No executor failure is modeled.",
+    "confirmation": "C learned-completion count for central/hierarchy; minimum count over A1/A2/A3 for peers. Peer coverage is an evaluator metric, not common knowledge or a termination protocol.",
+    "stopping": "Six physical completions and six confirmed completions, otherwise the 600-interval budget; first physical completion time recorded separately.",
+    "duplicates": "duplicateAssignments is the peak extra concurrent owners of any task; duplicateCompletions sums extra completion owners over tasks.",
+    "accounting": "Packets, not bytes. Reports/proposals/remote commands count separately; local actions do not. The common all-to-all reports are not a traffic-optimal design for each architecture."
+  },
+  "results": [
+    {
+      "architecture": "central",
+      "network": "connected",
+      "status": "completed",
+      "step": 117,
+      "time": 11.700000000000001,
+      "physical": 6,
+      "confirmed": 6,
+      "firstPhysicalStep": 117,
+      "physicalTime": 11.700000000000001,
+      "totalDistance": 17.803014413189356,
+      "duplicateAssignments": 0,
+      "duplicateCompletions": 0,
+      "traffic": {
+        "report": {
+          "attempted": 1062,
+          "delivered": 1062,
+          "dropped": 0
+        },
+        "proposal": {
+          "attempted": 0,
+          "delivered": 0,
+          "dropped": 0
+        },
+        "command": {
+          "attempted": 6,
+          "delivered": 6,
+          "dropped": 0
+        }
+      },
+      "known": [
+        6,
+        6,
+        6,
+        6
+      ]
+    },
+    {
+      "architecture": "hierarchy",
+      "network": "connected",
+      "status": "completed",
+      "step": 157,
+      "time": 15.700000000000001,
+      "physical": 6,
+      "confirmed": 6,
+      "firstPhysicalStep": 157,
+      "physicalTime": 15.700000000000001,
+      "totalDistance": 22.786985743434876,
+      "duplicateAssignments": 0,
+      "duplicateCompletions": 0,
+      "traffic": {
+        "report": {
+          "attempted": 1422,
+          "delivered": 1422,
+          "dropped": 0
+        },
+        "proposal": {
+          "attempted": 0,
+          "delivered": 0,
+          "dropped": 0
+        },
+        "command": {
+          "attempted": 2,
+          "delivered": 2,
+          "dropped": 0
+        }
+      },
+      "known": [
+        6,
+        6,
+        6,
+        6
+      ]
+    },
+    {
+      "architecture": "peers",
+      "network": "connected",
+      "status": "completed",
+      "step": 117,
+      "time": 11.700000000000001,
+      "physical": 6,
+      "confirmed": 6,
+      "firstPhysicalStep": 117,
+      "physicalTime": 11.700000000000001,
+      "totalDistance": 17.803014413189356,
+      "duplicateAssignments": 0,
+      "duplicateCompletions": 0,
+      "traffic": {
+        "report": {
+          "attempted": 1062,
+          "delivered": 1062,
+          "dropped": 0
+        },
+        "proposal": {
+          "attempted": 24,
+          "delivered": 24,
+          "dropped": 0
+        },
+        "command": {
+          "attempted": 0,
+          "delivered": 0,
+          "dropped": 0
+        }
+      },
+      "known": [
+        6,
+        6,
+        6,
+        6
+      ]
+    },
+    {
+      "architecture": "central",
+      "network": "partition",
+      "status": "budget",
+      "step": 600,
+      "time": 60,
+      "physical": 6,
+      "confirmed": 4,
+      "firstPhysicalStep": 277,
+      "physicalTime": 27.700000000000003,
+      "totalDistance": 25.563720427268215,
+      "duplicateAssignments": 0,
+      "duplicateCompletions": 0,
+      "traffic": {
+        "report": {
+          "attempted": 5409,
+          "delivered": 1923,
+          "dropped": 3486
+        },
+        "proposal": {
+          "attempted": 0,
+          "delivered": 0,
+          "dropped": 0
+        },
+        "command": {
+          "attempted": 6,
+          "delivered": 6,
+          "dropped": 0
+        }
+      },
+      "known": [
+        4,
+        4,
+        2,
+        2
+      ]
+    },
+    {
+      "architecture": "hierarchy",
+      "network": "partition",
+      "status": "budget",
+      "step": 600,
+      "time": 60,
+      "physical": 6,
+      "confirmed": 2,
+      "firstPhysicalStep": 157,
+      "physicalTime": 15.700000000000001,
+      "totalDistance": 22.786985743434876,
+      "duplicateAssignments": 0,
+      "duplicateCompletions": 0,
+      "traffic": {
+        "report": {
+          "attempted": 5409,
+          "delivered": 1923,
+          "dropped": 3486
+        },
+        "proposal": {
+          "attempted": 0,
+          "delivered": 0,
+          "dropped": 0
+        },
+        "command": {
+          "attempted": 2,
+          "delivered": 2,
+          "dropped": 0
+        }
+      },
+      "known": [
+        2,
+        2,
+        4,
+        4
+      ]
+    },
+    {
+      "architecture": "peers",
+      "network": "partition",
+      "status": "budget",
+      "step": 600,
+      "time": 60,
+      "physical": 3,
+      "confirmed": 1,
+      "firstPhysicalStep": null,
+      "physicalTime": null,
+      "totalDistance": 6.800000000000002,
+      "duplicateAssignments": 0,
+      "duplicateCompletions": 0,
+      "traffic": {
+        "report": {
+          "attempted": 5409,
+          "delivered": 1923,
+          "dropped": 3486
+        },
+        "proposal": {
+          "attempted": 6,
+          "delivered": 6,
+          "dropped": 0
+        },
+        "command": {
+          "attempted": 0,
+          "delivered": 0,
+          "dropped": 0
+        }
+      },
+      "known": [
+        1,
+        1,
+        2,
+        2
+      ]
+    },
+    {
+      "architecture": "central",
+      "network": "recovery",
+      "status": "completed",
+      "step": 137,
+      "time": 13.700000000000001,
+      "physical": 6,
+      "confirmed": 6,
+      "firstPhysicalStep": 137,
+      "physicalTime": 13.700000000000001,
+      "totalDistance": 17.803014413189356,
+      "duplicateAssignments": 0,
+      "duplicateCompletions": 0,
+      "traffic": {
+        "report": {
+          "attempted": 1242,
+          "delivered": 882,
+          "dropped": 360
+        },
+        "proposal": {
+          "attempted": 0,
+          "delivered": 0,
+          "dropped": 0
+        },
+        "command": {
+          "attempted": 6,
+          "delivered": 6,
+          "dropped": 0
+        }
+      },
+      "known": [
+        6,
+        6,
+        6,
+        6
+      ]
+    },
+    {
+      "architecture": "hierarchy",
+      "network": "recovery",
+      "status": "completed",
+      "step": 157,
+      "time": 15.700000000000001,
+      "physical": 6,
+      "confirmed": 6,
+      "firstPhysicalStep": 157,
+      "physicalTime": 15.700000000000001,
+      "totalDistance": 22.786985743434876,
+      "duplicateAssignments": 0,
+      "duplicateCompletions": 0,
+      "traffic": {
+        "report": {
+          "attempted": 1422,
+          "delivered": 1062,
+          "dropped": 360
+        },
+        "proposal": {
+          "attempted": 0,
+          "delivered": 0,
+          "dropped": 0
+        },
+        "command": {
+          "attempted": 2,
+          "delivered": 2,
+          "dropped": 0
+        }
+      },
+      "known": [
+        6,
+        6,
+        6,
+        6
+      ]
+    },
+    {
+      "architecture": "peers",
+      "network": "recovery",
+      "status": "completed",
+      "step": 152,
+      "time": 15.200000000000001,
+      "physical": 6,
+      "confirmed": 6,
+      "firstPhysicalStep": 152,
+      "physicalTime": 15.200000000000001,
+      "totalDistance": 17.803014413189356,
+      "duplicateAssignments": 0,
+      "duplicateCompletions": 0,
+      "traffic": {
+        "report": {
+          "attempted": 1377,
+          "delivered": 1017,
+          "dropped": 360
+        },
+        "proposal": {
+          "attempted": 12,
+          "delivered": 12,
+          "dropped": 0
+        },
+        "command": {
+          "attempted": 0,
+          "delivered": 0,
+          "dropped": 0
+        }
+      },
+      "known": [
+        6,
+        6,
+        6,
+        6
+      ]
+    }
+  ]
+}

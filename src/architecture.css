@@ -1,0 +1,47 @@
+.arch-intro { padding: 25px 0 30px; max-width: 1060px; }
+.arch-intro h1 { font-size: 2.45rem; line-height: 1.2; letter-spacing: -.06rem; margin: 12px 0; }
+.arch-intro h1 br { display: none; }
+.arch-intro>p:not(.eyebrow) { font-size: 1rem; color: var(--muted); }
+.arch-intro .arch-prediction { margin-top: 11px; color: var(--ink); }
+.arch-lab { display: grid; grid-template-columns: minmax(0,1fr) 340px; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+#arch-viewport { position: relative; min-width: 0; width: 100%; height: 485px; min-height: 390px; flex: 1; }
+.arch-controls { background: white; padding: 22px; min-width: 0; }
+.arch-controls>label { display: block; font-size: .875rem; font-weight: 600; margin-bottom: 9px; }
+.arch-controls>select { width: 100%; margin-bottom: 18px; }
+.arch-network-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: .875rem; border-top: 1px solid var(--line); margin-top: 18px; padding-top: 17px; }
+#arch-link-state { color: var(--teal); }
+#arch-network-diagram svg { width: 100%; height: auto; margin: 4px 0; }
+#arch-network-diagram [role=button] { cursor: pointer; outline: none; }
+#arch-network-diagram [role=button]:focus-visible circle { stroke: #b67932; stroke-width: 4; }
+.arch-advance { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 17px 0 10px; }
+.arch-advance button { font-size: .8125rem; padding: 10px 8px; }
+.arch-controls .wide { font-size: .875rem; }
+.arch-authority { display: grid; grid-template-columns: 230px minmax(0,1fr); gap: 20px; background: #edf2e8; padding: 18px 22px; border: 1px solid #d5dfce; border-radius: 6px; margin-bottom: 24px; }
+.arch-authority strong { font-size: 1rem; line-height: 1.6; }
+.arch-authority p { font-size: .9375rem; color: #496154; }
+.arch-inspection { display: grid; grid-template-columns: minmax(0,1.6fr) minmax(0,1fr); gap: 22px; }
+.arch-cache,.arch-progress,.arch-task-inspection,.arch-agent-state { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 22px; min-width: 0; }
+.arch-cache>p { font-size: .875rem; color: var(--muted); margin: 12px 0; }
+.arch-cache .arch-readiness { color: var(--ink); background: #edf3ec; padding: 12px; border-radius: 4px; }
+.arch-cache .arch-readiness[data-waiting=true] { background: #fbefe2; color: #805329; }
+#arch-reports tr[data-stale=true] { background: #fcf3e6; }
+.arch-progress h3,.arch-agent-state h3 { margin: 6px 0 16px; }
+#arch-chart svg { width: 100%; height: auto; margin: 10px 0; }
+.arch-chart-legend { display: flex; flex-wrap: wrap; gap: 10px 16px; font-size: .8125rem; margin-bottom: 12px; }
+.arch-chart-legend span:first-child { color: #217761; }
+.arch-chart-legend span:last-child { color: #8c603c; }
+.arch-traffic { border-top: 1px solid var(--line); margin-top: 20px; padding-top: 12px; }
+.arch-traffic>div { display: flex; justify-content: space-between; gap: 10px; font-size: .8125rem; line-height: 1.7; margin: 6px 0; }
+.arch-task-inspection { margin: 22px 0; }
+#arch-tasks tr[data-unknown=true] { background: #fcf3e6; }
+.arch-bottom { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 22px; }
+#arch-events { padding: 0; margin: 0 0 16px; list-style: none; max-height: 285px; overflow-y: auto; }
+#arch-events li { font-size: .875rem; line-height: 1.65; padding: 7px 0; border-bottom: 1px solid var(--line); }
+#arch-events time { color: var(--teal); font: .8125rem ui-monospace,monospace; padding-right: 10px; }
+.arch-profile { margin: 32px 0 42px; }
+.arch-cases .exercise-grid { grid-template-columns: repeat(3,minmax(0,1fr)); margin-top: 25px; }
+.arch-equation { font-size: .9375rem; line-height: 1.9; }
+.architecture-page .mission-metrics strong { font-size: 1.65rem; }
+@media(max-width:1100px) { .arch-lab { grid-template-columns: minmax(0,1fr) 305px; } .arch-inspection { grid-template-columns: 1fr; } .arch-controls { padding: 18px; } }
+@media(max-width:850px) { .arch-lab,.arch-bottom { grid-template-columns: 1fr; } #arch-viewport { flex: auto; height: 450px; } #arch-network-diagram { max-width: 350px; margin: auto; } .arch-authority { grid-template-columns: 1fr; gap: 8px; } .arch-cases .exercise-grid { grid-template-columns: 1fr; } }
+@media(max-width:580px) { .arch-intro h1 { font-size: 2rem; } .arch-intro h1 br { display: block; } .arch-intro { padding: 20px 0; } #arch-viewport { height: 330px; min-height: 330px; } .arch-cache,.arch-progress,.arch-task-inspection,.arch-agent-state { padding: 16px; } .arch-cache .panel-heading,.arch-task-inspection .panel-heading { align-items: flex-start; flex-wrap: wrap; } .arch-equation { font-size: .8125rem; padding: 13px; } .architecture-page .mission-metrics strong { font-size: 1.4rem; } .arch-authority { padding: 16px; } }

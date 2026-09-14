@@ -4,10 +4,10 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** three local workshops with explanations, linked 2D/3D views, step
+**Available:** four local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
-**Artificial Potential Fields**, and **task allocation with finite-state
-execution**. Other modules in the
+**Artificial Potential Fields**, **task allocation with finite-state
+execution**, and **decision architectures under network partition**. Other modules in the
 [catalog](docs/learning-path.md) remain proposals.
 
 ## Run locally
@@ -24,7 +24,7 @@ Open the URL printed by Vite, normally [http://127.0.0.1:5173](http://127.0.0.1:
 The server binds to loopback. No account, backend or external service is needed.
 Dependencies and the optional test browser need a network connection to install;
 the workshops load their assets locally. Use the workshop links to switch pages;
-the second workshop is at `/movement/` and the third at `/mission/`. Navigation
+the additional workshops are at `/movement/`, `/mission/`, and `/architecture/`. Navigation
 starts a new run.
 
 ```sh
@@ -32,6 +32,7 @@ npm test                         # mathematical properties, failures and replay
 npm run compare                  # consensus reference cases as JSON, with metadata
 npm run compare:movement         # potential-field reference cases as JSON
 npm run compare:missions         # allocation and failure reference cases as JSON
+npm run compare:architectures    # authority and network partition cases as JSON
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -42,8 +43,9 @@ On a Linux installation missing browser system libraries, use
 `npx playwright install --with-deps chromium` for Playwright's documented setup.
 The browser checks use software WebGL for reproducibility; they do not measure
 hardware rendering performance. The [consensus results](docs/lessons/01-consensus-results.md),
-[potential-field results](docs/lessons/02-potential-fields-results.md) and
-[mission results](docs/lessons/03-mission-allocation-results.md) list the checks
+[potential-field results](docs/lessons/02-potential-fields-results.md),
+[mission results](docs/lessons/03-mission-allocation-results.md) and
+[architecture results](docs/lessons/04-decision-architectures-results.md) list the checks
 actually run and their limitations.
 
 ## First workshop: distributed average consensus
@@ -133,14 +135,45 @@ motion, with no obstacles or collision avoidance. The
 [module specification](docs/lessons/03-mission-allocation.md) defines timing,
 information access, failure ordering and the limits of the matching objective.
 
+## Fourth workshop: decision architectures under network partition
+
+**Who may assign work, and who can confirm it finished?** Reuse the same three
+agents, six tasks and **nearest-pair greedy** rule. Compare a **central
+coordinator**, **subgroup coordinators** with predelegated task domains, and
+**peer-to-peer replicas** using a **full-roster round barrier**. Every decision
+uses one local cache, with exact reports sampled before new commands.
+
+1. Select **Central + permanent cut**, then advance to 2 s, separating {C, A1}
+   from {A2, A3}. Agents keep executing
+   accepted work; report age increases without implying an executor failure.
+2. Finish the central run. All six jobs execute, but C can confirm only four.
+   Retaining reservations prevents silence from triggering duplicate work.
+3. Compare groups: they execute all six tasks inside their domains, while C
+   learns only two completions across this permanent cut.
+4. Compare peers: this protocol waits for all three current reports and matching
+   nonempty plans before taking new targets. It completes only the first three
+   jobs under a permanent cut; restoring links at 8 s allows it to finish.
+
+Inspect C or an agent to compare its received information with physical truth.
+The run completes only when execution and required confirmation are both complete;
+otherwise it reaches the 60 s budget. Peer confirmation coverage is the evaluator's
+minimum count across three caches, not a distributed termination protocol.
+The hierarchical scopes restrict eligibility too, and the common report traffic
+is not an optimized network design. These examples compare declared protocols,
+not every possible implementation of the architecture names.
+
+The [module specification](docs/lessons/04-decision-architectures.md) declares
+authority, report contents, synchronization and transport assumptions. The custom
+peer protocol does not implement Raft, Paxos or Lamport logical clocks.
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
-  model and page controller. `src/model.js`, `src/movement-model.js` and
-  `src/mission-model.js` contain deterministic transitions without DOM, rendering
+  model and page controller. `src/model.js`, `src/movement-model.js`,
+  `src/mission-model.js` and `src/architecture-model.js` contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with three explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with four explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -150,7 +183,8 @@ information access, failure ordering and the limits of the matching objective.
   from browser interactions. `src/comparisons.js` runs the five reference cases
   for both the consensus page and its command-line result exporter. Movement
   references similarly use `compareMovement()` in `src/movement-model.js`;
-  mission references use `compareMissions()` in `src/mission-model.js`.
+  mission references use `compareMissions()` in `src/mission-model.js`; architecture
+  references use `compareArchitectures()` in `src/architecture-model.js`.
 
 Official dependency documentation was checked on 2026-09-14. Dependencies are
 shared by the workshops; robotics middleware and flight dynamics are outside
@@ -166,5 +200,6 @@ their scope.
 | [Consensus results](docs/lessons/01-consensus-results.md) | Observed outcomes, verification and limits. |
 | [Potential-field results](docs/lessons/02-potential-fields-results.md) | Measured arrival, stalls and contact failures. |
 | [Mission results](docs/lessons/03-mission-allocation-results.md) | Assignment costs, completion and reallocation after agent loss. |
+| [Architecture results](docs/lessons/04-decision-architectures-results.md) | Physical completion, delivered knowledge and partition recovery. |
 
 Additional modules and integrations need their own specifications and validation.

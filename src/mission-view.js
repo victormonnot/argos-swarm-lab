@@ -113,7 +113,8 @@ export function createMissionView(container, { selectAgent = () => {} } = {}) {
       world.taskLabels[id].textContent = `T${id + 1}${task.state === 'completed' ? ' ✓' : ''}`;
       world.taskLabels[id].style.color = TASK_COLORS[task.state];
     });
-    world.ring.position.set(run.agents[selected].position[0], .012, -run.agents[selected].position[1]);
+    world.ring.visible = selected !== null;
+    if (selected !== null) world.ring.position.set(run.agents[selected].position[0], .012, -run.agents[selected].position[1]);
     if (world.history !== run.history) {
       for (const child of [...world.paths.children]) { child.geometry.dispose(); child.material.dispose(); world.paths.remove(child); }
       run.agents.forEach((agent, id) => {
