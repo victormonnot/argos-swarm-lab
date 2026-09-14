@@ -12,6 +12,7 @@ export default defineConfig({
         pathfinding: resolve(import.meta.dirname, 'pathfinding/index.html'),
         localization: resolve(import.meta.dirname, 'localization/index.html'),
         fusion: resolve(import.meta.dirname, 'fusion/index.html'),
+        orca: resolve(import.meta.dirname, 'orca/index.html'),
       },
     },
   },

@@ -4,12 +4,13 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** seven local workshops with explanations, linked 2D/3D views, step
+**Available:** eight local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
 **Artificial Potential Fields**, **task allocation with finite-state
 execution**, **decision architectures under network partition**, **A* path
-planning with waypoint execution**, **linear Kalman position filtering**, and
-**shared estimates with Covariance Intersection**.
+planning with waypoint execution**, **linear Kalman position filtering**,
+**shared estimates with Covariance Intersection**, and **Optimal Reciprocal
+Collision Avoidance (ORCA)**.
 Other modules in the
 [catalog](docs/learning-path.md) remain proposals.
 
@@ -28,7 +29,7 @@ The server binds to loopback. No account, backend or external service is needed.
 Dependencies and the optional test browser need a network connection to install;
 the workshops load their assets locally. Use the workshop links to switch pages;
 the additional workshops are at `/movement/`, `/mission/`, `/architecture/`,
-`/pathfinding/`, `/localization/`, and `/fusion/`. Navigation
+`/pathfinding/`, `/localization/`, `/fusion/`, and `/orca/`. Navigation
 starts a new run.
 
 If the local server has stopped after sleep or shutdown, run `npm run dev` again
@@ -45,6 +46,7 @@ npm run compare:architectures    # authority and network partition cases as JSON
 npm run compare:pathfinding      # A*, Dijkstra and direct-motion cases as JSON
 npm run compare:localization     # position filters and 200 seeded trials as JSON
 npm run compare:fusion           # shared estimates and 1,000 seeded trials as JSON
+npm run compare:orca             # disk crossing, symmetry and sensing cases as JSON
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -60,7 +62,8 @@ hardware rendering performance. The [consensus results](docs/lessons/01-consensu
 [architecture results](docs/lessons/04-decision-architectures-results.md),
 [pathfinding results](docs/lessons/05-pathfinding-results.md),
 [localization results](docs/lessons/06-localization-results.md) and
-[shared-estimation results](docs/lessons/07-shared-estimates-results.md) list the checks
+[shared-estimation results](docs/lessons/07-shared-estimates-results.md) and
+[ORCA results](docs/lessons/08-orca-results.md) list the checks
 actually run and their limitations.
 
 ## First workshop: distributed average consensus
@@ -265,16 +268,39 @@ method guarantees low error for each realization. The
 [specification](docs/lessons/07-shared-estimates.md) defines equations, transport,
 metrics and primary sources.
 
+## Eighth workshop: Optimal Reciprocal Collision Avoidance
+
+**How can moving agents share responsibility for avoiding a collision?** Planar
+disk agents choose their own velocities using **Optimal Reciprocal Collision
+Avoidance (ORCA)**. Each observed neighbor contributes a permitted half-plane
+in velocity space. The selected velocity is the closest to the agent's preferred
+goal-directed velocity inside those constraints and the maximum-speed circle.
+
+Compare ORCA, **Artificial Potential Fields (APF)** and direct goal following on
+the same crossing. Inspect preferred and chosen velocities, the selected agent's
+constraints, swept clearance and actual arrival. Try an exactly symmetric
+head-on case to explore lack of progress, then remove peer sensing to expose
+the information the avoidance rule needs. Change the prediction horizon and
+repeat the experiment.
+
+Both views observe the same synchronous planar kinematics. The agents have exact
+self-position and, when sensing is available, exact peer positions and velocities;
+they exchange no messages. Reciprocal half-responsibility, feasible constraints
+and instantaneous velocity execution are explicit model assumptions. Local
+avoidance does not supply a global route or guarantee eventual arrival. The
+[specification](docs/lessons/08-orca.md) defines the solver, information boundary,
+stopping criteria and primary method sources.
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
   model and page controller. `src/model.js`, `src/movement-model.js`,
   `src/mission-model.js`, `src/architecture-model.js`, `src/pathfinding-model.js`,
-  `src/localization-model.js` and `src/fusion-model.js`
+  `src/localization-model.js`, `src/fusion-model.js` and `src/orca-model.js`
   contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with seven explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with eight explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -288,7 +314,8 @@ metrics and primary sources.
   references use `compareArchitectures()` in `src/architecture-model.js`; pathfinding
   references use `comparePaths()` in `src/pathfinding-model.js`; localization uses
   `compareLocalization()` and the paired-seed `compareLocalizationSeeds()`;
-  shared estimation uses `compareFusion()` and `compareFusionSeeds()`.
+  shared estimation uses `compareFusion()` and `compareFusionSeeds()`; ORCA uses
+  `referenceComparisons()` in `src/orca-model.js`.
 
 Official dependency documentation was checked on 2026-09-14. Dependencies are
 shared by the workshops; robotics middleware and flight dynamics are outside
@@ -307,5 +334,7 @@ their scope.
 | [Architecture results](docs/lessons/04-decision-architectures-results.md) | Physical completion, delivered knowledge and partition recovery. |
 | [Pathfinding results](docs/lessons/05-pathfinding-results.md) | Grid shortest routes, search effort, waypoint execution and contact. |
 | [Localization results](docs/lessons/06-localization-results.md) | Position error, assumed uncertainty, missing fixes and false arrival. |
+| [Shared-estimation results](docs/lessons/07-shared-estimates-results.md) | Repeated evidence, covariance consistency and communication cost. |
+| [ORCA results](docs/lessons/08-orca-results.md) | Reciprocal avoidance, clearance, arrival and failures under missing sensing. |
 
 Additional modules and integrations need their own specifications and validation.
