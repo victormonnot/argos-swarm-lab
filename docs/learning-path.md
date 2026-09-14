@@ -1,14 +1,15 @@
 # Module catalog
 
-Consensus and Artificial Potential Fields are implemented local modules. Entries
-3–7 are candidate extensions, not implemented features. Each module combines an interactive
+Consensus, Artificial Potential Fields, and task allocation/execution are
+implemented local modules. Entries 4–7 are candidate extensions, not implemented
+features. Each module combines an interactive
 experiment with explanations following the [experiment guide](experiment-guide.md).
 
 | Module | Question explored | Bounded experiment and comparison | Concepts covered |
 | --- | --- | --- | --- |
 | 1. Distributed average consensus | How can local exchanges produce agreement? | Linear consensus with constant edge gain on a complete graph, a chain and disconnected groups; remove and restore links. | Decentralized, leaderless decisions; synchronous discrete updates; communication topology and convergence assumptions. |
 | 2. [Artificial Potential Fields](lessons/02-potential-fields.md) | How do local motion rules produce useful or undesirable behavior? | Capped velocity commands from attraction/repulsion in a known map; compare arrival, a U-shaped trap and contact failures. | Decentralized reactive control; finite-range peer sensing; synchronous kinematics; tuning and local traps. |
-| 3. Mission execution and allocation | Who should do which task, and when is it complete? | Three agents service predefined observation points; compare fixed allocation, a simple adaptive greedy rule and an appropriate assignment method. Remove an agent mid-run. | Task models, execution states, constraints, reallocation and objective metrics. |
+| 3. [Task allocation and finite-state execution](lessons/03-mission-allocation.md) | Who should do which task, and when is it complete? | Three agents service six points; compare fixed round-robin, nearest-pair greedy and Hungarian assignment under one central coordinator. Make A2 unavailable at 5 s. | Linear assignment versus mission execution; finite-state machines; exclusive ownership, reallocation and completion metrics. |
 | 4. Decision architectures | What changes when decision authority moves? | Reuse one task scenario with central allocation, subgroup coordinators and peer allocation. Introduce a network partition. | Information access, ownership, stale decisions and architecture tradeoffs. |
 | 5. Motion and shared estimates | How do movement constraints and uncertain knowledge affect decisions? | Separate small lessons on path/trajectory execution, local avoidance, and individual versus shared estimates. Add declared synthetic pose error. | Model assumptions, uncertainty, planning interfaces and avoiding double-counted evidence. |
 | 6. Distributed software | What changes when the same experiment runs across processes? | Reproduce a known scenario with ROS 2 and Python/C++ components. Compare DDS and Zenoh for a defined communication scenario. | Message contracts, process lifecycle, observability and middleware integration. |

@@ -1,0 +1,226 @@
+{
+  "generatedAt": "2026-09-14T10:05:31.082Z",
+  "runtime": "v22.22.1",
+  "revision": "0cffe21407a241ba03439f22752639f039169e93",
+  "workingTreeModified": true,
+  "sourceHashes": {
+    "src/assignment.js": "4baec0e7d293bef0153f01091c5c5cd4c3895ae5b00305180f1fb7b32499dc8a",
+    "src/mission-model.js": "f7895a2489d1e11f0c6c5fdb15d93ccfcdc162e7f955a5f7f5599eea67326ddf"
+  },
+  "model": {
+    "lengthUnit": "m",
+    "timeUnit": "s",
+    "starts": [
+      [
+        0,
+        0
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        0,
+        4
+      ]
+    ],
+    "tasks": [
+      [
+        0.8,
+        0
+      ],
+      [
+        -2,
+        0
+      ],
+      [
+        0,
+        6
+      ],
+      [
+        -5,
+        2
+      ],
+      [
+        5,
+        3
+      ],
+      [
+        2,
+        7
+      ]
+    ],
+    "dt": 0.1,
+    "speed": 1,
+    "serviceSteps": 20,
+    "budget": 600,
+    "fixedOwners": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2
+    ],
+    "failure": {
+      "agentId": 1,
+      "step": 50,
+      "time": 5,
+      "detectionDelay": 0
+    },
+    "architecture": "One central allocator with exact reports for every policy; no advance knowledge of failure.",
+    "objective": "Hungarian minimizes the sum of current Euclidean distances over maximum-cardinality idle-agent / pending-task matchings. Fixed ownership imposes separate eligibility restrictions.",
+    "eventOrder": [
+      "Execute one travel or service interval",
+      "Process completion reports",
+      "Apply scheduled unavailability and release unfinished work",
+      "Dispatch idle agents",
+      "Evaluate outcome"
+    ],
+    "servicePolicy": "Arrival starts servicing for the next interval; interrupted service is discarded and restarted in full.",
+    "stopping": "All tasks completed, no eligible execution remains, or 600 intervals elapsed."
+  },
+  "results": [
+    {
+      "policy": "fixed",
+      "failure": false,
+      "status": "completed",
+      "step": 157,
+      "time": 15.700000000000001,
+      "completed": 6,
+      "remaining": [],
+      "available": 3,
+      "totalDistance": 22.786985743434876,
+      "firstDispatchCost": 6.8,
+      "reassignments": 0,
+      "lostService": 0,
+      "completionSteps": [
+        28,
+        60,
+        40,
+        110,
+        157,
+        83
+      ],
+      "failureApplied": false
+    },
+    {
+      "policy": "greedy",
+      "failure": false,
+      "status": "completed",
+      "step": 117,
+      "time": 11.700000000000001,
+      "completed": 6,
+      "remaining": [],
+      "available": 3,
+      "totalDistance": 17.803014413189356,
+      "firstDispatchCost": 6.8,
+      "reassignments": 0,
+      "lostService": 0,
+      "completionSteps": [
+        28,
+        60,
+        40,
+        117,
+        100,
+        83
+      ],
+      "failureApplied": false
+    },
+    {
+      "policy": "hungarian",
+      "failure": false,
+      "status": "completed",
+      "step": 104,
+      "time": 10.4,
+      "completed": 6,
+      "remaining": [],
+      "available": 3,
+      "totalDistance": 16.203014413189365,
+      "firstDispatchCost": 5.2,
+      "reassignments": 0,
+      "lostService": 0,
+      "completionSteps": [
+        32,
+        40,
+        40,
+        97,
+        104,
+        83
+      ],
+      "failureApplied": false
+    },
+    {
+      "policy": "fixed",
+      "failure": true,
+      "status": "blocked",
+      "step": 110,
+      "time": 11,
+      "completed": 4,
+      "remaining": [
+        1,
+        4
+      ],
+      "available": 2,
+      "totalDistance": 15.171212637570989,
+      "firstDispatchCost": 6.8,
+      "reassignments": 0,
+      "lostService": 1,
+      "completionSteps": [
+        28,
+        null,
+        40,
+        110,
+        null,
+        83
+      ],
+      "failureApplied": true
+    },
+    {
+      "policy": "greedy",
+      "failure": true,
+      "status": "completed",
+      "step": 221,
+      "time": 22.1,
+      "completed": 6,
+      "remaining": [],
+      "available": 2,
+      "totalDistance": 32.309596507144775,
+      "firstDispatchCost": 6.8,
+      "reassignments": 1,
+      "lostService": 1,
+      "completionSteps": [
+        28,
+        184,
+        40,
+        221,
+        100,
+        83
+      ],
+      "failureApplied": true
+    },
+    {
+      "policy": "hungarian",
+      "failure": true,
+      "status": "completed",
+      "step": 153,
+      "time": 15.3,
+      "completed": 6,
+      "remaining": [],
+      "available": 2,
+      "totalDistance": 17.841619252963763,
+      "firstDispatchCost": 5.2,
+      "reassignments": 1,
+      "lostService": 0,
+      "completionSteps": [
+        32,
+        40,
+        40,
+        97,
+        153,
+        83
+      ],
+      "failureApplied": true
+    }
+  ]
+}

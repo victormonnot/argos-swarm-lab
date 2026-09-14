@@ -7,6 +7,7 @@ export default defineConfig({
       input: {
         consensus: resolve(import.meta.dirname, 'index.html'),
         movement: resolve(import.meta.dirname, 'movement/index.html'),
+        mission: resolve(import.meta.dirname, 'mission/index.html'),
       },
     },
   },

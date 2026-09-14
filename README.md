@@ -4,9 +4,10 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** two local workshops with explanations, linked 2D/3D views, step
-controls and measured comparisons: **distributed average consensus** and
-**Artificial Potential Fields**. Other modules in the
+**Available:** three local workshops with explanations, linked 2D/3D views, step
+controls and measured comparisons: **distributed average consensus**,
+**Artificial Potential Fields**, and **task allocation with finite-state
+execution**. Other modules in the
 [catalog](docs/learning-path.md) remain proposals.
 
 ## Run locally
@@ -23,12 +24,14 @@ Open the URL printed by Vite, normally [http://127.0.0.1:5173](http://127.0.0.1:
 The server binds to loopback. No account, backend or external service is needed.
 Dependencies and the optional test browser need a network connection to install;
 the workshops load their assets locally. Use the workshop links to switch pages;
-the second workshop is at `/movement/`. Navigation starts a new run.
+the second workshop is at `/movement/` and the third at `/mission/`. Navigation
+starts a new run.
 
 ```sh
 npm test                         # mathematical properties, failures and replay
 npm run compare                  # consensus reference cases as JSON, with metadata
 npm run compare:movement         # potential-field reference cases as JSON
+npm run compare:missions         # allocation and failure reference cases as JSON
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -38,9 +41,10 @@ npm run preview                  # serve that build locally
 On a Linux installation missing browser system libraries, use
 `npx playwright install --with-deps chromium` for Playwright's documented setup.
 The browser checks use software WebGL for reproducibility; they do not measure
-hardware rendering performance. The [consensus results](docs/lessons/01-consensus-results.md)
-and [potential-field results](docs/lessons/02-potential-fields-results.md) list the
-checks actually run and their limitations.
+hardware rendering performance. The [consensus results](docs/lessons/01-consensus-results.md),
+[potential-field results](docs/lessons/02-potential-fields-results.md) and
+[mission results](docs/lessons/03-mission-allocation-results.md) list the checks
+actually run and their limitations.
 
 ## First workshop: distributed average consensus
 
@@ -104,13 +108,39 @@ physics. It requires WebGL 2; the 2D map and numerical controls work without it.
 See the [module specification](docs/lessons/02-potential-fields.md) for geometry,
 equations, sensing assumptions and stopping criteria.
 
+## Third workshop: task allocation and finite-state execution
+
+**Who should do the work, and when is it actually finished?** Three agents visit
+six observation points, each requiring arrival and 2 seconds of uninterrupted
+service. Compare **fixed round-robin**, **nearest-pair greedy matching**, and
+the **Hungarian algorithm**, all using the same **centralized** coordinator.
+Agent execution follows a **finite-state machine (FSM)**: idle, travelling,
+servicing, or unavailable.
+
+1. Inspect the first assignment matrix. Greedy chooses a total of 6.8 m;
+   Hungarian finds a matching costing 5.2 m. This optimizes the current dispatch,
+   not the entire multi-stop mission.
+2. Step through arrival. A task remains incomplete until its service finishes.
+3. Make A2 unavailable at 5 seconds. Its unfinished task is released and partial
+   service is discarded. The coordinator learns the event immediately.
+4. Compare outcomes: fixed owners strand two tasks while the adaptive policies
+   reassign interrupted work and finish all six in these reference runs.
+
+Inspect task ownership, service progress, executor states, the recorded assignment
+matrix and event history. Change policy or failure preset to start a paused run;
+reset repeats the applied configuration. Both views display the same planar point
+motion, with no obstacles or collision avoidance. The
+[module specification](docs/lessons/03-mission-allocation.md) defines timing,
+information access, failure ordering and the limits of the matching objective.
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
-  model and page controller. `src/model.js` and `src/movement-model.js` contain
-  deterministic transitions without DOM, rendering or wall-clock dependencies.
+  model and page controller. `src/model.js`, `src/movement-model.js` and
+  `src/mission-model.js` contain deterministic transitions without DOM, rendering
+  or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with two explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with three explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -119,10 +149,11 @@ equations, sensing assumptions and stopping criteria.
   [Playwright](https://playwright.dev/docs/intro):** mathematical checks separately
   from browser interactions. `src/comparisons.js` runs the five reference cases
   for both the consensus page and its command-line result exporter. Movement
-  references similarly use `compareMovement()` in `src/movement-model.js`.
+  references similarly use `compareMovement()` in `src/movement-model.js`;
+  mission references use `compareMissions()` in `src/mission-model.js`.
 
 Official dependency documentation was checked on 2026-09-14. Dependencies are
-shared by both workshops; robotics middleware and flight dynamics are outside
+shared by the workshops; robotics middleware and flight dynamics are outside
 their scope.
 
 ## Read next
@@ -134,5 +165,6 @@ their scope.
 | [Experiment guide](docs/experiment-guide.md) | Lesson format, comparisons and failure-model rules. |
 | [Consensus results](docs/lessons/01-consensus-results.md) | Observed outcomes, verification and limits. |
 | [Potential-field results](docs/lessons/02-potential-fields-results.md) | Measured arrival, stalls and contact failures. |
+| [Mission results](docs/lessons/03-mission-allocation-results.md) | Assignment costs, completion and reallocation after agent loss. |
 
 Additional modules and integrations need their own specifications and validation.
