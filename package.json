@@ -21,7 +21,9 @@
     "compare:behavior": "node scripts/compare-behavior.js",
     "compare:cooperative": "node scripts/compare-cooperative.js",
     "compare:slam": "node scripts/compare-slam.js",
-    "compare:pose-graph": "node scripts/compare-pose-graph.js"
+    "compare:pose-graph": "node scripts/compare-pose-graph.js",
+    "record:ros2": "node scripts/record-ros2.js",
+    "compare:ros2": "node scripts/compare-ros2.js"
   },
   "engines": {
     "node": ">=22.12.0"

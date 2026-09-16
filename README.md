@@ -4,7 +4,7 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** thirteen local workshops with explanations, linked 2D/3D views, step
+**Available:** fourteen local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
 **Artificial Potential Fields**, **task allocation with finite-state
 execution**, **decision architectures under network partition**, **A* path
@@ -14,7 +14,8 @@ Collision Avoidance (ORCA)**, **Consensus-Based Bundle Algorithm (CBBA)**,
 **Behavior Trees versus finite-state machines (FSM)**, **cooperative
 localization with a joint-state Kalman filter**, **Extended Kalman Filter
 SLAM with supplied landmark identities**, and **pose-graph SLAM with
-Gauss–Newton optimization**.
+Gauss–Newton optimization**, and **ROS 2 nodes/topics with explicit
+consensus rounds recorded from separate processes**.
 Other modules in the
 [catalog](docs/learning-path.md) remain proposals.
 
@@ -34,7 +35,7 @@ Dependencies and the optional test browser need a network connection to install;
 the workshops load their assets locally. Use the workshop links to switch pages;
 the additional workshops are at `/movement/`, `/mission/`, `/architecture/`,
 `/pathfinding/`, `/localization/`, `/fusion/`, `/orca/`, `/cbba/`, `/behavior/`,
-`/cooperative/`, `/slam/`, and `/pose-graph/`. Navigation starts a new run.
+`/cooperative/`, `/slam/`, and `/pose-graph/`, and `/ros2/`. Navigation starts a new run or rewinds a recording.
 
 If the local server has stopped after sleep or shutdown, run `npm run dev` again
 from this project directory and keep that terminal open. To reuse a chosen port,
@@ -56,6 +57,8 @@ npm run compare:behavior         # execution, interruption and recovery as JSON
 npm run compare:cooperative      # joint localization, missing anchors and paired seeds
 npm run compare:slam             # EKF map growth, reobservations and sensor failures
 npm run compare:pose-graph       # pose optimization, supplied loops and paired seeds
+npm run compare:ros2             # recorded ROS rounds versus the lesson-1 reference
+npm run record:ros2              # optional Docker execution; writes a local trace
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -77,7 +80,8 @@ hardware rendering performance. The [consensus results](docs/lessons/01-consensu
 [execution results](docs/lessons/10-behavior-trees-results.md),
 [cooperative-localization results](docs/lessons/11-cooperative-localization-results.md),
 [EKF-SLAM results](docs/lessons/12-ekf-slam-results.md) and
-[pose-graph results](docs/lessons/13-pose-graph-slam-results.md) list the checks actually run and their limitations.
+[pose-graph results](docs/lessons/13-pose-graph-slam-results.md) and
+[ROS 2 results](docs/lessons/14-ros2-rounds-results.md) list the checks actually run and their limitations.
 
 ## First workshop: distributed average consensus
 
@@ -435,6 +439,35 @@ outliers, estimate landmarks or control flight. See the
 [specification](docs/lessons/13-pose-graph-slam.md) for residual coordinates,
 solver conventions, backtracking and limits.
 
+## Fourteenth workshop: ROS 2 nodes, topics and explicit rounds
+
+**How do six separate programs reproduce the same consensus?** Six actual
+**ROS 2 Jazzy / rclpy** processes publish their own scalars and subscribe to
+neighbor topics. A seventh process starts each round and waits for six update
+reports. Numerical decisions remain local; timing coordination is centralized.
+
+The page replays actual recorded runs. Step through publication, received inputs
+and the completed barrier, inspect node names, process IDs and run/round fields,
+and compare every completed vector with workshop 1. A complete graph and a
+chain retain the same averaging rule. When A3 deliberately omits its publication,
+five peers wait and the barrier times out; A3's local update is not a complete
+new global state. This is application withholding, not simulated radio loss.
+
+The linked 2D/3D software diagrams share one replay cursor. Animation timing is
+for teaching, not measured network latency. The default recordings work with the
+usual web setup. To produce a new trace with Docker installed and running:
+
+```sh
+npm run record:ros2
+```
+
+Import `local/ros2-consensus.json` on the page. The runner downloads a pinned
+official ROS image on first use and runs a disposable container with six agent
+processes and one supervisor. It needs no host ROS installation or host network.
+The page clearly distinguishes saved playback from real process execution.
+See the [specification](docs/lessons/14-ros2-rounds.md) for the protocol, exact
+information boundaries, reproducibility and limits.
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
@@ -446,7 +479,7 @@ solver conventions, backtracking and limits.
   contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with thirteen explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with fourteen explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -468,9 +501,12 @@ solver conventions, backtracking and limits.
   EKF-SLAM uses the same helper names in `src/slam-model.js`, and pose-graph
   optimization in `src/pose-graph-model.js`.
 
-Official dependency documentation was checked on 2026-09-14. Dependencies are
-shared by the workshops; robotics middleware and flight dynamics are outside
-their scope.
+Web dependency documentation was checked on 2026-09-14. Workshop 14 adds a
+separate optional ROS 2 runtime, checked against official documentation on
+2026-09-16. Its pinned Docker image contains Python, rclpy and Fast DDS;
+`ros2/consensus.py` runs the processes and `src/ros2-trace.js` validates and
+compares their recordings. Browser dependencies remain shared. Flight dynamics
+remain outside these workshops.
 
 ## Read next
 
@@ -492,5 +528,6 @@ their scope.
 | [Cooperative-localization results](docs/lessons/11-cooperative-localization-results.md) | Joint covariance, missing references, shared prior offsets and paired-seed estimation errors. |
 | [EKF-SLAM results](docs/lessons/12-ekf-slam-results.md) | Map initialization, pose/map corrections, sensor loss, bias and paired-seed errors. |
 | [Pose-graph results](docs/lessons/13-pose-graph-slam-results.md) | Retrospective trajectory optimization, residuals, supplied correct/incorrect loops and paired-seed limits. |
+| [ROS 2 results](docs/lessons/14-ros2-rounds-results.md) | Actual process traces, numerical equivalence and an incomplete round barrier. |
 
 Additional modules and integrations need their own specifications and validation.

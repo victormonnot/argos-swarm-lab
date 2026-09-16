@@ -23,6 +23,7 @@ test('workshop navigation exposes both algorithms and starts fresh runs', async 
   await page.locator('#movement-step').click();
   await page.getByRole('navigation', { name: 'Workshops', exact: true }).getByRole('link', { name: '01 / Average consensus' }).click();
   await expect(page.locator('#step-count')).toHaveText('0');
+  await expect(page.locator('#state-table tbody tr')).toHaveCount(6);
   await page.locator('#step-button').click();
   await expect(page.locator('#step-count')).toHaveText('1');
   await page.getByRole('link', { name: '02 / Potential fields', exact: true }).click();

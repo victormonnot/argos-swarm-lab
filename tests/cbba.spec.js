@@ -162,7 +162,7 @@ test('keyboard, mobile navigation and unavailable WebGL keep CBBA usable', async
   await expect(page.locator('#cbba-reference-table tr')).toHaveCount(4);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(13);
+  await expect(navigation.getByRole('link')).toHaveCount(14);
   await navigation.getByRole('link', { name: '08 / ORCA collision avoidance', exact: true }).click(); await expect(page.locator('#orca-step-count')).toHaveText('0');
   await page.getByRole('navigation', { name: 'Workshops', exact: true }).getByRole('link', { name: '09 / CBBA task bundles', exact: true }).click();
   await page.addInitScript(() => {

@@ -18,6 +18,7 @@ export default defineConfig({
         cooperative: resolve(import.meta.dirname, 'cooperative/index.html'),
         slam: resolve(import.meta.dirname, 'slam/index.html'),
         poseGraph: resolve(import.meta.dirname, 'pose-graph/index.html'),
+        ros2: resolve(import.meta.dirname, 'ros2/index.html'),
       },
     },
   },

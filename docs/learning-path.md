@@ -3,9 +3,10 @@
 Consensus, Artificial Potential Fields, task allocation/execution, decision
 architectures, A* planning, individual Kalman estimation, shared target
 estimates, ORCA, CBBA, Behavior Trees/FSM, cooperative localization, EKF-SLAM
-and pose-graph SLAM are implemented local workshops **1–13**. The proposed
-sequence continues with distributed software in workshops 14–17 and flight
-simulation in workshops 18–21. These later integrations remain proposals.
+pose-graph SLAM and ROS 2 nodes/topics are implemented local workshops **1–14**.
+Workshop 14 replays actual separate-process runs. The proposed sequence continues
+with distributed software in workshops 15–17 and flight simulation in workshops
+18–21. These later integrations remain proposals.
 
 A **phase** groups related subjects. A **workshop** answers one bounded question
 with an experiment. Its **lesson page** explains the method, exposes controls
@@ -29,14 +30,15 @@ and displays the observed results. Each follows the
 | 11. [Cooperative localization](lessons/11-cooperative-localization.md) | Can robots improve their own positions by observing each other? | Independent position Kalman filters versus a joint four-state KF; relative Cartesian observations, A1-only absolute fixes, absent/restored reference and a shared prior offset. | Cross-covariance, indirect corrections, known coordinate frame, common-translation observability, error versus uncertainty and paired seeded trials. |
 | 12. [Extended Kalman Filter SLAM](lessons/12-ekf-slam.md) | How can a robot map landmarks and locate itself together? | One planar pose and unknown landmark positions with supplied IDs; range/bearing, correlated map initialization and reobservation corrections versus odometry mapping. | Nonlinear Jacobians, pose/map cross-covariance, fixed start frame, map coverage, sensor loss and biased measurements. |
 | 13. [Pose-graph SLAM](lessons/13-pose-graph-slam.md) | How does revisiting a place constrain an accumulated trajectory? | An anchored 25-pose SE(2) graph with noisy relative constraints; Gauss–Newton with backtracking and supplied correct/incorrect loop IDs. | Retrospective corrections, nonlinear weighted least squares, local residuals, gauge anchoring, optimization versus association and cost versus accuracy. |
+| 14. [ROS 2 nodes, topics and explicit rounds](lessons/14-ros2-rounds.md) | What changes when a known algorithm runs in separate programs? | Six actual rclpy agent processes with neighbor topics and a central round supervisor; recorded complete/chain/omitted-publication traces. | Node versus process, publish/subscribe, run and round IDs, application barriers, numerical equivalence and progress versus local updates. |
 
 ## Algorithm sequence and method context
 
 The implemented examples cover motion, task allocation/execution and estimation,
 including two bounded SLAM approaches. They are not an exhaustive curriculum.
-The next proposed workshop is **14: ROS 2 nodes, topics and explicit rounds**.
-It will move a known algorithm into actual processes after its own specification,
-dependency choices and acceptance criteria are defined.
+Workshop **14: ROS 2 nodes, topics and explicit rounds** now moves the known
+consensus rule into actual processes, with an interactive recorded-trace page.
+The next proposed workshop is **15: message freshness and Quality of Service**.
 
 ORCA selects a locally suitable velocity under its model; global route planning,
 physical feasibility and eventual mission completion remain separate questions.
@@ -71,12 +73,11 @@ solvers and supplied observation associations explicitly.
 
 ## Proposed main sequence: distributed software
 
-After those algorithm experiments, reuse a known scenario across actual processes.
-The four planned workshop questions below retain a small, inspectable scope.
+Workshop 14 now reuses a known scenario across actual processes. The remaining
+three planned questions below retain a small, inspectable scope.
 
 | No. | Proposed workshop | Question | Bounded experiment |
 | --- | --- | --- | --- |
-| 14 | ROS 2 nodes, topics and explicit rounds | What changes when a known algorithm runs in separate programs? | Reproduce a lesson-1 consensus case with one agent per process and inspect published/received messages. Specify run IDs, round IDs and a synchronization protocol before comparing numerical traces. |
 | 15 | Message freshness and Quality of Service (QoS) | Is a delivered message still useful? | Keep the same processes; introduce a controlled delivery impairment and compare selected reliability/history settings. Inspect sequence gaps and message age under a declared clock model. |
 | 16 | Process failure and restart | What can peers infer when an agent stops, then returns? | Stop one agent process and restart it. Inspect timeout evidence, session identity and stale state. Define restart/reset behavior explicitly; silence alone does not prove a crash. |
 | 17 | One DDS-based RMW versus rmw_zenoh | What changes when the transport implementation changes? | Reuse the same message scenario with one named DDS implementation and Zenoh through ROS 2's RMW interface. Compare a declared delivery/recovery metric with versions, topology and supported QoS recorded. Keep this comparison conditional on a useful, comparable experiment. |
@@ -88,8 +89,8 @@ property of publish/subscribe. The
 [official QoS documentation](https://github.com/ros2/ros2_documentation/blob/rolling/source/ROS-Framework/interfaces/topics/About-Quality-of-Service-Settings.rst)
 and [rmw_zenoh design](https://github.com/ros2/rmw_zenoh/blob/rolling/docs/design.md)
 describe the transport concepts; they do not establish equivalence or a winning
-implementation for this lab. Select a supported distribution, client language
-and middleware versions when implementing the bounded workshop.
+implementation for this lab. Workshop 14 selects Jazzy, Python/rclpy and rmw_fastrtps_cpp in a pinned
+container; later comparisons must declare their own supported versions.
 
 ## Proposed main sequence: flight simulation
 
@@ -121,7 +122,8 @@ trace; its 2D/3D views must not run a separate browser approximation presented a
 ROS 2 or autopilot execution. A small adapter can be introduced when needed by
 that specific experiment. Software versions, installation/resource requirements,
 supported vehicle counts and acceptance criteria must be verified before delivery.
-None of workshops 14–21 is implemented by the current browser lab.
+Workshops 15–21 remain proposals; workshop 14 includes a runnable ROS 2 recorder
+and an interactive page for its actual traces.
 
 ## Comparisons must answer a specific question
 
