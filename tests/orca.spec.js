@@ -130,7 +130,7 @@ test('keyboard selection, mobile layout, navigation and unavailable WebGL keep t
   await expect(page.locator('#orca-reference-table tr')).toHaveCount(5);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(14);
+  await expect(navigation.getByRole('link')).toHaveCount(15);
   await navigation.getByRole('link', { name: '07 / Shared estimates', exact: true }).click(); await expect(page.locator('#fusion-round')).toHaveText('0');
   await page.getByRole('navigation', { name: 'Workshops', exact: true }).getByRole('link', { name: '08 / ORCA collision avoidance', exact: true }).click();
   await page.addInitScript(() => {

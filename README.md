@@ -4,7 +4,7 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** fourteen local workshops with explanations, linked 2D/3D views, step
+**Available:** fifteen local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
 **Artificial Potential Fields**, **task allocation with finite-state
 execution**, **decision architectures under network partition**, **A* path
@@ -13,9 +13,10 @@ planning with waypoint execution**, **linear Kalman position filtering**,
 Collision Avoidance (ORCA)**, **Consensus-Based Bundle Algorithm (CBBA)**,
 **Behavior Trees versus finite-state machines (FSM)**, **cooperative
 localization with a joint-state Kalman filter**, **Extended Kalman Filter
-SLAM with supplied landmark identities**, and **pose-graph SLAM with
-Gauss–Newton optimization**, and **ROS 2 nodes/topics with explicit
-consensus rounds recorded from separate processes**.
+SLAM with supplied landmark identities**, **pose-graph SLAM with
+Gauss–Newton optimization**, **ROS 2 nodes/topics with explicit
+consensus rounds recorded from separate processes**, and **ROS 2 message
+freshness with KEEP_LAST history and an application age gate**.
 Other modules in the
 [catalog](docs/learning-path.md) remain proposals.
 
@@ -35,7 +36,7 @@ Dependencies and the optional test browser need a network connection to install;
 the workshops load their assets locally. Use the workshop links to switch pages;
 the additional workshops are at `/movement/`, `/mission/`, `/architecture/`,
 `/pathfinding/`, `/localization/`, `/fusion/`, `/orca/`, `/cbba/`, `/behavior/`,
-`/cooperative/`, `/slam/`, and `/pose-graph/`, and `/ros2/`. Navigation starts a new run or rewinds a recording.
+`/cooperative/`, `/slam/`, `/pose-graph/`, `/ros2/`, and `/qos/`. Navigation starts a new run or rewinds a recording.
 
 If the local server has stopped after sleep or shutdown, run `npm run dev` again
 from this project directory and keep that terminal open. To reuse a chosen port,
@@ -59,6 +60,8 @@ npm run compare:slam             # EKF map growth, reobservations and sensor fai
 npm run compare:pose-graph       # pose optimization, supplied loops and paired seeds
 npm run compare:ros2             # recorded ROS rounds versus the lesson-1 reference
 npm run record:ros2              # optional Docker execution; writes a local trace
+npm run compare:qos              # recorded callback ages, acceptance and retained state
+npm run record:qos               # optional Docker freshness recording
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -79,9 +82,10 @@ hardware rendering performance. The [consensus results](docs/lessons/01-consensu
 [CBBA results](docs/lessons/09-cbba-results.md),
 [execution results](docs/lessons/10-behavior-trees-results.md),
 [cooperative-localization results](docs/lessons/11-cooperative-localization-results.md),
-[EKF-SLAM results](docs/lessons/12-ekf-slam-results.md) and
-[pose-graph results](docs/lessons/13-pose-graph-slam-results.md) and
-[ROS 2 results](docs/lessons/14-ros2-rounds-results.md) list the checks actually run and their limitations.
+[EKF-SLAM results](docs/lessons/12-ekf-slam-results.md),
+[pose-graph results](docs/lessons/13-pose-graph-slam-results.md),
+[ROS 2 results](docs/lessons/14-ros2-rounds-results.md) and
+[freshness results](docs/lessons/15-ros2-freshness-results.md) list the checks actually run and their limitations.
 
 ## First workshop: distributed average consensus
 
@@ -468,6 +472,32 @@ The page clearly distinguishes saved playback from real process execution.
 See the [specification](docs/lessons/14-ros2-rounds.md) for the protocol, exact
 information boundaries, reproducibility and limits.
 
+## Fifteenth workshop: ROS 2 message freshness and QoS
+
+**Is a delivered position still useful?** One real ROS 2 publisher sends synthetic
+XYZ positions to three separate readers. Compare **KEEP_LAST depth 20**,
+**KEEP_LAST depth 1**, and **depth 20 with a 150 ms application age gate**.
+All endpoints use the same **reliable, volatile** delivery policies.
+
+1. Replay the nominal recording to inspect generation and callback timestamps.
+2. Load the paused case, then jump to **First callbacks after resume**. The source
+   kept publishing while all reader executors paused for one second. Compare the
+   old depth-20 sample with the shallow reader's recent sample.
+3. Select the gated reader: rejecting an old callback leaves its previously
+   accepted position unchanged, and that retained information keeps aging.
+4. Observe the drain interval after publication stops. A small callback age at
+   acceptance does not make a stored position fresh forever.
+
+The linked 2D/3D views show one replay cursor: a solid drone follows the synthetic
+evaluator reference and a ghost holds the selected reader's exact accepted
+sample. Position lag is evaluator data. There is no flight controller, radio-loss
+injection, hidden DDS queue measurement or multi-host clock assumption.
+
+The page replays actual process records. With Docker available, produce another
+recording with `npm run record:qos`, then import `local/ros2-qos.json`. The
+[specification](docs/lessons/15-ros2-freshness.md) separates callback age, retained
+Age of Information, middleware QoS and application acceptance.
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
@@ -479,7 +509,7 @@ information boundaries, reproducibility and limits.
   contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with fourteen explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with fifteen explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -505,7 +535,9 @@ Web dependency documentation was checked on 2026-09-14. Workshop 14 adds a
 separate optional ROS 2 runtime, checked against official documentation on
 2026-09-16. Its pinned Docker image contains Python, rclpy and Fast DDS;
 `ros2/consensus.py` runs the processes and `src/ros2-trace.js` validates and
-compares their recordings. Browser dependencies remain shared. Flight dynamics
+compares their recordings. Workshop 15 reuses that image: `ros2/freshness.py`
+records periodic telemetry, and `src/qos-trace.js` validates and reads callbacks
+without simulating transport. Browser dependencies remain shared. Flight dynamics
 remain outside these workshops.
 
 ## Read next
@@ -529,5 +561,6 @@ remain outside these workshops.
 | [EKF-SLAM results](docs/lessons/12-ekf-slam-results.md) | Map initialization, pose/map corrections, sensor loss, bias and paired-seed errors. |
 | [Pose-graph results](docs/lessons/13-pose-graph-slam-results.md) | Retrospective trajectory optimization, residuals, supplied correct/incorrect loops and paired-seed limits. |
 | [ROS 2 results](docs/lessons/14-ros2-rounds-results.md) | Actual process traces, numerical equivalence and an incomplete round barrier. |
+| [Freshness results](docs/lessons/15-ros2-freshness-results.md) | Measured callback ages, history-depth effects and stale retained information. |
 
 Additional modules and integrations need their own specifications and validation.
