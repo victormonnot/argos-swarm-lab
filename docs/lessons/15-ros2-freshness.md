@@ -185,7 +185,8 @@ without invented freshness, and linked replay/import/2D/3D interactions.
 No reliability-policy comparison, network loss injection, hidden-queue telemetry,
 process restart, multi-host clock model, asynchronous consensus theorem, real
 GPS/IMU, vehicle controller or physical flight simulation is implemented.
-Process interruption/restart remains the separate proposed workshop 16.
+Process interruption/restart is covered separately by
+[workshop 16](16-process-restart.md).
 
 ## Primary sources
 

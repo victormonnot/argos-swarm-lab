@@ -4,7 +4,7 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** fifteen local workshops with explanations, linked 2D/3D views, step
+**Available:** sixteen local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
 **Artificial Potential Fields**, **task allocation with finite-state
 execution**, **decision architectures under network partition**, **A* path
@@ -15,8 +15,9 @@ Collision Avoidance (ORCA)**, **Consensus-Based Bundle Algorithm (CBBA)**,
 localization with a joint-state Kalman filter**, **Extended Kalman Filter
 SLAM with supplied landmark identities**, **pose-graph SLAM with
 Gauss–Newton optimization**, **ROS 2 nodes/topics with explicit
-consensus rounds recorded from separate processes**, and **ROS 2 message
-freshness with KEEP_LAST history and an application age gate**.
+consensus rounds recorded from separate processes**, **ROS 2 message
+freshness with KEEP_LAST history and an application age gate**, and **process
+failure/restart with heartbeat suspicion and epoch/sequence admission**.
 Other modules in the
 [catalog](docs/learning-path.md) remain proposals.
 
@@ -36,7 +37,7 @@ Dependencies and the optional test browser need a network connection to install;
 the workshops load their assets locally. Use the workshop links to switch pages;
 the additional workshops are at `/movement/`, `/mission/`, `/architecture/`,
 `/pathfinding/`, `/localization/`, `/fusion/`, `/orca/`, `/cbba/`, `/behavior/`,
-`/cooperative/`, `/slam/`, `/pose-graph/`, `/ros2/`, and `/qos/`. Navigation starts a new run or rewinds a recording.
+`/cooperative/`, `/slam/`, `/pose-graph/`, `/ros2/`, `/qos/`, and `/restart/`. Navigation starts a new run or rewinds a recording.
 
 If the local server has stopped after sleep or shutdown, run `npm run dev` again
 from this project directory and keep that terminal open. To reuse a chosen port,
@@ -62,6 +63,8 @@ npm run compare:ros2             # recorded ROS rounds versus the lesson-1 refer
 npm run record:ros2              # optional Docker execution; writes a local trace
 npm run compare:qos              # recorded callback ages, acceptance and retained state
 npm run record:qos               # optional Docker freshness recording
+npm run compare:restart          # observed suspicion and post-restart admission
+npm run record:restart           # optional Docker process interruption/restart
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -84,8 +87,9 @@ hardware rendering performance. The [consensus results](docs/lessons/01-consensu
 [cooperative-localization results](docs/lessons/11-cooperative-localization-results.md),
 [EKF-SLAM results](docs/lessons/12-ekf-slam-results.md),
 [pose-graph results](docs/lessons/13-pose-graph-slam-results.md),
-[ROS 2 results](docs/lessons/14-ros2-rounds-results.md) and
-[freshness results](docs/lessons/15-ros2-freshness-results.md) list the checks actually run and their limitations.
+[ROS 2 results](docs/lessons/14-ros2-rounds-results.md),
+[freshness results](docs/lessons/15-ros2-freshness-results.md) and
+[restart results](docs/lessons/16-process-restart-results.md) list the checks actually run and their limitations.
 
 ## First workshop: distributed average consensus
 
@@ -498,6 +502,33 @@ recording with `npm run record:qos`, then import `local/ros2-qos.json`. The
 [specification](docs/lessons/15-ros2-freshness.md) separates callback age, retained
 Age of Information, middleware QoS and application acceptance.
 
+## Sixteenth workshop: process failure, heartbeat suspicion and restart
+
+**What can an observer infer when a process stops, then returns?** One actual
+ROS 2 heartbeat source represents A1. One observer applies a **fixed-timeout
+heartbeat failure detector** after two different admission rules: **sequence
+only** and **ordered epoch + sequence**. Both see identical callbacks.
+
+1. Compare continuous publication with temporary silence in a living process.
+   The watchdog can suspect A1 in either a publication pause or a real crash.
+2. Load the restart case. Inspect the actual SIGKILL exit, new PID, endpoint
+   readiness and first returned heartbeat. A launch is not an accepted update.
+3. At the first return callback, compare the two policies: the new process starts
+   its sequence at zero, so a sequence-only observer can reject valid new data.
+4. Jump to each policy's recovery and compare retained positions and receipt
+   ages. The baseline can catch up once its old sequence maximum is exceeded;
+   the ordered epoch makes the new incarnation distinguishable immediately.
+
+The 2D/3D views share one replay cursor. A detailed drone represents the synthetic
+XYZ reference; a ghost shows the selected policy's retained sample. Harness
+process truth remains separate from observer belief. No physical crash, mission
+restoration, ROS managed-node lifecycle or autopilot failsafe is implied.
+
+Use `npm run record:restart` with Docker, then import `local/ros2-restart.json`
+to inspect another actual run. The [specification](docs/lessons/16-process-restart.md)
+defines receipt-time suspicion, run-scoped epoch authority, startup guard and
+information boundaries.
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
@@ -509,7 +540,7 @@ Age of Information, middleware QoS and application acceptance.
   contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with fifteen explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with sixteen explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -537,7 +568,9 @@ separate optional ROS 2 runtime, checked against official documentation on
 `ros2/consensus.py` runs the processes and `src/ros2-trace.js` validates and
 compares their recordings. Workshop 15 reuses that image: `ros2/freshness.py`
 records periodic telemetry, and `src/qos-trace.js` validates and reads callbacks
-without simulating transport. Browser dependencies remain shared. Flight dynamics
+without simulating transport. Workshop 16 uses `ros2/restart.py` for heartbeat
+policies and actual process interruption, with `src/restart-trace.js` for checked
+replay. Browser dependencies remain shared. Flight dynamics
 remain outside these workshops.
 
 ## Read next
@@ -562,5 +595,6 @@ remain outside these workshops.
 | [Pose-graph results](docs/lessons/13-pose-graph-slam-results.md) | Retrospective trajectory optimization, residuals, supplied correct/incorrect loops and paired-seed limits. |
 | [ROS 2 results](docs/lessons/14-ros2-rounds-results.md) | Actual process traces, numerical equivalence and an incomplete round barrier. |
 | [Freshness results](docs/lessons/15-ros2-freshness-results.md) | Measured callback ages, history-depth effects and stale retained information. |
+| [Restart results](docs/lessons/16-process-restart-results.md) | Process exit versus suspicion, new incarnations and accepted-state recovery. |
 
 Additional modules and integrations need their own specifications and validation.

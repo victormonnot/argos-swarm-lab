@@ -3,9 +3,9 @@
 Consensus, Artificial Potential Fields, task allocation/execution, decision
 architectures, A* planning, individual Kalman estimation, shared target
 estimates, ORCA, CBBA, Behavior Trees/FSM, cooperative localization, EKF-SLAM,
-pose-graph SLAM, ROS 2 nodes/topics and message freshness are implemented local
-workshops **1–15**. Workshops 14–15 replay actual separate-process runs. The
-proposed sequence continues with distributed software in workshops 16–17 and
+pose-graph SLAM, ROS 2 nodes/topics, message freshness and process restart are
+implemented local workshops **1–16**. Workshops 14–16 replay actual process runs.
+The proposed sequence continues with a middleware comparison in workshop 17 and
 flight simulation in workshops 18–21. These later integrations remain proposals.
 
 A **phase** groups related subjects. A **workshop** answers one bounded question
@@ -32,6 +32,7 @@ and displays the observed results. Each follows the
 | 13. [Pose-graph SLAM](lessons/13-pose-graph-slam.md) | How does revisiting a place constrain an accumulated trajectory? | An anchored 25-pose SE(2) graph with noisy relative constraints; Gauss–Newton with backtracking and supplied correct/incorrect loop IDs. | Retrospective corrections, nonlinear weighted least squares, local residuals, gauge anchoring, optimization versus association and cost versus accuracy. |
 | 14. [ROS 2 nodes, topics and explicit rounds](lessons/14-ros2-rounds.md) | What changes when a known algorithm runs in separate programs? | Six actual rclpy agent processes with neighbor topics and a central round supervisor; recorded complete/chain/omitted-publication traces. | Node versus process, publish/subscribe, run and round IDs, application barriers, numerical equivalence and progress versus local updates. |
 | 15. [ROS 2 message freshness and Quality of Service](lessons/15-ros2-freshness.md) | Is a delivered message still useful? | One actual publisher and three independent reader processes; KEEP_LAST depth 20 versus 1 and an application age gate under a controlled executor pause. | Middleware history versus application acceptance, callback age, retained Age of Information and sequence gaps without packet-loss inference. |
+| 16. [Process failure and restart](lessons/16-process-restart.md) | What can an observer infer when a process stops, then returns? | Continuous heartbeat, same-process publication silence and actual SIGKILL/respawn; one observer compares sequence-only and epoch/sequence admission on identical callbacks. | Fixed-timeout suspicion versus process truth, logical identity, new PID/incarnation, lost counters and accepted-state recovery. |
 
 ## Algorithm sequence and method context
 
@@ -42,8 +43,10 @@ consensus rule into actual processes, with an interactive recorded-trace page.
 Workshop **15: message freshness and Quality of Service** compares history
 depths and an application age gate on a continuous telemetry stream. Its
 executor pause replaces the synchronous barrier to expose old samples while
-reliability remains fixed. The next proposed workshop is **16: process failure
-and restart**.
+reliability remains fixed. Workshop **16: process failure and restart** compares
+local heartbeat suspicion with actual process exit and new-incarnation admission.
+The next proposed workshop is **17: a DDS-based RMW versus rmw_zenoh**, conditional
+on a useful, comparable experiment.
 
 ORCA selects a locally suitable velocity under its model; global route planning,
 physical feasibility and eventual mission completion remain separate questions.
@@ -78,12 +81,11 @@ solvers and supplied observation associations explicitly.
 
 ## Proposed main sequence: distributed software
 
-Workshops 14–15 execute actual ROS 2 processes. The remaining two planned
-questions below retain a small, inspectable scope.
+Workshops 14–16 execute actual ROS 2 processes. The remaining middleware
+comparison retains a small, inspectable scope.
 
 | No. | Proposed workshop | Question | Bounded experiment |
 | --- | --- | --- | --- |
-| 16 | Process failure and restart | What can peers infer when an agent stops, then returns? | Stop one agent process and restart it. Inspect timeout evidence, session identity and stale state. Define restart/reset behavior explicitly; silence alone does not prove a crash. |
 | 17 | One DDS-based RMW versus rmw_zenoh | What changes when the transport implementation changes? | Reuse the same message scenario with one named DDS implementation and Zenoh through ROS 2's RMW interface. Compare a declared delivery/recovery metric with versions, topology and supported QoS recorded. Keep this comparison conditional on a useful, comparable experiment. |
 
 One node per process in workshop 14 is an experiment choice; ROS 2 also supports
@@ -126,7 +128,7 @@ trace; its 2D/3D views must not run a separate browser approximation presented a
 ROS 2 or autopilot execution. A small adapter can be introduced when needed by
 that specific experiment. Software versions, installation/resource requirements,
 supported vehicle counts and acceptance criteria must be verified before delivery.
-Workshops 16–21 remain proposals; workshops 14–15 include runnable ROS 2
+Workshops 17–21 remain proposals; workshops 14–16 include runnable ROS 2
 recorders and interactive pages for their actual traces.
 
 ## Comparisons must answer a specific question

@@ -20,6 +20,7 @@ export default defineConfig({
         poseGraph: resolve(import.meta.dirname, 'pose-graph/index.html'),
         ros2: resolve(import.meta.dirname, 'ros2/index.html'),
         qos: resolve(import.meta.dirname, 'qos/index.html'),
+        restart: resolve(import.meta.dirname, 'restart/index.html'),
       },
     },
   },

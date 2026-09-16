@@ -25,7 +25,9 @@
     "record:ros2": "node scripts/record-ros2.js",
     "compare:ros2": "node scripts/compare-ros2.js",
     "record:qos": "node scripts/record-qos.js",
-    "compare:qos": "node scripts/compare-qos.js"
+    "compare:qos": "node scripts/compare-qos.js",
+    "record:restart": "node scripts/record-restart.js",
+    "compare:restart": "node scripts/compare-restart.js"
   },
   "engines": {
     "node": ">=22.12.0"
