@@ -21,6 +21,7 @@ export default defineConfig({
         ros2: resolve(import.meta.dirname, 'ros2/index.html'),
         qos: resolve(import.meta.dirname, 'qos/index.html'),
         restart: resolve(import.meta.dirname, 'restart/index.html'),
+        middleware: resolve(import.meta.dirname, 'middleware/index.html'),
       },
     },
   },

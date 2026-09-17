@@ -3,10 +3,10 @@
 Consensus, Artificial Potential Fields, task allocation/execution, decision
 architectures, A* planning, individual Kalman estimation, shared target
 estimates, ORCA, CBBA, Behavior Trees/FSM, cooperative localization, EKF-SLAM,
-pose-graph SLAM, ROS 2 nodes/topics, message freshness and process restart are
-implemented local workshops **1–16**. Workshops 14–16 replay actual process runs.
-The proposed sequence continues with a middleware comparison in workshop 17 and
-flight simulation in workshops 18–21. These later integrations remain proposals.
+pose-graph SLAM, ROS 2 nodes/topics, message freshness, process restart and a
+Fast DDS/Zenoh comparison are implemented local workshops **1–17**. Workshops
+14–17 replay actual process runs. Flight simulation in workshops 18–21 remains
+the proposed continuation.
 
 A **phase** groups related subjects. A **workshop** answers one bounded question
 with an experiment. Its **lesson page** explains the method, exposes controls
@@ -33,6 +33,7 @@ and displays the observed results. Each follows the
 | 14. [ROS 2 nodes, topics and explicit rounds](lessons/14-ros2-rounds.md) | What changes when a known algorithm runs in separate programs? | Six actual rclpy agent processes with neighbor topics and a central round supervisor; recorded complete/chain/omitted-publication traces. | Node versus process, publish/subscribe, run and round IDs, application barriers, numerical equivalence and progress versus local updates. |
 | 15. [ROS 2 message freshness and Quality of Service](lessons/15-ros2-freshness.md) | Is a delivered message still useful? | One actual publisher and three independent reader processes; KEEP_LAST depth 20 versus 1 and an application age gate under a controlled executor pause. | Middleware history versus application acceptance, callback age, retained Age of Information and sequence gaps without packet-loss inference. |
 | 16. [Process failure and restart](lessons/16-process-restart.md) | What can an observer infer when a process stops, then returns? | Continuous heartbeat, same-process publication silence and actual SIGKILL/respawn; one observer compares sequence-only and epoch/sequence admission on identical callbacks. | Fixed-timeout suspicion versus process truth, logical identity, new PID/incarnation, lost counters and accepted-state recovery. |
+| 17. [Fast DDS, Zenoh and late-joining readers](lessons/17-middleware-durability.md) | Does changing the middleware preserve a bounded historical-delivery contract? | The same actual ROS application through two RMWs, each with VOLATILE versus TRANSIENT_LOCAL durability; a reader joins between two fixed publication batches. | RMW versus application, reliability versus history, bounded publisher retention, discovery versus data paths, requested/graph-reported QoS and observed callback sets. |
 
 ## Algorithm sequence and method context
 
@@ -45,8 +46,9 @@ depths and an application age gate on a continuous telemetry stream. Its
 executor pause replaces the synchronous barrier to expose old samples while
 reliability remains fixed. Workshop **16: process failure and restart** compares
 local heartbeat suspicion with actual process exit and new-incarnation admission.
-The next proposed workshop is **17: a DDS-based RMW versus rmw_zenoh**, conditional
-on a useful, comparable experiment.
+Workshop **17: Fast DDS, Zenoh and late-joining readers** now compares the same
+bounded durability workload through both RMWs. The next proposed workshop is
+**18: one ArduPilot SITL vehicle with MAVLink command feedback**.
 
 ORCA selects a locally suitable velocity under its model; global route planning,
 physical feasibility and eventual mission completion remain separate questions.
@@ -79,14 +81,11 @@ and [Grisetti et al. graph-based tutorial](https://iris.uniroma1.it/handle/11573
 provide the method context. Their lesson specifications name the estimators,
 solvers and supplied observation associations explicitly.
 
-## Proposed main sequence: distributed software
+## Implemented sequence: distributed software
 
-Workshops 14–16 execute actual ROS 2 processes. The remaining middleware
-comparison retains a small, inspectable scope.
-
-| No. | Proposed workshop | Question | Bounded experiment |
-| --- | --- | --- | --- |
-| 17 | One DDS-based RMW versus rmw_zenoh | What changes when the transport implementation changes? | Reuse the same message scenario with one named DDS implementation and Zenoh through ROS 2's RMW interface. Compare a declared delivery/recovery metric with versions, topology and supported QoS recorded. Keep this comparison conditional on a useful, comparable experiment. |
+Workshops 14–17 execute actual ROS 2 processes. The middleware comparison uses
+one fixed late-subscription workload and two named implementations. It observes
+historical/live sequence sets rather than ranking general transport performance.
 
 One node per process in workshop 14 is an experiment choice; ROS 2 also supports
 [multiple nodes in one process](https://docs.ros.org/en/rolling/Tutorials/Intermediate/Composition.html).
@@ -96,7 +95,8 @@ property of publish/subscribe. The
 and [rmw_zenoh design](https://github.com/ros2/rmw_zenoh/blob/rolling/docs/design.md)
 describe the transport concepts; they do not establish equivalence or a winning
 implementation for this lab. Workshop 14 selects Jazzy, Python/rclpy and rmw_fastrtps_cpp in a pinned
-container; later comparisons must declare their own supported versions.
+container. Workshop 17 derives one shared image with pinned Jazzy Zenoh packages
+and records both implementations, endpoint settings and configuration fingerprints.
 
 ## Proposed main sequence: flight simulation
 
@@ -128,7 +128,7 @@ trace; its 2D/3D views must not run a separate browser approximation presented a
 ROS 2 or autopilot execution. A small adapter can be introduced when needed by
 that specific experiment. Software versions, installation/resource requirements,
 supported vehicle counts and acceptance criteria must be verified before delivery.
-Workshops 17–21 remain proposals; workshops 14–16 include runnable ROS 2
+Workshops 18–21 remain proposals; workshops 14–17 include runnable ROS 2
 recorders and interactive pages for their actual traces.
 
 ## Comparisons must answer a specific question

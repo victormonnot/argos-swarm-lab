@@ -27,7 +27,9 @@
     "record:qos": "node scripts/record-qos.js",
     "compare:qos": "node scripts/compare-qos.js",
     "record:restart": "node scripts/record-restart.js",
-    "compare:restart": "node scripts/compare-restart.js"
+    "compare:restart": "node scripts/compare-restart.js",
+    "record:middleware": "node scripts/record-middleware.js",
+    "compare:middleware": "node scripts/compare-middleware.js"
   },
   "engines": {
     "node": ">=22.12.0"
