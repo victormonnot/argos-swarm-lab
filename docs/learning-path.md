@@ -4,12 +4,12 @@ Consensus, Artificial Potential Fields, task allocation/execution, decision
 architectures, A* planning, individual Kalman estimation, shared target
 estimates, ORCA, CBBA, Behavior Trees/FSM, cooperative localization, EKF-SLAM,
 pose-graph SLAM, ROS 2 nodes/topics, message freshness, process restart, a
-Fast DDS/Zenoh comparison, ArduPilot SITL, Gazebo external physics and a GCS
-heartbeat failsafe are implemented local workshops **1–20**. Workshops 14–17 replay actual ROS 2 process
-runs; workshop 18 replays autopilot execution with built-in flight dynamics, and
-workshop 19 connects the autopilot to an external Gazebo world. Workshop 20
-observes the onboard response to missing GCS heartbeats. Workshop 21 remains
-the proposed continuation.
+Fast DDS/Zenoh comparison, ArduPilot SITL, Gazebo external physics, a GCS
+heartbeat failsafe and a two-vehicle mission are implemented local workshops
+**1–21**. Workshops 14–17 replay actual ROS 2 process runs; workshops 18–21 replay
+actual autopilot execution, with an external Gazebo world in workshop 19 and two
+simultaneous independent SITL vehicles in workshop 21. The initial numbered
+sequence is implemented; further extensions below remain possible work.
 
 A **phase** groups related subjects. A **workshop** answers one bounded question
 with an experiment. Its **lesson page** explains the method, exposes controls
@@ -40,6 +40,7 @@ and displays the observed results. Each follows the
 | 18. [ArduPilot SITL and MAVLink command feedback](lessons/18-sitl-mavlink.md) | Did the vehicle execute the requested action? | One actual ArduCopter SITL vehicle per case: normal arm, takeoff, local position target and landing versus takeoff requested while disarmed. | Autopilot versus controller, command acceptance versus telemetry-derived completion, NED/altitude frames, sampled estimates and normal arming preconditions. |
 | 19. [Gazebo external physics and a force disturbance](lessons/19-gazebo-physics.md) | How does the controller respond when the simulated world pushes the vehicle? | One Gazebo Iris quadrotor connected to ArduPilot's JSON backend; compare nominal hover with an actual bounded eastward force, then land. | External dynamics, lockstep, EKF estimates versus world pose, applied impulse, separate clocks, frame alignment and measured horizontal return. |
 | 20. [GCS heartbeat loss and an onboard failsafe](lessons/20-gcs-failsafe.md) | Does restoring contact resume the flight? | Two fresh SITL flights with identical LAND failsafe parameters; interrupt only GCS heartbeat sends in one case, retain telemetry reception, then restore sends. | Source identity, onboard timeout, command silence versus heartbeat loss, received status versus send age, autonomous landing and clearing without automatic mode restoration. |
+| 21. [Two vehicles and one addressed mission](lessons/21-two-vehicle-mission.md) | Did the assigned vehicle complete its own task? | Two actual SITL processes, central nearest-pair greedy assignment and isolated MAVLink routes; compare correct addressing with one wrong destination system ID, then land both vehicles. | Identity versus route, independent local frames and supplied registration, asynchronous evidence, fixed mission deadline and task success versus flight cleanup. |
 
 ## Algorithm sequence and method context
 
@@ -59,7 +60,9 @@ completion and a disarmed takeoff rejection. Workshop **19: Gazebo external
 physics** now compares stationary flight with a bounded world-force pulse and
 measured return. Workshop **20: GCS heartbeat loss and an onboard failsafe**
 compares continuous sends with a bounded interruption and observed LAND response.
-The next proposed workshop is **21: two vehicles and one bounded mission**.
+Workshop **21: two vehicles and one addressed mission** now connects central
+greedy allocation to two independent autopilots, with a wrong target system ID
+revealing partial mission completion despite both vehicles subsequently landing.
 
 ORCA selects a locally suitable velocity under its model; global route planning,
 physical feasibility and eventual mission completion remain separate questions.
@@ -109,7 +112,7 @@ implementation for this lab. Workshop 14 selects Jazzy, Python/rclpy and rmw_fas
 container. Workshop 17 derives one shared image with pinned Jazzy Zenoh packages
 and records both implementations, endpoint settings and configuration fingerprints.
 
-## Flight simulation: implemented foundations and proposed continuation
+## Implemented sequence: flight simulation
 
 Start with one vehicle and observable execution before introducing a fleet.
 This is a pedagogical order: ArduPilot's Gazebo integration does not require
@@ -138,9 +141,14 @@ on-ground/disarmed reports establish the response. Sending resumes without
 automatically restoring Guided. The browser distinguishes the sender's clock
 from the autopilot's internal last-reception timer.
 
-| No. | Proposed workshop | Question | Bounded experiment |
-| --- | --- | --- | --- |
-| 21 | Two vehicles and one bounded mission | Can commands, reports and task completion stay associated with the right vehicle? | Start with two separately identified SITL vehicles, isolated message routes and one simple allocation scenario using a known policy. Measure execution and confirmation; document separation assumptions and resource use before increasing the fleet. |
+Workshop 21 uses two independently identified, simultaneously running built-in
+SITL vehicles and isolated TCP routes. One central nearest-pair greedy assignment
+uses fresh received positions in an explicitly supplied common ENU layout. The
+nominal case addresses both task setpoints correctly; the comparison sends A1's
+setpoint on its own route with a destination system ID of 2. A twenty-second
+mission window separates task completion from the later, correctly addressed
+LAND requests. Both cases retain per-vehicle evidence and concurrent-process
+memory snapshots. There is no shared collision physics or peer-to-peer routing.
 
 SITL already includes a vehicle dynamics model; workshop 19 introduces an
 external environment, rather than the first physical dynamics in the sequence.
@@ -159,8 +167,8 @@ trace; its 2D/3D views must not run a separate browser approximation presented a
 ROS 2 or autopilot execution. A small adapter can be introduced when needed by
 that specific experiment. Software versions, installation/resource requirements,
 supported vehicle counts and acceptance criteria must be verified before delivery.
-Workshop 21 remains proposed; workshops 14–20 include runnable process
-recorders and interactive pages for their actual traces.
+Workshops 14–21 include runnable process recorders and interactive pages for
+their actual traces. No additional numbered workshop is specified yet.
 
 ## Comparisons must answer a specific question
 

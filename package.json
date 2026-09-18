@@ -35,7 +35,9 @@
     "record:gazebo": "node scripts/record-gazebo.js",
     "compare:gazebo": "node scripts/compare-gazebo.js",
     "record:failsafe": "node scripts/record-failsafe.js",
-    "compare:failsafe": "node scripts/compare-failsafe.js"
+    "compare:failsafe": "node scripts/compare-failsafe.js",
+    "record:fleet": "node scripts/record-fleet.js",
+    "compare:fleet": "node scripts/compare-fleet.js"
   },
   "engines": {
     "node": ">=22.12.0"

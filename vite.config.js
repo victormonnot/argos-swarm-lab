@@ -25,6 +25,7 @@ export default defineConfig({
         sitl: resolve(import.meta.dirname, 'sitl/index.html'),
         gazebo: resolve(import.meta.dirname, 'gazebo/index.html'),
         failsafe: resolve(import.meta.dirname, 'failsafe/index.html'),
+        fleet: resolve(import.meta.dirname, 'fleet/index.html'),
       },
     },
   },

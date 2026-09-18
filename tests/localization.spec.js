@@ -132,7 +132,7 @@ test('keyboard, mobile navigation and unavailable WebGL keep the experiment usab
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(20);
+  await expect(navigation.getByRole('link')).toHaveCount(21);
   await navigation.getByRole('link', { name: '05 / A* path planning', exact: true }).click(); await expect(page.locator('#path-step-count')).toHaveText('0');
   await page.getByRole('navigation', { name: 'Workshops', exact: true }).getByRole('link', { name: '06 / Kalman position filtering', exact: true }).click();
   await page.addInitScript(() => {

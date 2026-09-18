@@ -4,7 +4,7 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** twenty local workshops with explanations, linked 2D/3D views, step
+**Available:** twenty-one local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
 **Artificial Potential Fields**, **task allocation with finite-state
 execution**, **decision architectures under network partition**, **A* path
@@ -21,9 +21,9 @@ failure/restart with heartbeat suspicion and epoch/sequence admission**, plus
 **Fast DDS versus Zenoh with late-joining readers and bounded retained history**,
 **ArduPilot SITL with MAVLink command admission and measured flight execution**,
 **Gazebo external physics with a bounded force disturbance and observed recovery**,
-and **GCS heartbeat loss with an onboard LAND failsafe**.
-Other modules in the
-[catalog](docs/learning-path.md) remain proposals.
+**GCS heartbeat loss with an onboard LAND failsafe**, and **two-vehicle
+mission execution with central greedy assignment and per-vehicle MAVLink addressing**.
+The [catalog](docs/learning-path.md) also describes possible further extensions.
 
 ## Run locally
 
@@ -42,7 +42,7 @@ the workshops load their assets locally. Use the workshop links to switch pages;
 the additional workshops are at `/movement/`, `/mission/`, `/architecture/`,
 `/pathfinding/`, `/localization/`, `/fusion/`, `/orca/`, `/cbba/`, `/behavior/`,
 `/cooperative/`, `/slam/`, `/pose-graph/`, `/ros2/`, `/qos/`, `/restart/`, `/middleware/`,
-`/sitl/`, `/gazebo/`, and `/failsafe/`. Navigation starts a new run or rewinds a recording.
+`/sitl/`, `/gazebo/`, `/failsafe/`, and `/fleet/`. Navigation starts a new run or rewinds a recording.
 
 If the local server has stopped after sleep or shutdown, run `npm run dev` again
 from this project directory and keep that terminal open. To reuse a chosen port,
@@ -78,6 +78,8 @@ npm run compare:gazebo           # world displacement, applied impulse and horiz
 npm run record:gazebo            # Docker: Gazebo Iris + ArduPilot JSON, nominal versus force pulse
 npm run compare:failsafe         # GCS sends, observed timeout response and autonomous landing
 npm run record:failsafe          # Docker: continuous versus interrupted GCS heartbeats
+npm run compare:fleet            # two task outcomes, per-vehicle evidence and landing
+npm run record:fleet             # Docker: two SITL processes, correct versus wrong target ID
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -105,8 +107,9 @@ hardware rendering performance. The [consensus results](docs/lessons/01-consensu
 [restart results](docs/lessons/16-process-restart-results.md),
 [middleware results](docs/lessons/17-middleware-durability-results.md),
 [SITL results](docs/lessons/18-sitl-mavlink-results.md),
-[Gazebo results](docs/lessons/19-gazebo-physics-results.md) and
-[GCS failsafe results](docs/lessons/20-gcs-failsafe-results.md) list the checks actually run and their limitations.
+[Gazebo results](docs/lessons/19-gazebo-physics-results.md),
+[GCS failsafe results](docs/lessons/20-gcs-failsafe-results.md) and
+[two-vehicle results](docs/lessons/21-two-vehicle-mission-results.md) list the checks actually run and their limitations.
 
 ## First workshop: distributed average consensus
 
@@ -652,6 +655,31 @@ identity, eligible traffic, clocks, the LAND pause and execution evidence.
 `npm run record:failsafe` reuses the pinned SITL image and saves an importable
 recording at `local/ardupilot-failsafe.json`.
 
+## Twenty-first workshop: two vehicles and one addressed mission
+
+**Did the assigned vehicle complete its own task?** Two actual **ArduCopter SITL**
+processes execute visit-and-hold tasks selected by **nearest-pair greedy matching**
+under one **central coordinator**. Separate MAVLink system IDs, TCP routes and
+local estimator frames remain visible throughout the mission.
+
+1. Observe normal takeoff, then inspect the horizontal cost matrix and owners.
+2. Dispatch one local NED target to each vehicle and follow their received
+   position/attitude estimates in the common, explicitly supplied ENU layout.
+3. Compare correct addressing with an A1 setpoint whose destination system is 2,
+   while still sent on A1's isolated connection. A2 receives its own task normally.
+4. At the twenty-second deadline, separate confirmed task completion from the
+   subsequent LAND requests and measured landing/disarming of both vehicles.
+
+The two detailed 3D quadrotors and linked 2D plan/elevation share one recording
+cursor. The yard is a supplied registration of independent SITL simulations;
+there is no common collision physics, peer allocation or onboard rejection
+capture. Setpoint messages have no command ACK. Completion requires fresh,
+vehicle-specific position/velocity samples sustaining the declared dwell.
+
+The [specification](docs/lessons/21-two-vehicle-mission.md) defines addressing,
+frames, greedy costs and deadline evidence. `npm run record:fleet` reuses the
+pinned SITL image and saves `local/ardupilot-fleet.json` for browser import.
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
@@ -663,7 +691,7 @@ recording at `local/ardupilot-failsafe.json`.
   contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with twenty explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with twenty-one explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -706,7 +734,9 @@ Workshop 20 reuses the built-in SITL runtime, adding a bounded GCS heartbeat
 sender/interruption in `failsafe/record.py`. `src/failsafe-trace.js` validates
 send history and independently derives received failsafe, mode and landing
 evidence. The autopilot evaluates the timeout; the recorder configures it and
-observes the response.
+observes the response. Workshop 21 launches two owned processes in
+`fleet/record.py`; `src/fleet-trace.js` independently recomputes assignment and
+vehicle-specific completion within the shared mission deadline.
 The external stack was verified against official sources on 2026-09-18.
 Browser dependencies remain shared.
 
@@ -737,5 +767,6 @@ Browser dependencies remain shared.
 | [SITL results](docs/lessons/18-sitl-mavlink-results.md) | Actual takeoff, waypoint and landing telemetry versus command acceptance and a disarmed rejection. |
 | [Gazebo results](docs/lessons/19-gazebo-physics-results.md) | External world dynamics, applied force, measured displacement and horizontal return under a bounded disturbance. |
 | [GCS failsafe results](docs/lessons/20-gcs-failsafe-results.md) | Selective heartbeat suppression, continued telemetry, onboard LAND response and clearing without automatic mode restoration. |
+| [Two-vehicle results](docs/lessons/21-two-vehicle-mission-results.md) | Central greedy assignment, isolated addressing, bounded task failure and separately confirmed fleet landing. |
 
 Additional modules and integrations need their own specifications and validation.
