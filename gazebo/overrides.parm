@@ -1,0 +1,3 @@
+# Use the actual EKF3 estimator with normal arming checks and external JSON physics.
+AHRS_EKF_TYPE 3
+ARMING_SKIPCHK 0

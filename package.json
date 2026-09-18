@@ -31,7 +31,9 @@
     "record:middleware": "node scripts/record-middleware.js",
     "compare:middleware": "node scripts/compare-middleware.js",
     "record:sitl": "node scripts/record-sitl.js",
-    "compare:sitl": "node scripts/compare-sitl.js"
+    "compare:sitl": "node scripts/compare-sitl.js",
+    "record:gazebo": "node scripts/record-gazebo.js",
+    "compare:gazebo": "node scripts/compare-gazebo.js"
   },
   "engines": {
     "node": ">=22.12.0"

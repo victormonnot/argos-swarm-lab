@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+ <world name="argos_flight_yard">
+  <physics name="1ms" type="ignore"><max_step_size>0.001</max_step_size><real_time_factor>1</real_time_factor></physics>
+  <gravity>0 0 -9.8</gravity>
+  <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"><engine><filename>gz-physics-dartsim-plugin</filename></engine></plugin>
+  <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+  <plugin filename="TruthObserver" name="TruthObserver"/>
+  <model name="ground"><static>true</static><link name="ground">
+   <collision name="surface"><geometry><plane><normal>0 0 1</normal><size>50 50</size></plane></geometry></collision>
+   <visual name="surface"><geometry><plane><normal>0 0 1</normal><size>50 50</size></plane></geometry></visual>
+  </link></model>
+  <include><uri>model://argos_iris</uri><name>iris</name><pose degrees="true">0 0 0.195 0 0 90</pose></include>
+ </world>
+</sdf>

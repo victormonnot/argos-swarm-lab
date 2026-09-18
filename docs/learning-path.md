@@ -4,10 +4,11 @@ Consensus, Artificial Potential Fields, task allocation/execution, decision
 architectures, A* planning, individual Kalman estimation, shared target
 estimates, ORCA, CBBA, Behavior Trees/FSM, cooperative localization, EKF-SLAM,
 pose-graph SLAM, ROS 2 nodes/topics, message freshness, process restart, a
-Fast DDS/Zenoh comparison and ArduPilot SITL are implemented local workshops
-**1–18**. Workshops 14–17 replay actual ROS 2 process runs; workshop 18 replays
-actual autopilot execution with built-in flight dynamics. Workshops 19–21 remain
-the proposed continuation.
+Fast DDS/Zenoh comparison, ArduPilot SITL and Gazebo external physics are
+implemented local workshops **1–19**. Workshops 14–17 replay actual ROS 2 process
+runs; workshop 18 replays autopilot execution with built-in flight dynamics, and
+workshop 19 connects the autopilot to an external Gazebo world. Workshops 20–21
+remain the proposed continuation.
 
 A **phase** groups related subjects. A **workshop** answers one bounded question
 with an experiment. Its **lesson page** explains the method, exposes controls
@@ -36,6 +37,7 @@ and displays the observed results. Each follows the
 | 16. [Process failure and restart](lessons/16-process-restart.md) | What can an observer infer when a process stops, then returns? | Continuous heartbeat, same-process publication silence and actual SIGKILL/respawn; one observer compares sequence-only and epoch/sequence admission on identical callbacks. | Fixed-timeout suspicion versus process truth, logical identity, new PID/incarnation, lost counters and accepted-state recovery. |
 | 17. [Fast DDS, Zenoh and late-joining readers](lessons/17-middleware-durability.md) | Does changing the middleware preserve a bounded historical-delivery contract? | The same actual ROS application through two RMWs, each with VOLATILE versus TRANSIENT_LOCAL durability; a reader joins between two fixed publication batches. | RMW versus application, reliability versus history, bounded publisher retention, discovery versus data paths, requested/graph-reported QoS and observed callback sets. |
 | 18. [ArduPilot SITL and MAVLink command feedback](lessons/18-sitl-mavlink.md) | Did the vehicle execute the requested action? | One actual ArduCopter SITL vehicle per case: normal arm, takeoff, local position target and landing versus takeoff requested while disarmed. | Autopilot versus controller, command acceptance versus telemetry-derived completion, NED/altitude frames, sampled estimates and normal arming preconditions. |
+| 19. [Gazebo external physics and a force disturbance](lessons/19-gazebo-physics.md) | How does the controller respond when the simulated world pushes the vehicle? | One Gazebo Iris quadrotor connected to ArduPilot's JSON backend; compare nominal hover with an actual bounded eastward force, then land. | External dynamics, lockstep, EKF estimates versus world pose, applied impulse, separate clocks, frame alignment and measured horizontal return. |
 
 ## Algorithm sequence and method context
 
@@ -51,8 +53,10 @@ local heartbeat suspicion with actual process exit and new-incarnation admission
 Workshop **17: Fast DDS, Zenoh and late-joining readers** now compares the same
 bounded durability workload through both RMWs. Workshop **18: ArduPilot SITL and
 MAVLink command feedback** now compares ACK admission with measured flight
-completion and a disarmed takeoff rejection. The next proposed workshop is
-**19: one ArduPilot vehicle connected to a Gazebo environment**.
+completion and a disarmed takeoff rejection. Workshop **19: Gazebo external
+physics** now compares stationary flight with a bounded world-force pulse and
+measured return. The next proposed workshop is **20: lost GCS heartbeat and a
+configured autopilot failsafe**.
 
 ORCA selects a locally suitable velocity under its model; global route planning,
 physical feasibility and eventual mission completion remain separate questions.
@@ -102,7 +106,7 @@ implementation for this lab. Workshop 14 selects Jazzy, Python/rclpy and rmw_fas
 container. Workshop 17 derives one shared image with pinned Jazzy Zenoh packages
 and records both implementations, endpoint settings and configuration fingerprints.
 
-## Flight simulation: first workshop implemented, proposed continuation
+## Flight simulation: implemented foundations and proposed continuation
 
 Start with one vehicle and observable execution before introducing a fleet.
 This is a pedagogical order: ArduPilot's Gazebo integration does not require
@@ -112,11 +116,18 @@ Workshop 18 uses the built-in SITL quadrotor model and a pymavlink controller.
 Its interactive page reads actual position, attitude, mode and landed reports;
 it does not create a second browser flight simulation. The normal flight and
 rejected disarmed request have separate fresh simulator state. Gazebo and a
-second vehicle are outside this implemented experiment.
+second vehicle are outside that experiment.
+
+Workshop 19 connects ArduPilot to Gazebo Harmonic through the official JSON
+integration. Separate fresh simulations compare nominal hover with a measured
+eight-newton lateral force pulse. It exposes world pose, estimator telemetry,
+simulation and receipt clocks, applied impulse and horizontal return criteria.
+The controller still uses MAVLink evidence for takeoff and landing; the evaluator
+uses world observations to assess the disturbance response. No fleet, obstacle
+avoidance or heartbeat-loss failsafe is included.
 
 | No. | Proposed workshop | Question | Bounded experiment |
 | --- | --- | --- | --- |
-| 19 | ArduPilot with a Gazebo environment | How does the flight controller interact with an external simulated world? | Connect one vehicle to a supported Gazebo model. Observe a short motion command and one declared perturbation or execution limit, with simulation timing and state feedback visible. |
 | 20 | Lost GCS heartbeat and configured failsafe | What does the autopilot do when contact with the ground station is lost? | On one simulated vehicle, interrupt the established GCS heartbeat, inspect timeout and configured response, then restore it. Distinguish heartbeat loss from merely pausing commands or losing a telemetry display. |
 | 21 | Two vehicles and one bounded mission | Can commands, reports and task completion stay associated with the right vehicle? | Start with two separately identified SITL vehicles, isolated message routes and one simple allocation scenario using a known policy. Measure execution and confirmation; document separation assumptions and resource use before increasing the fleet. |
 
@@ -137,7 +148,7 @@ trace; its 2D/3D views must not run a separate browser approximation presented a
 ROS 2 or autopilot execution. A small adapter can be introduced when needed by
 that specific experiment. Software versions, installation/resource requirements,
 supported vehicle counts and acceptance criteria must be verified before delivery.
-Workshops 19–21 remain proposals; workshops 14–18 include runnable process
+Workshops 20–21 remain proposals; workshops 14–19 include runnable process
 recorders and interactive pages for their actual traces.
 
 ## Comparisons must answer a specific question

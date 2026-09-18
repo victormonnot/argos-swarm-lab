@@ -23,6 +23,7 @@ export default defineConfig({
         restart: resolve(import.meta.dirname, 'restart/index.html'),
         middleware: resolve(import.meta.dirname, 'middleware/index.html'),
         sitl: resolve(import.meta.dirname, 'sitl/index.html'),
+        gazebo: resolve(import.meta.dirname, 'gazebo/index.html'),
       },
     },
   },

@@ -4,7 +4,7 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** eighteen local workshops with explanations, linked 2D/3D views, step
+**Available:** nineteen local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
 **Artificial Potential Fields**, **task allocation with finite-state
 execution**, **decision architectures under network partition**, **A* path
@@ -19,7 +19,8 @@ consensus rounds recorded from separate processes**, **ROS 2 message
 freshness with KEEP_LAST history and an application age gate**, and **process
 failure/restart with heartbeat suspicion and epoch/sequence admission**, plus
 **Fast DDS versus Zenoh with late-joining readers and bounded retained history**,
-and **ArduPilot SITL with MAVLink command admission and measured flight execution**.
+**ArduPilot SITL with MAVLink command admission and measured flight execution**,
+and **Gazebo external physics with a bounded force disturbance and observed recovery**.
 Other modules in the
 [catalog](docs/learning-path.md) remain proposals.
 
@@ -40,7 +41,7 @@ the workshops load their assets locally. Use the workshop links to switch pages;
 the additional workshops are at `/movement/`, `/mission/`, `/architecture/`,
 `/pathfinding/`, `/localization/`, `/fusion/`, `/orca/`, `/cbba/`, `/behavior/`,
 `/cooperative/`, `/slam/`, `/pose-graph/`, `/ros2/`, `/qos/`, `/restart/`, `/middleware/`,
-and `/sitl/`. Navigation starts a new run or rewinds a recording.
+`/sitl/`, and `/gazebo/`. Navigation starts a new run or rewinds a recording.
 
 If the local server has stopped after sleep or shutdown, run `npm run dev` again
 from this project directory and keep that terminal open. To reuse a chosen port,
@@ -72,6 +73,8 @@ npm run compare:middleware       # observed historical and live sequence sets
 npm run record:middleware        # Docker: same application through Fast DDS and Zenoh
 npm run compare:sitl             # recorded command ACKs versus measured flight completion
 npm run record:sitl              # Docker: one ArduCopter SITL vehicle per independent case
+npm run compare:gazebo           # world displacement, applied impulse and horizontal return
+npm run record:gazebo            # Docker: Gazebo Iris + ArduPilot JSON, nominal versus force pulse
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -97,8 +100,9 @@ hardware rendering performance. The [consensus results](docs/lessons/01-consensu
 [ROS 2 results](docs/lessons/14-ros2-rounds-results.md),
 [freshness results](docs/lessons/15-ros2-freshness-results.md),
 [restart results](docs/lessons/16-process-restart-results.md),
-[middleware results](docs/lessons/17-middleware-durability-results.md) and
-[SITL results](docs/lessons/18-sitl-mavlink-results.md) list the checks actually run and their limitations.
+[middleware results](docs/lessons/17-middleware-durability-results.md),
+[SITL results](docs/lessons/18-sitl-mavlink-results.md) and
+[Gazebo results](docs/lessons/19-gazebo-physics-results.md) list the checks actually run and their limitations.
 
 ## First workshop: distributed average consensus
 
@@ -590,6 +594,33 @@ official ArduCopter binary and Python dependencies, then records
 Read the [specification](docs/lessons/18-sitl-mavlink.md) for command fields,
 completion thresholds, coordinate frames and the bounded failure case.
 
+## Nineteenth workshop: Gazebo external physics and a force disturbance
+
+**How does the controller respond when the world pushes the vehicle?** An actual
+**Gazebo Harmonic** world simulates an Iris quadrotor, connected to **ArduCopter
+SITL** through the official **ArduPilot Gazebo plugin** and JSON simulator backend.
+EKF3 estimates and Gazebo world observations remain separate streams.
+
+1. Observe takeoff and twelve simulation seconds of stationary Guided flight.
+2. Compare a fresh nominal run with an eight-newton eastward force applied for
+   one simulation second at the base link's center of mass.
+3. Inspect applied force, actual tilt, peak horizontal displacement and the
+   measured return criterion after release. The same autopilot controls both runs.
+4. Compare the displayed world pose with the latest estimate. Channel ages and
+   clock differences explain why their separation is not a synchronized accuracy
+   measurement. Finish with telemetry-confirmed landing and disarming.
+
+The linked 2D/3D views share one recorded cursor, with a detailed X-frame drone,
+an optional estimate ghost and a force arrow. The yard is illustrative; actual
+physics contains the vehicle and a ground plane. This bounded pulse is
+an external force, not a wind simulation or an obstacle-avoidance scenario.
+
+`npm run record:gazebo` builds an isolated Linux amd64 image and records
+`local/ardupilot-gazebo.json`. The browser can use the bundled file without
+Gazebo installed on the host. The [specification](docs/lessons/19-gazebo-physics.md)
+defines the physics boundary, simulation clock, force application and evaluator
+criteria separately from command acceptance and flight completion.
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
@@ -601,7 +632,7 @@ completion thresholds, coordinate frames and the bounded failure case.
   contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with eighteen explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with nineteen explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -636,8 +667,12 @@ RMWs; `src/middleware-trace.js` validates its late-subscription recordings.
 Workshop 18 adds `sitl/record.py` and a separate pinned ArduCopter/pymavlink image,
 verified against official sources on 2026-09-18. `src/sitl-trace.js` independently
 checks command and completion evidence. This workshop introduces actual SITL
-flight dynamics; its browser remains a trace viewer. Browser dependencies
-remain shared.
+flight dynamics; its browser remains a trace viewer. Workshop 19 adds an external
+Gazebo world, the official ArduPilot Gazebo integration and a small C++ experiment
+system in `gazebo/`. Its recorder reuses workshop 18's command/telemetry gates;
+`src/gazebo-trace.js` validates world observations and evaluates horizontal return.
+The external stack was verified against official sources on 2026-09-18.
+Browser dependencies remain shared.
 
 ## Read next
 
@@ -664,5 +699,6 @@ remain shared.
 | [Restart results](docs/lessons/16-process-restart-results.md) | Process exit versus suspicion, new incarnations and accepted-state recovery. |
 | [Middleware results](docs/lessons/17-middleware-durability-results.md) | Actual late-join observations through Fast DDS and Zenoh, bounded history and live delivery. |
 | [SITL results](docs/lessons/18-sitl-mavlink-results.md) | Actual takeoff, waypoint and landing telemetry versus command acceptance and a disarmed rejection. |
+| [Gazebo results](docs/lessons/19-gazebo-physics-results.md) | External world dynamics, applied force, measured displacement and horizontal return under a bounded disturbance. |
 
 Additional modules and integrations need their own specifications and validation.
