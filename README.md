@@ -4,7 +4,7 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** nineteen local workshops with explanations, linked 2D/3D views, step
+**Available:** twenty local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
 **Artificial Potential Fields**, **task allocation with finite-state
 execution**, **decision architectures under network partition**, **A* path
@@ -20,7 +20,8 @@ freshness with KEEP_LAST history and an application age gate**, and **process
 failure/restart with heartbeat suspicion and epoch/sequence admission**, plus
 **Fast DDS versus Zenoh with late-joining readers and bounded retained history**,
 **ArduPilot SITL with MAVLink command admission and measured flight execution**,
-and **Gazebo external physics with a bounded force disturbance and observed recovery**.
+**Gazebo external physics with a bounded force disturbance and observed recovery**,
+and **GCS heartbeat loss with an onboard LAND failsafe**.
 Other modules in the
 [catalog](docs/learning-path.md) remain proposals.
 
@@ -41,7 +42,7 @@ the workshops load their assets locally. Use the workshop links to switch pages;
 the additional workshops are at `/movement/`, `/mission/`, `/architecture/`,
 `/pathfinding/`, `/localization/`, `/fusion/`, `/orca/`, `/cbba/`, `/behavior/`,
 `/cooperative/`, `/slam/`, `/pose-graph/`, `/ros2/`, `/qos/`, `/restart/`, `/middleware/`,
-`/sitl/`, and `/gazebo/`. Navigation starts a new run or rewinds a recording.
+`/sitl/`, `/gazebo/`, and `/failsafe/`. Navigation starts a new run or rewinds a recording.
 
 If the local server has stopped after sleep or shutdown, run `npm run dev` again
 from this project directory and keep that terminal open. To reuse a chosen port,
@@ -75,6 +76,8 @@ npm run compare:sitl             # recorded command ACKs versus measured flight 
 npm run record:sitl              # Docker: one ArduCopter SITL vehicle per independent case
 npm run compare:gazebo           # world displacement, applied impulse and horizontal return
 npm run record:gazebo            # Docker: Gazebo Iris + ArduPilot JSON, nominal versus force pulse
+npm run compare:failsafe         # GCS sends, observed timeout response and autonomous landing
+npm run record:failsafe          # Docker: continuous versus interrupted GCS heartbeats
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -101,8 +104,9 @@ hardware rendering performance. The [consensus results](docs/lessons/01-consensu
 [freshness results](docs/lessons/15-ros2-freshness-results.md),
 [restart results](docs/lessons/16-process-restart-results.md),
 [middleware results](docs/lessons/17-middleware-durability-results.md),
-[SITL results](docs/lessons/18-sitl-mavlink-results.md) and
-[Gazebo results](docs/lessons/19-gazebo-physics-results.md) list the checks actually run and their limitations.
+[SITL results](docs/lessons/18-sitl-mavlink-results.md),
+[Gazebo results](docs/lessons/19-gazebo-physics-results.md) and
+[GCS failsafe results](docs/lessons/20-gcs-failsafe-results.md) list the checks actually run and their limitations.
 
 ## First workshop: distributed average consensus
 
@@ -621,6 +625,33 @@ Gazebo installed on the host. The [specification](docs/lessons/19-gazebo-physics
 defines the physics boundary, simulation clock, force application and evaluator
 criteria separately from command acceptance and flight completion.
 
+## Twentieth workshop: GCS heartbeat loss and an onboard failsafe
+
+**Does restoring contact resume the flight?** Two actual **ArduCopter SITL**
+recordings compare continuous **Ground Control Station (GCS) heartbeats** with
+an eight-second interruption. Both use the same configured **GCS heartbeat
+failsafe**: a three-second timeout, **LAND** response and no continuation options.
+
+1. Establish the GCS heartbeat, arm normally and settle at four meters above home.
+2. Stop sending flight commands in both cases. In one case, also suppress only
+   the outgoing GCS heartbeat while continuing to receive vehicle telemetry.
+3. Inspect the actual GCS-specific status text, LAND-mode report, pause and descent.
+   The interrupted case has no LAND command or corresponding command ACK.
+4. Restore heartbeats, then distinguish clearing the failsafe from resuming Guided
+   flight. Confirm final landing with fresh on-ground and disarmed reports.
+
+A detailed 3D drone and a linked 2D message/height diagram observe the same recording.
+A ground-station display separates the two message directions. The scene is
+illustrative; this experiment uses workshop 18's built-in SITL dynamics and
+container-local TCP. It does not simulate radio propagation or a severed socket.
+
+The sender's heartbeat age and the autopilot's received status remain distinct:
+the browser never invents a failsafe transition when a displayed timer reaches
+three seconds. Read the [specification](docs/lessons/20-gcs-failsafe.md) for source
+identity, eligible traffic, clocks, the LAND pause and execution evidence.
+`npm run record:failsafe` reuses the pinned SITL image and saves an importable
+recording at `local/ardupilot-failsafe.json`.
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
@@ -632,7 +663,7 @@ criteria separately from command acceptance and flight completion.
   contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with nineteen explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with twenty explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -671,6 +702,11 @@ flight dynamics; its browser remains a trace viewer. Workshop 19 adds an externa
 Gazebo world, the official ArduPilot Gazebo integration and a small C++ experiment
 system in `gazebo/`. Its recorder reuses workshop 18's command/telemetry gates;
 `src/gazebo-trace.js` validates world observations and evaluates horizontal return.
+Workshop 20 reuses the built-in SITL runtime, adding a bounded GCS heartbeat
+sender/interruption in `failsafe/record.py`. `src/failsafe-trace.js` validates
+send history and independently derives received failsafe, mode and landing
+evidence. The autopilot evaluates the timeout; the recorder configures it and
+observes the response.
 The external stack was verified against official sources on 2026-09-18.
 Browser dependencies remain shared.
 
@@ -700,5 +736,6 @@ Browser dependencies remain shared.
 | [Middleware results](docs/lessons/17-middleware-durability-results.md) | Actual late-join observations through Fast DDS and Zenoh, bounded history and live delivery. |
 | [SITL results](docs/lessons/18-sitl-mavlink-results.md) | Actual takeoff, waypoint and landing telemetry versus command acceptance and a disarmed rejection. |
 | [Gazebo results](docs/lessons/19-gazebo-physics-results.md) | External world dynamics, applied force, measured displacement and horizontal return under a bounded disturbance. |
+| [GCS failsafe results](docs/lessons/20-gcs-failsafe-results.md) | Selective heartbeat suppression, continued telemetry, onboard LAND response and clearing without automatic mode restoration. |
 
 Additional modules and integrations need their own specifications and validation.

@@ -214,6 +214,6 @@ test('a 390px viewport without WebGL preserves flight evidence, controls and all
   expect(frame.truth.pulseActive).toBe(true);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(19);
+  await expect(navigation.getByRole('link')).toHaveCount(20);
   await expect(navigation.getByRole('link', { name: /19.*Gazebo/i })).toHaveAttribute('aria-current', 'page');
 });

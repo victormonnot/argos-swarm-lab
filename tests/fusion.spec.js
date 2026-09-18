@@ -125,7 +125,7 @@ test('keyboard, narrow layout, workshop navigation and unavailable WebGL remain 
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(19);
+  await expect(navigation.getByRole('link')).toHaveCount(20);
   await navigation.getByRole('link', { name: '06 / Kalman position filtering', exact: true }).click(); await expect(page.locator('#loc-step-count')).toHaveText('0');
   await page.getByRole('navigation', { name: 'Workshops', exact: true }).getByRole('link', { name: '07 / Shared estimates', exact: true }).click();
   await page.addInitScript(() => {

@@ -33,7 +33,9 @@
     "record:sitl": "node scripts/record-sitl.js",
     "compare:sitl": "node scripts/compare-sitl.js",
     "record:gazebo": "node scripts/record-gazebo.js",
-    "compare:gazebo": "node scripts/compare-gazebo.js"
+    "compare:gazebo": "node scripts/compare-gazebo.js",
+    "record:failsafe": "node scripts/record-failsafe.js",
+    "compare:failsafe": "node scripts/compare-failsafe.js"
   },
   "engines": {
     "node": ">=22.12.0"

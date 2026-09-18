@@ -4,11 +4,12 @@ Consensus, Artificial Potential Fields, task allocation/execution, decision
 architectures, A* planning, individual Kalman estimation, shared target
 estimates, ORCA, CBBA, Behavior Trees/FSM, cooperative localization, EKF-SLAM,
 pose-graph SLAM, ROS 2 nodes/topics, message freshness, process restart, a
-Fast DDS/Zenoh comparison, ArduPilot SITL and Gazebo external physics are
-implemented local workshops **1–19**. Workshops 14–17 replay actual ROS 2 process
+Fast DDS/Zenoh comparison, ArduPilot SITL, Gazebo external physics and a GCS
+heartbeat failsafe are implemented local workshops **1–20**. Workshops 14–17 replay actual ROS 2 process
 runs; workshop 18 replays autopilot execution with built-in flight dynamics, and
-workshop 19 connects the autopilot to an external Gazebo world. Workshops 20–21
-remain the proposed continuation.
+workshop 19 connects the autopilot to an external Gazebo world. Workshop 20
+observes the onboard response to missing GCS heartbeats. Workshop 21 remains
+the proposed continuation.
 
 A **phase** groups related subjects. A **workshop** answers one bounded question
 with an experiment. Its **lesson page** explains the method, exposes controls
@@ -38,6 +39,7 @@ and displays the observed results. Each follows the
 | 17. [Fast DDS, Zenoh and late-joining readers](lessons/17-middleware-durability.md) | Does changing the middleware preserve a bounded historical-delivery contract? | The same actual ROS application through two RMWs, each with VOLATILE versus TRANSIENT_LOCAL durability; a reader joins between two fixed publication batches. | RMW versus application, reliability versus history, bounded publisher retention, discovery versus data paths, requested/graph-reported QoS and observed callback sets. |
 | 18. [ArduPilot SITL and MAVLink command feedback](lessons/18-sitl-mavlink.md) | Did the vehicle execute the requested action? | One actual ArduCopter SITL vehicle per case: normal arm, takeoff, local position target and landing versus takeoff requested while disarmed. | Autopilot versus controller, command acceptance versus telemetry-derived completion, NED/altitude frames, sampled estimates and normal arming preconditions. |
 | 19. [Gazebo external physics and a force disturbance](lessons/19-gazebo-physics.md) | How does the controller respond when the simulated world pushes the vehicle? | One Gazebo Iris quadrotor connected to ArduPilot's JSON backend; compare nominal hover with an actual bounded eastward force, then land. | External dynamics, lockstep, EKF estimates versus world pose, applied impulse, separate clocks, frame alignment and measured horizontal return. |
+| 20. [GCS heartbeat loss and an onboard failsafe](lessons/20-gcs-failsafe.md) | Does restoring contact resume the flight? | Two fresh SITL flights with identical LAND failsafe parameters; interrupt only GCS heartbeat sends in one case, retain telemetry reception, then restore sends. | Source identity, onboard timeout, command silence versus heartbeat loss, received status versus send age, autonomous landing and clearing without automatic mode restoration. |
 
 ## Algorithm sequence and method context
 
@@ -55,8 +57,9 @@ bounded durability workload through both RMWs. Workshop **18: ArduPilot SITL and
 MAVLink command feedback** now compares ACK admission with measured flight
 completion and a disarmed takeoff rejection. Workshop **19: Gazebo external
 physics** now compares stationary flight with a bounded world-force pulse and
-measured return. The next proposed workshop is **20: lost GCS heartbeat and a
-configured autopilot failsafe**.
+measured return. Workshop **20: GCS heartbeat loss and an onboard failsafe**
+compares continuous sends with a bounded interruption and observed LAND response.
+The next proposed workshop is **21: two vehicles and one bounded mission**.
 
 ORCA selects a locally suitable velocity under its model; global route planning,
 physical feasibility and eventual mission completion remain separate questions.
@@ -126,9 +129,17 @@ The controller still uses MAVLink evidence for takeoff and landing; the evaluato
 uses world observations to assess the disturbance response. No fleet, obstacle
 avoidance or heartbeat-loss failsafe is included.
 
+Workshop 20 returns to the built-in SITL quadrotor model to isolate GCS heartbeat
+loss. Both fresh runs have established heartbeats and identical failsafe settings.
+The interruption suppresses only outbound GCS heartbeats for eight host seconds;
+vehicle telemetry continues and no flight commands are sent during the shared
+fourteen-second observation. Specific status text, LAND mode and fresh final
+on-ground/disarmed reports establish the response. Sending resumes without
+automatically restoring Guided. The browser distinguishes the sender's clock
+from the autopilot's internal last-reception timer.
+
 | No. | Proposed workshop | Question | Bounded experiment |
 | --- | --- | --- | --- |
-| 20 | Lost GCS heartbeat and configured failsafe | What does the autopilot do when contact with the ground station is lost? | On one simulated vehicle, interrupt the established GCS heartbeat, inspect timeout and configured response, then restore it. Distinguish heartbeat loss from merely pausing commands or losing a telemetry display. |
 | 21 | Two vehicles and one bounded mission | Can commands, reports and task completion stay associated with the right vehicle? | Start with two separately identified SITL vehicles, isolated message routes and one simple allocation scenario using a known policy. Measure execution and confirmation; document separation assumptions and resource use before increasing the fleet. |
 
 SITL already includes a vehicle dynamics model; workshop 19 introduces an
@@ -137,7 +148,7 @@ The [ArduPilot simulation overview](https://ardupilot.org/dev/docs/simulation-2.
 and [Gazebo integration guide](https://ardupilot.org/dev/docs/sitl-with-gazebo.html)
 describe that boundary. MAVLink distinguishes command acceptance from execution
 completion in its [command protocol](https://mavlink.io/en/services/command.html).
-The proposed failure case follows the documented
+The heartbeat experiment follows the documented
 [GCS heartbeat failsafe](https://ardupilot.org/copter/docs/gcs-failsafe.html).
 Vehicle identity and spawning are described in
 [Using SITL](https://ardupilot.org/dev/docs/using-sitl-for-ardupilot-testing.html).
@@ -148,7 +159,7 @@ trace; its 2D/3D views must not run a separate browser approximation presented a
 ROS 2 or autopilot execution. A small adapter can be introduced when needed by
 that specific experiment. Software versions, installation/resource requirements,
 supported vehicle counts and acceptance criteria must be verified before delivery.
-Workshops 20–21 remain proposals; workshops 14–19 include runnable process
+Workshop 21 remains proposed; workshops 14–20 include runnable process
 recorders and interactive pages for their actual traces.
 
 ## Comparisons must answer a specific question
