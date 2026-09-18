@@ -3,9 +3,10 @@
 Consensus, Artificial Potential Fields, task allocation/execution, decision
 architectures, A* planning, individual Kalman estimation, shared target
 estimates, ORCA, CBBA, Behavior Trees/FSM, cooperative localization, EKF-SLAM,
-pose-graph SLAM, ROS 2 nodes/topics, message freshness, process restart and a
-Fast DDS/Zenoh comparison are implemented local workshops **1–17**. Workshops
-14–17 replay actual process runs. Flight simulation in workshops 18–21 remains
+pose-graph SLAM, ROS 2 nodes/topics, message freshness, process restart, a
+Fast DDS/Zenoh comparison and ArduPilot SITL are implemented local workshops
+**1–18**. Workshops 14–17 replay actual ROS 2 process runs; workshop 18 replays
+actual autopilot execution with built-in flight dynamics. Workshops 19–21 remain
 the proposed continuation.
 
 A **phase** groups related subjects. A **workshop** answers one bounded question
@@ -34,6 +35,7 @@ and displays the observed results. Each follows the
 | 15. [ROS 2 message freshness and Quality of Service](lessons/15-ros2-freshness.md) | Is a delivered message still useful? | One actual publisher and three independent reader processes; KEEP_LAST depth 20 versus 1 and an application age gate under a controlled executor pause. | Middleware history versus application acceptance, callback age, retained Age of Information and sequence gaps without packet-loss inference. |
 | 16. [Process failure and restart](lessons/16-process-restart.md) | What can an observer infer when a process stops, then returns? | Continuous heartbeat, same-process publication silence and actual SIGKILL/respawn; one observer compares sequence-only and epoch/sequence admission on identical callbacks. | Fixed-timeout suspicion versus process truth, logical identity, new PID/incarnation, lost counters and accepted-state recovery. |
 | 17. [Fast DDS, Zenoh and late-joining readers](lessons/17-middleware-durability.md) | Does changing the middleware preserve a bounded historical-delivery contract? | The same actual ROS application through two RMWs, each with VOLATILE versus TRANSIENT_LOCAL durability; a reader joins between two fixed publication batches. | RMW versus application, reliability versus history, bounded publisher retention, discovery versus data paths, requested/graph-reported QoS and observed callback sets. |
+| 18. [ArduPilot SITL and MAVLink command feedback](lessons/18-sitl-mavlink.md) | Did the vehicle execute the requested action? | One actual ArduCopter SITL vehicle per case: normal arm, takeoff, local position target and landing versus takeoff requested while disarmed. | Autopilot versus controller, command acceptance versus telemetry-derived completion, NED/altitude frames, sampled estimates and normal arming preconditions. |
 
 ## Algorithm sequence and method context
 
@@ -47,8 +49,10 @@ executor pause replaces the synchronous barrier to expose old samples while
 reliability remains fixed. Workshop **16: process failure and restart** compares
 local heartbeat suspicion with actual process exit and new-incarnation admission.
 Workshop **17: Fast DDS, Zenoh and late-joining readers** now compares the same
-bounded durability workload through both RMWs. The next proposed workshop is
-**18: one ArduPilot SITL vehicle with MAVLink command feedback**.
+bounded durability workload through both RMWs. Workshop **18: ArduPilot SITL and
+MAVLink command feedback** now compares ACK admission with measured flight
+completion and a disarmed takeoff rejection. The next proposed workshop is
+**19: one ArduPilot vehicle connected to a Gazebo environment**.
 
 ORCA selects a locally suitable velocity under its model; global route planning,
 physical feasibility and eventual mission completion remain separate questions.
@@ -98,15 +102,20 @@ implementation for this lab. Workshop 14 selects Jazzy, Python/rclpy and rmw_fas
 container. Workshop 17 derives one shared image with pinned Jazzy Zenoh packages
 and records both implementations, endpoint settings and configuration fingerprints.
 
-## Proposed main sequence: flight simulation
+## Flight simulation: first workshop implemented, proposed continuation
 
 Start with one vehicle and observable execution before introducing a fleet.
 This is a pedagogical order: ArduPilot's Gazebo integration does not require
 completing a ROS 2 middleware comparison first.
 
+Workshop 18 uses the built-in SITL quadrotor model and a pymavlink controller.
+Its interactive page reads actual position, attitude, mode and landed reports;
+it does not create a second browser flight simulation. The normal flight and
+rejected disarmed request have separate fresh simulator state. Gazebo and a
+second vehicle are outside this implemented experiment.
+
 | No. | Proposed workshop | Question | Bounded experiment |
 | --- | --- | --- | --- |
-| 18 | ArduPilot SITL and MAVLink command feedback | Did the vehicle execute the requested action? | Use one simulated vehicle and a short takeoff/waypoint/landing sequence. Inspect commands, acknowledgements and telemetry against explicit completion criteria. Start with SITL's built-in dynamics model. |
 | 19 | ArduPilot with a Gazebo environment | How does the flight controller interact with an external simulated world? | Connect one vehicle to a supported Gazebo model. Observe a short motion command and one declared perturbation or execution limit, with simulation timing and state feedback visible. |
 | 20 | Lost GCS heartbeat and configured failsafe | What does the autopilot do when contact with the ground station is lost? | On one simulated vehicle, interrupt the established GCS heartbeat, inspect timeout and configured response, then restore it. Distinguish heartbeat loss from merely pausing commands or losing a telemetry display. |
 | 21 | Two vehicles and one bounded mission | Can commands, reports and task completion stay associated with the right vehicle? | Start with two separately identified SITL vehicles, isolated message routes and one simple allocation scenario using a known policy. Measure execution and confirmation; document separation assumptions and resource use before increasing the fleet. |
@@ -128,7 +137,7 @@ trace; its 2D/3D views must not run a separate browser approximation presented a
 ROS 2 or autopilot execution. A small adapter can be introduced when needed by
 that specific experiment. Software versions, installation/resource requirements,
 supported vehicle counts and acceptance criteria must be verified before delivery.
-Workshops 18–21 remain proposals; workshops 14–17 include runnable ROS 2
+Workshops 19–21 remain proposals; workshops 14–18 include runnable process
 recorders and interactive pages for their actual traces.
 
 ## Comparisons must answer a specific question

@@ -4,7 +4,7 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** seventeen local workshops with explanations, linked 2D/3D views, step
+**Available:** eighteen local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
 **Artificial Potential Fields**, **task allocation with finite-state
 execution**, **decision architectures under network partition**, **A* path
@@ -18,7 +18,8 @@ Gauss–Newton optimization**, **ROS 2 nodes/topics with explicit
 consensus rounds recorded from separate processes**, **ROS 2 message
 freshness with KEEP_LAST history and an application age gate**, and **process
 failure/restart with heartbeat suspicion and epoch/sequence admission**, plus
-**Fast DDS versus Zenoh with late-joining readers and bounded retained history**.
+**Fast DDS versus Zenoh with late-joining readers and bounded retained history**,
+and **ArduPilot SITL with MAVLink command admission and measured flight execution**.
 Other modules in the
 [catalog](docs/learning-path.md) remain proposals.
 
@@ -38,7 +39,8 @@ Dependencies and the optional test browser need a network connection to install;
 the workshops load their assets locally. Use the workshop links to switch pages;
 the additional workshops are at `/movement/`, `/mission/`, `/architecture/`,
 `/pathfinding/`, `/localization/`, `/fusion/`, `/orca/`, `/cbba/`, `/behavior/`,
-`/cooperative/`, `/slam/`, `/pose-graph/`, `/ros2/`, `/qos/`, `/restart/`, and `/middleware/`. Navigation starts a new run or rewinds a recording.
+`/cooperative/`, `/slam/`, `/pose-graph/`, `/ros2/`, `/qos/`, `/restart/`, `/middleware/`,
+and `/sitl/`. Navigation starts a new run or rewinds a recording.
 
 If the local server has stopped after sleep or shutdown, run `npm run dev` again
 from this project directory and keep that terminal open. To reuse a chosen port,
@@ -68,6 +70,8 @@ npm run compare:restart          # observed suspicion and post-restart admission
 npm run record:restart           # optional Docker process interruption/restart
 npm run compare:middleware       # observed historical and live sequence sets
 npm run record:middleware        # Docker: same application through Fast DDS and Zenoh
+npm run compare:sitl             # recorded command ACKs versus measured flight completion
+npm run record:sitl              # Docker: one ArduCopter SITL vehicle per independent case
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -91,9 +95,10 @@ hardware rendering performance. The [consensus results](docs/lessons/01-consensu
 [EKF-SLAM results](docs/lessons/12-ekf-slam-results.md),
 [pose-graph results](docs/lessons/13-pose-graph-slam-results.md),
 [ROS 2 results](docs/lessons/14-ros2-rounds-results.md),
-[freshness results](docs/lessons/15-ros2-freshness-results.md) and
-[restart results](docs/lessons/16-process-restart-results.md) and
-[middleware results](docs/lessons/17-middleware-durability-results.md) list the checks actually run and their limitations.
+[freshness results](docs/lessons/15-ros2-freshness-results.md),
+[restart results](docs/lessons/16-process-restart-results.md),
+[middleware results](docs/lessons/17-middleware-durability-results.md) and
+[SITL results](docs/lessons/18-sitl-mavlink-results.md) list the checks actually run and their limitations.
 
 ## First workshop: distributed average consensus
 
@@ -559,6 +564,32 @@ for two pinned Zenoh packages; the host ROS installation is unchanged. Read the
 [specification](docs/lessons/17-middleware-durability.md) for the fixed workload,
 configuration fingerprints and measurement limits.
 
+## Eighteenth workshop: ArduPilot SITL and MAVLink command feedback
+
+**Does an accepted command mean the vehicle has finished the action?** One actual
+**ArduCopter SITL** process runs the built-in quadrotor dynamics. A **pymavlink**
+controller sends serialized **MAVLink 2** requests and checks later telemetry.
+
+1. Inspect Guided mode and normal arming, then jump to the takeoff ACK. Acceptance
+   arrives before the vehicle stabilizes at the requested four-meter height.
+2. Follow one local NED position target. This movement message has no command
+   ACK; reaching the target requires fresh position and speed evidence.
+3. Inspect LAND acceptance, followed by fresh on-ground and disarmed reports.
+4. Compare a fresh simulation that requests takeoff without arming. The saved
+   negative ACK and five-second observation show the measured rejection.
+
+Both views replay the same autopilot estimates. A detailed plus-frame quadrotor
+uses recorded altitude and attitude in a volumetric yard; the 2D view also exposes
+height. The yard is illustrative, and no independent simulator-truth accuracy
+measurement is supplied. Channel receipt ages and differing altitude references
+remain explicit. Playback does not send flight commands.
+
+`npm run record:sitl` builds an isolated Linux amd64 image containing the pinned
+official ArduCopter binary and Python dependencies, then records
+`local/ardupilot-sitl.json` for import. The flight run has no external network.
+Read the [specification](docs/lessons/18-sitl-mavlink.md) for command fields,
+completion thresholds, coordinate frames and the bounded failure case.
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
@@ -570,7 +601,7 @@ configuration fingerprints and measurement limits.
   contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with seventeen explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with eighteen explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -601,9 +632,12 @@ records periodic telemetry, and `src/qos-trace.js` validates and reads callbacks
 without simulating transport. Workshop 16 uses `ros2/restart.py` for heartbeat
 policies and actual process interruption, with `src/restart-trace.js` for checked
 replay. Workshop 17 adds `ros2/middleware.py` and a derived Docker image with both
-RMWs; `src/middleware-trace.js` validates its late-subscription recordings. Browser
-dependencies remain shared. Flight dynamics
-remain outside these workshops.
+RMWs; `src/middleware-trace.js` validates its late-subscription recordings.
+Workshop 18 adds `sitl/record.py` and a separate pinned ArduCopter/pymavlink image,
+verified against official sources on 2026-09-18. `src/sitl-trace.js` independently
+checks command and completion evidence. This workshop introduces actual SITL
+flight dynamics; its browser remains a trace viewer. Browser dependencies
+remain shared.
 
 ## Read next
 
@@ -629,5 +663,6 @@ remain outside these workshops.
 | [Freshness results](docs/lessons/15-ros2-freshness-results.md) | Measured callback ages, history-depth effects and stale retained information. |
 | [Restart results](docs/lessons/16-process-restart-results.md) | Process exit versus suspicion, new incarnations and accepted-state recovery. |
 | [Middleware results](docs/lessons/17-middleware-durability-results.md) | Actual late-join observations through Fast DDS and Zenoh, bounded history and live delivery. |
+| [SITL results](docs/lessons/18-sitl-mavlink-results.md) | Actual takeoff, waypoint and landing telemetry versus command acceptance and a disarmed rejection. |
 
 Additional modules and integrations need their own specifications and validation.

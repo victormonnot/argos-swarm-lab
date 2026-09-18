@@ -176,7 +176,7 @@ test('mobile layout and navigation remain usable when WebGL is unavailable', asy
   await expect(page.locator('#behavior-reference-table tr')).toHaveCount(12);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(17);
+  await expect(navigation.getByRole('link')).toHaveCount(18);
   await navigation.getByRole('link', { name: '09 / CBBA task bundles', exact: true }).click();
   await expect(page.locator('#cbba-round')).toHaveText('0');
   await page.goBack();

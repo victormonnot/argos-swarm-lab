@@ -22,6 +22,7 @@ export default defineConfig({
         qos: resolve(import.meta.dirname, 'qos/index.html'),
         restart: resolve(import.meta.dirname, 'restart/index.html'),
         middleware: resolve(import.meta.dirname, 'middleware/index.html'),
+        sitl: resolve(import.meta.dirname, 'sitl/index.html'),
       },
     },
   },

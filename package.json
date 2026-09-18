@@ -29,7 +29,9 @@
     "record:restart": "node scripts/record-restart.js",
     "compare:restart": "node scripts/compare-restart.js",
     "record:middleware": "node scripts/record-middleware.js",
-    "compare:middleware": "node scripts/compare-middleware.js"
+    "compare:middleware": "node scripts/compare-middleware.js",
+    "record:sitl": "node scripts/record-sitl.js",
+    "compare:sitl": "node scripts/compare-sitl.js"
   },
   "engines": {
     "node": ">=22.12.0"
