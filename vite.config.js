@@ -26,6 +26,7 @@ export default defineConfig({
         gazebo: resolve(import.meta.dirname, 'gazebo/index.html'),
         failsafe: resolve(import.meta.dirname, 'failsafe/index.html'),
         fleet: resolve(import.meta.dirname, 'fleet/index.html'),
+        recovery: resolve(import.meta.dirname, 'recovery/index.html'),
       },
     },
   },

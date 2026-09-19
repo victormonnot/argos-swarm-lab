@@ -5,11 +5,12 @@ architectures, A* planning, individual Kalman estimation, shared target
 estimates, ORCA, CBBA, Behavior Trees/FSM, cooperative localization, EKF-SLAM,
 pose-graph SLAM, ROS 2 nodes/topics, message freshness, process restart, a
 Fast DDS/Zenoh comparison, ArduPilot SITL, Gazebo external physics, a GCS
-heartbeat failsafe and a two-vehicle mission are implemented local workshops
-**1–21**. Workshops 14–17 replay actual ROS 2 process runs; workshops 18–21 replay
+heartbeat failsafe, a two-vehicle mission and three-vehicle mission recovery are
+implemented local workshops **1–22**. Workshops 14–17 replay actual ROS 2 process runs; workshops 18–22 replay
 actual autopilot execution, with an external Gazebo world in workshop 19 and two
-simultaneous independent SITL vehicles in workshop 21. The initial numbered
-sequence is implemented; further extensions below remain possible work.
+simultaneous independent SITL vehicles in workshop 21. Workshop 22 integrates
+online allocation and reactive Behavior Trees with three actual autopilots.
+Further extensions below remain possible work.
 
 A **phase** groups related subjects. A **workshop** answers one bounded question
 with an experiment. Its **lesson page** explains the method, exposes controls
@@ -41,6 +42,7 @@ and displays the observed results. Each follows the
 | 19. [Gazebo external physics and a force disturbance](lessons/19-gazebo-physics.md) | How does the controller respond when the simulated world pushes the vehicle? | One Gazebo Iris quadrotor connected to ArduPilot's JSON backend; compare nominal hover with an actual bounded eastward force, then land. | External dynamics, lockstep, EKF estimates versus world pose, applied impulse, separate clocks, frame alignment and measured horizontal return. |
 | 20. [GCS heartbeat loss and an onboard failsafe](lessons/20-gcs-failsafe.md) | Does restoring contact resume the flight? | Two fresh SITL flights with identical LAND failsafe parameters; interrupt only GCS heartbeat sends in one case, retain telemetry reception, then restore sends. | Source identity, onboard timeout, command silence versus heartbeat loss, received status versus send age, autonomous landing and clearing without automatic mode restoration. |
 | 21. [Two vehicles and one addressed mission](lessons/21-two-vehicle-mission.md) | Did the assigned vehicle complete its own task? | Two actual SITL processes, central nearest-pair greedy assignment and isolated MAVLink routes; compare correct addressing with one wrong destination system ID, then land both vehicles. | Identity versus route, independent local frames and supplied registration, asynchronous evidence, fixed mission deadline and task success versus flight cleanup. |
+| 22. [Three-vehicle mission recovery](lessons/22-mission-recovery.md) | When may unfinished work acquire a new owner? | Three actual SITL vehicles, six tasks, online greedy assignment and reactive Behavior Trees; compare nominal execution with controlled A1 withdrawal, retained ownership through landing, then reassignment. | Actual tree traversal, action cancellation versus physical completion, exclusive ownership, fresh release evidence, new-attempt dwell and mission duration versus fleet landing. |
 
 ## Algorithm sequence and method context
 
@@ -63,6 +65,9 @@ compares continuous sends with a bounded interruption and observed LAND response
 Workshop **21: two vehicles and one addressed mission** now connects central
 greedy allocation to two independent autopilots, with a wrong target system ID
 revealing partial mission completion despite both vehicles subsequently landing.
+Workshop **22: three-vehicle mission recovery** now integrates online allocation
+and reactive Behavior Trees, with a controlled withdrawal and confirmed task
+handover to an available vehicle.
 
 ORCA selects a locally suitable velocity under its model; global route planning,
 physical feasibility and eventual mission completion remain separate questions.
@@ -150,6 +155,13 @@ mission window separates task completion from the later, correctly addressed
 LAND requests. Both cases retain per-vehicle evidence and concurrent-process
 memory snapshots. There is no shared collision physics or peer-to-peer routing.
 
+Workshop 22 adds one vehicle and moves from fixed ownership to online assignment
+of six visit-and-hold tasks. Three reactive Behavior Trees execute in the central
+coordinator, with withdrawal and final cleanup ahead of normal work. Interrupted
+work stays reserved until fresh landing/disarming evidence permits release. A
+new greedy decision and independent new-attempt dwell establish recovery. The
+browser inspects recorded tree inputs/traversal, requests and task transitions.
+
 SITL already includes a vehicle dynamics model; workshop 19 introduces an
 external environment, rather than the first physical dynamics in the sequence.
 The [ArduPilot simulation overview](https://ardupilot.org/dev/docs/simulation-2.html)
@@ -167,7 +179,7 @@ trace; its 2D/3D views must not run a separate browser approximation presented a
 ROS 2 or autopilot execution. A small adapter can be introduced when needed by
 that specific experiment. Software versions, installation/resource requirements,
 supported vehicle counts and acceptance criteria must be verified before delivery.
-Workshops 14–21 include runnable process recorders and interactive pages for
+Workshops 14–22 include runnable process recorders and interactive pages for
 their actual traces. No additional numbered workshop is specified yet.
 
 ## Comparisons must answer a specific question

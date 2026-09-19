@@ -37,7 +37,9 @@
     "record:failsafe": "node scripts/record-failsafe.js",
     "compare:failsafe": "node scripts/compare-failsafe.js",
     "record:fleet": "node scripts/record-fleet.js",
-    "compare:fleet": "node scripts/compare-fleet.js"
+    "compare:fleet": "node scripts/compare-fleet.js",
+    "record:recovery": "node scripts/record-recovery.js",
+    "compare:recovery": "node scripts/compare-recovery.js"
   },
   "engines": {
     "node": ">=22.12.0"

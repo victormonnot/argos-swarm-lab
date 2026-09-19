@@ -4,7 +4,7 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** twenty-one local workshops with explanations, linked 2D/3D views, step
+**Available:** twenty-two local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
 **Artificial Potential Fields**, **task allocation with finite-state
 execution**, **decision architectures under network partition**, **A* path
@@ -21,8 +21,9 @@ failure/restart with heartbeat suspicion and epoch/sequence admission**, plus
 **Fast DDS versus Zenoh with late-joining readers and bounded retained history**,
 **ArduPilot SITL with MAVLink command admission and measured flight execution**,
 **Gazebo external physics with a bounded force disturbance and observed recovery**,
-**GCS heartbeat loss with an onboard LAND failsafe**, and **two-vehicle
-mission execution with central greedy assignment and per-vehicle MAVLink addressing**.
+**GCS heartbeat loss with an onboard LAND failsafe**, **two-vehicle
+mission execution with central greedy assignment and per-vehicle MAVLink addressing**,
+and **three-vehicle mission recovery with reactive Behavior Trees and exclusive task reassignment**.
 The [catalog](docs/learning-path.md) also describes possible further extensions.
 
 ## Run locally
@@ -42,7 +43,7 @@ the workshops load their assets locally. Use the workshop links to switch pages;
 the additional workshops are at `/movement/`, `/mission/`, `/architecture/`,
 `/pathfinding/`, `/localization/`, `/fusion/`, `/orca/`, `/cbba/`, `/behavior/`,
 `/cooperative/`, `/slam/`, `/pose-graph/`, `/ros2/`, `/qos/`, `/restart/`, `/middleware/`,
-`/sitl/`, `/gazebo/`, `/failsafe/`, and `/fleet/`. Navigation starts a new run or rewinds a recording.
+`/sitl/`, `/gazebo/`, `/failsafe/`, `/fleet/`, and `/recovery/`. Navigation starts a new run or rewinds a recording.
 
 If the local server has stopped after sleep or shutdown, run `npm run dev` again
 from this project directory and keep that terminal open. To reuse a chosen port,
@@ -80,6 +81,8 @@ npm run compare:failsafe         # GCS sends, observed timeout response and auto
 npm run record:failsafe          # Docker: continuous versus interrupted GCS heartbeats
 npm run compare:fleet            # two task outcomes, per-vehicle evidence and landing
 npm run record:fleet             # Docker: two SITL processes, correct versus wrong target ID
+npm run compare:recovery         # mission duration, cancelled attempt and confirmed handover
+npm run record:recovery          # Docker: three vehicles, reactive BTs and withdrawal/reassignment
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -108,8 +111,9 @@ hardware rendering performance. The [consensus results](docs/lessons/01-consensu
 [middleware results](docs/lessons/17-middleware-durability-results.md),
 [SITL results](docs/lessons/18-sitl-mavlink-results.md),
 [Gazebo results](docs/lessons/19-gazebo-physics-results.md),
-[GCS failsafe results](docs/lessons/20-gcs-failsafe-results.md) and
-[two-vehicle results](docs/lessons/21-two-vehicle-mission-results.md) list the checks actually run and their limitations.
+[GCS failsafe results](docs/lessons/20-gcs-failsafe-results.md),
+[two-vehicle results](docs/lessons/21-two-vehicle-mission-results.md) and
+[mission recovery results](docs/lessons/22-mission-recovery-results.md) list the checks actually run and their limitations.
 
 ## First workshop: distributed average consensus
 
@@ -680,6 +684,33 @@ The [specification](docs/lessons/21-two-vehicle-mission.md) defines addressing,
 frames, greedy costs and deadline evidence. `npm run record:fleet` reuses the
 pinned SITL image and saves `local/ardupilot-fleet.json` for browser import.
 
+## Twenty-second workshop: three-vehicle mission recovery
+
+**When may unfinished work acquire a new owner?** Three actual **ArduCopter SITL**
+vehicles visit six supplied points. A central **online nearest-pair greedy**
+allocator selects idle vehicles and pending tasks; one **reactive Behavior Tree**
+per vehicle runs in the Python coordinator and executes its flight requests.
+
+1. Inspect normal Guided entry, arming and takeoff, then the first allocation.
+2. Compare nominal execution with a controlled withdrawal during A1's second
+   task. The higher-priority withdrawal branch halts the visit and requests LAND.
+3. Observe the cancelled task remain reserved while A1 lands. An accepted command
+   does not release ownership: fresh on-ground and disarmed reports are required.
+4. Follow release, a new greedy decision and a new attempt by an available vehicle.
+   Its visit must independently satisfy the full position/speed dwell.
+5. Compare confirmed task counts, mission duration and later fleet landing.
+
+The page exposes actual tree traversals, sampled inputs, action halts, exclusive
+ownership, allocation snapshots and raw MAVLink evidence. Three detailed drones,
+six target stations and linked 2D/3D views observe one recording cursor. The
+supplied common yard registers independent local estimates; it adds no shared
+collision physics, peer allocation, camera sensing or battery-failure model.
+
+`npm run record:recovery` reuses the pinned SITL image and saves
+`local/ardupilot-recovery.json` for import. See the
+[specification](docs/lessons/22-mission-recovery.md) for control-flow semantics,
+cancellation versus release, receipt clocks and completion criteria.
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
@@ -691,7 +722,7 @@ pinned SITL image and saves `local/ardupilot-fleet.json` for browser import.
   contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with twenty-one explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with twenty-two explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -736,7 +767,11 @@ send history and independently derives received failsafe, mode and landing
 evidence. The autopilot evaluates the timeout; the recorder configures it and
 observes the response. Workshop 21 launches two owned processes in
 `fleet/record.py`; `src/fleet-trace.js` independently recomputes assignment and
-vehicle-specific completion within the shared mission deadline.
+vehicle-specific completion within the shared mission deadline. Workshop 22
+reuses those flight helpers in `recovery/record.py` while executing three actual
+reactive Behavior Trees and online task ownership. `src/recovery-trace.js` checks
+per-attempt dwell, complete allocation inputs, fresh release evidence and
+recorded traversal/command causality independently.
 The external stack was verified against official sources on 2026-09-18.
 Browser dependencies remain shared.
 
@@ -768,5 +803,6 @@ Browser dependencies remain shared.
 | [Gazebo results](docs/lessons/19-gazebo-physics-results.md) | External world dynamics, applied force, measured displacement and horizontal return under a bounded disturbance. |
 | [GCS failsafe results](docs/lessons/20-gcs-failsafe-results.md) | Selective heartbeat suppression, continued telemetry, onboard LAND response and clearing without automatic mode restoration. |
 | [Two-vehicle results](docs/lessons/21-two-vehicle-mission-results.md) | Central greedy assignment, isolated addressing, bounded task failure and separately confirmed fleet landing. |
+| [Mission recovery results](docs/lessons/22-mission-recovery-results.md) | Three-vehicle task execution, reactive cancellation, retained ownership, reassignment and elapsed mission time. |
 
 Additional modules and integrations need their own specifications and validation.
