@@ -1,3 +1,5 @@
+import { createWorkshopDrone, setWorkshopDrone, createWorkshopStage, addWorkshopCameraUI } from './workshop-scene.js';
+
 const NS = 'http://www.w3.org/2000/svg';
 const COLORS = ['#72dabb', '#b8acff', '#f1c17d'];
 const LABEL_OFFSETS = [[-15, -16], [15, -16], [15, 24]];
@@ -10,6 +12,7 @@ function element(name, attributes = {}, text) {
 function releaseGroup(group) {
   const geometries = new Set(), materials = new Set();
   group.traverse((node) => {
+    node.shadow?.dispose();
     if (node.geometry) geometries.add(node.geometry);
     for (const material of Array.isArray(node.material) ? node.material : node.material ? [node.material] : []) materials.add(material);
   });
@@ -17,10 +20,11 @@ function releaseGroup(group) {
 }
 
 /** Both views observe one supplied fusion snapshot. Marker positions are target
- * estimates, never agent positions. Heights are decorative; model y maps to -z.
+ * estimates, never agent positions. The stationary observer layout is illustrative,
+ * not sensing geometry. Heights are decorative; model y maps to -z.
  * Truth is displayed for the learner but is never fed to a fusion update. */
 export function createFusionView(container) {
-  let run, selected = 0, mode = '2d', world, loading = false, failed = false, disposed = false;
+  let run, selected = 0, mode = '2d', world, loading = false, failed = false, disposed = false, following = false;
   const svg = element('svg', { viewBox: '0 0 760 600', class: 'fusion-svg', role: 'img', 'aria-label': 'Three target estimates and reported uncertainty contours. A1 is a circle, A2 a diamond, A3 a square; T is evaluator-only target truth. Trails are estimate revisions, not robot motion.' });
   const layer = document.createElement('div'); layer.className = 'fusion-three'; layer.hidden = true; container.append(svg, layer);
   function bounds() {
@@ -79,19 +83,28 @@ export function createFusionView(container) {
       const [THREE, { OrbitControls }] = await Promise.all([import('three'), import('three/addons/controls/OrbitControls.js')]);
       if (disposed || mode !== '3d') return;
       renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true }); renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-      renderer.domElement.setAttribute('aria-label', '3D display of the same planar target estimates and uncertainty contours. Drag to orbit, scroll to zoom. Marker heights are decorative.');
+      renderer.domElement.setAttribute('aria-label', 'Stationary observer drones on illustrative pads, with separate planar target estimates and uncertainty contours. The pads are not measured agent locations. Drag to orbit, scroll to zoom, or use arrow keys to pan.');
+      renderer.domElement.tabIndex = 0;
       renderer.domElement.addEventListener('webglcontextlost', (event) => { event.preventDefault(); if (!disposed) unavailable('3D context lost. Continue the same fusion run in 2D.'); });
       scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(46, 1, .1, 150);
-      controls = new OrbitControls(camera, renderer.domElement); controls.enablePan = false;
-      controls.minDistance = 5; controls.maxDistance = 45; controls.maxPolarAngle = Math.PI / 2 - .15;
-      const content = new THREE.Group(); scene.add(content);
+      controls = new OrbitControls(camera, renderer.domElement);
+      controls.minDistance = 2; controls.maxDistance = 55; controls.maxPolarAngle = Math.PI / 2 - .12;
+      controls.listenToKeyEvents(renderer.domElement);
+      const content = new THREE.Group(), yard = new THREE.Group(); scene.add(yard, content);
       const overlay = document.createElement('div'); overlay.className = 'fusion-labels'; overlay.setAttribute('aria-hidden', 'true');
       const labels = run.agents.map((agent) => {
-        const node = document.createElement('span'); node.textContent = `A${agent.id + 1}`; node.dataset.agent = agent.id; node.className = 'fusion-agent-label'; node.style.color = COLORS[agent.id]; overlay.append(node); return node;
+        const node = document.createElement('span'); node.textContent = `A${agent.id + 1} estimate`; node.dataset.agent = agent.id; node.className = 'fusion-agent-label'; node.style.color = COLORS[agent.id]; overlay.append(node); return node;
+      });
+      const observerLabels = run.agents.map((agent) => {
+        const node = document.createElement('span'); node.textContent = `A${agent.id + 1} observer`; node.className = 'fusion-observer-label'; node.style.color = COLORS[agent.id]; overlay.append(node); return node;
       });
       const truthLabel = document.createElement('span'); truthLabel.textContent = 'T'; truthLabel.className = 'fusion-truth-label'; truthLabel.style.color = '#eff5f1'; overlay.append(truthLabel);
       layer.replaceChildren(renderer.domElement, overlay);
-      world = { THREE, renderer, scene, camera, controls, content, labels, truthLabel, seed: null, anchors: [], truthAnchor: null };
+      const cameraUI = addWorkshopCameraUI(layer, { prefix: 'fusion',
+        caption: 'STATIONARY OBSERVERS: ILLUSTRATIVE PADS · SHAPES: TARGET ESTIMATES · HEIGHTS FIXED',
+        onWhole: () => frameCamera(false), onFollow: () => frameCamera(true) });
+      world = { THREE, renderer, scene, camera, controls, cameraUI, content, yard, labels, observerLabels, truthLabel,
+        layoutKey: null, anchors: [], observers: [], truthAnchor: null, selected };
       controls.addEventListener('change', drawThree); updateThree(); resize();
     } catch {
       controls?.dispose(); if (scene) releaseGroup(scene); renderer?.dispose(); world = undefined;
@@ -101,13 +114,32 @@ export function createFusionView(container) {
   function updateThree() {
     if (!world || !run || failed || disposed) return;
     const { THREE } = world, { low, high, width, height } = bounds();
+    const layoutKey = `${low}/${high}`;
+    if (layoutKey !== world.layoutKey) {
+      releaseGroup(world.yard);
+      createWorkshopStage(THREE, world.yard, world.renderer, { center: [(low[0] + high[0]) / 2, -(low[1] + high[1]) / 2 + 1.2], size: [width + 1, height + 3.4], grid: 1 });
+      // Fusion has no agent poses. These pads only identify the three observers,
+      // remain fixed during all rounds, and are never used in an update.
+      world.observers = run.agents.map(({ id }) => {
+        const x = low[0] + width * (.18 + id * .32), z = -low[1] + 1.6;
+        const pad = new THREE.Mesh(new THREE.CylinderGeometry(.65, .7, .1, 32), new THREE.MeshStandardMaterial({ color: '#345448', roughness: .8 }));
+        pad.position.set(x, .045, z); pad.receiveShadow = true; pad.castShadow = true; world.yard.add(pad);
+        const ring = new THREE.Mesh(new THREE.RingGeometry(.48, .52, 40), new THREE.MeshBasicMaterial({ color: COLORS[id], side: THREE.DoubleSide }));
+        ring.rotation.x = -Math.PI / 2; ring.position.set(x, .101, z); world.yard.add(ring);
+        const drone = createWorkshopDrone(THREE, { color: COLORS[id], size: 1.1, id: `A${id + 1}` });
+        setWorkshopDrone(drone, { position: [x, .29, z], heading: Math.PI / 2, phase: 0, active: false });
+        drone.userData.bodyMaterial.color.set(COLORS[id]);
+        world.yard.add(drone); return drone;
+      });
+      world.layoutKey = layoutKey; frameCamera(following);
+    }
     releaseGroup(world.content);
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(width, height), new THREE.MeshBasicMaterial({ color: '#19372f', side: THREE.DoubleSide }));
-    floor.rotation.x = -Math.PI / 2; floor.position.set((low[0] + high[0]) / 2, -.015, -(low[1] + high[1]) / 2); world.content.add(floor);
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(width, height), new THREE.MeshStandardMaterial({ color: '#29493d', roughness: 1, side: THREE.DoubleSide }));
+    floor.rotation.x = -Math.PI / 2; floor.position.set((low[0] + high[0]) / 2, .01, -(low[1] + high[1]) / 2); floor.receiveShadow = true; world.content.add(floor);
     const grid = [];
-    for (let x = low[0]; x <= high[0]; x += 1) grid.push(new THREE.Vector3(x, 0, -low[1]), new THREE.Vector3(x, 0, -high[1]));
-    for (let y = low[1]; y <= high[1]; y += 1) grid.push(new THREE.Vector3(low[0], 0, -y), new THREE.Vector3(high[0], 0, -y));
-    world.content.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(grid), new THREE.LineBasicMaterial({ color: '#3c6252' })));
+    for (let x = low[0]; x <= high[0]; x += 1) grid.push(new THREE.Vector3(x, .018, -low[1]), new THREE.Vector3(x, .018, -high[1]));
+    for (let y = low[1]; y <= high[1]; y += 1) grid.push(new THREE.Vector3(low[0], .018, -y), new THREE.Vector3(high[0], .018, -y));
+    world.content.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(grid), new THREE.LineBasicMaterial({ color: '#698771' })));
     const line = (points, color, { loop = false, opacity = 1 } = {}) => {
       const result = new THREE[loop ? 'LineLoop' : 'Line'](new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color, transparent: opacity < 1, opacity }));
       world.content.add(result); return result;
@@ -117,7 +149,7 @@ export function createFusionView(container) {
       const circle = (rx, ry, z) => Array.from({ length: 72 }, (_, index) => { const angle = index * Math.PI * 2 / 72; return new THREE.Vector3(x + Math.cos(angle) * rx, z, -y - Math.sin(angle) * ry); });
       line(circle(2 * Math.sqrt(agent.covariance[0]), 2 * Math.sqrt(agent.covariance[1]), .035 + id * .01), COLORS[id], { loop: true, opacity: id === selected ? 1 : .55 });
       if (run.history.length > 1) line(run.history.map((sample) => new THREE.Vector3(sample.means[id][0], .045 + id * .01, -sample.means[id][1])), COLORS[id], { opacity: .65 });
-      if (id === 0) line(circle(.08, .08, altitude), COLORS[id], { loop: true });
+      if (id === 0) line(circle(.09, .09, altitude), COLORS[id], { loop: true });
       else {
         const points = id === 1 ? [[0, -.16], [.16, 0], [0, .16], [-.16, 0]] : [[-.18, -.18], [.18, -.18], [.18, .18], [-.18, .18]];
         line(points.map(([dx, dy]) => new THREE.Vector3(x + dx, altitude, -y - dy)), COLORS[id], { loop: true });
@@ -128,12 +160,23 @@ export function createFusionView(container) {
     line([new THREE.Vector3(tx - .15, .14, -ty), new THREE.Vector3(tx + .15, .14, -ty)], '#eff5f1');
     line([new THREE.Vector3(tx, .14, -ty - .15), new THREE.Vector3(tx, .14, -ty + .15)], '#eff5f1');
     world.truthAnchor = new THREE.Vector3(tx, .14, -ty);
-    if (world.seed !== run.initial.seed) {
-      const cx = (low[0] + high[0]) / 2, cy = -(low[1] + high[1]) / 2, span = Math.max(width, height);
-      world.camera.position.set(cx + span * .08, span * 1.1, cy + span * .86);
-      world.controls.target.set(cx, 0, cy); world.controls.update(); world.seed = run.initial.seed;
-    }
+    world.cameraUI.setFollowLabel(`Inspect A${selected + 1}`);
+    if (following && world.selected !== selected) frameCamera(true);
+    world.selected = selected;
     drawThree();
+  }
+  function frameCamera(follow) {
+    if (!world || !run) return;
+    following = follow; world.cameraUI.setFollowing(follow);
+    if (follow && world.observers[selected]) {
+      world.controls.target.copy(world.observers[selected].position);
+      world.camera.position.copy(world.controls.target).add(new world.THREE.Vector3(2.4, 2.2, 2.8));
+    } else {
+      const { low, high, width, height } = bounds(), span = Math.max(width + 1, height + 3.4), fit = Math.max(1, 1.08 / world.camera.aspect);
+      world.controls.target.set((low[0] + high[0]) / 2, .2, -(low[1] + high[1]) / 2 + 1.2);
+      world.camera.position.copy(world.controls.target).add(new world.THREE.Vector3(span * .12, span * 1.12, span * .9).multiplyScalar(fit));
+    }
+    world.controls.update(); drawThree();
   }
   function drawThree() {
     if (!world || mode !== '3d' || failed || disposed) return;
@@ -141,16 +184,23 @@ export function createFusionView(container) {
     const place = (anchor, label) => {
       if (!anchor) return;
       const point = anchor.clone().project(world.camera);
-      label.style.left = `${(point.x + 1) * container.clientWidth / 2}px`; label.style.top = `${(1 - point.y) * container.clientHeight / 2}px`;
+      const x = (point.x + 1) * container.clientWidth / 2, y = (1 - point.y) * container.clientHeight / 2;
+      const margin = label.classList.contains('fusion-agent-label') ? 90 : 55;
+      label.style.left = `${Math.max(margin, Math.min(container.clientWidth - margin, x))}px`;
+      label.style.top = `${Math.max(65, Math.min(container.clientHeight - 54, y))}px`;
       label.hidden = point.z < -1 || point.z > 1 || Math.abs(point.x) > 1 || Math.abs(point.y) > 1;
     };
     world.anchors.forEach((anchor, id) => { world.labels[id].style.fontWeight = id === selected ? '700' : '400'; place(anchor, world.labels[id]); });
+    world.observers.forEach((drone, id) => place(drone.position, world.observerLabels[id]));
     place(world.truthAnchor, world.truthLabel);
   }
   function resize() {
     if (!world || failed || disposed) return;
     const width = Math.max(1, container.clientWidth), height = Math.max(1, container.clientHeight);
-    world.renderer.setSize(width, height, false); world.camera.aspect = width / height; world.camera.updateProjectionMatrix(); drawThree();
+    const changed = world.viewportWidth !== width || world.viewportHeight !== height;
+    world.viewportWidth = width; world.viewportHeight = height;
+    world.renderer.setSize(width, height, false); world.camera.aspect = width / height; world.camera.updateProjectionMatrix();
+    if (changed && !following) frameCamera(false); else drawThree();
   }
   const observer = new ResizeObserver(resize); observer.observe(container);
   return {

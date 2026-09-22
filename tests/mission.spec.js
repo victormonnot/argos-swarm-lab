@@ -109,6 +109,12 @@ test('both views, camera motion and timed playback preserve the mission sequence
   await page.locator('#mission-3d').click();
   const canvas = page.locator('#mission-viewport canvas');
   await expect(canvas).toBeVisible();
+  await page.locator('#mission-camera-follow').click();
+  await expect(page.locator('#mission-camera-follow')).toHaveAttribute('aria-pressed', 'true');
+  expect(await snapshot(page)).toEqual(slow);
+  await page.locator('#mission-camera-whole').click();
+  await expect(page.locator('#mission-camera-whole')).toHaveAttribute('aria-pressed', 'true');
+  expect(await snapshot(page)).toEqual(slow);
   await expect(page.locator('.mission-labels button')).toHaveCount(3);
   expect(await snapshot(page)).toEqual(slow);
   const labels = () => page.locator('.mission-labels button').evaluateAll((items) => items.map((item) => [item.style.left, item.style.top]));

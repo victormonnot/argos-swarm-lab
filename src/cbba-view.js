@@ -1,3 +1,5 @@
+import { createWorkshopDrone, setWorkshopDrone, createWorkshopStage, addWorkshopCameraUI } from './workshop-scene.js';
+
 import { RESTORE_ROUND } from './cbba-model.js';
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -72,10 +74,30 @@ export function createCbbaView(container, { selectAgent = () => {} } = {}) {
     if (!world) return;
     world.controls.dispose();
     const geometries = new Set(), materials = new Set();
-    world.scene.traverse((child) => { if (child.geometry) geometries.add(child.geometry); if (Array.isArray(child.material)) child.material.forEach((m) => materials.add(m)); else if (child.material) materials.add(child.material); });
+    world.scene.traverse((child) => { child.shadow?.dispose(); if (child.geometry) geometries.add(child.geometry); if (Array.isArray(child.material)) child.material.forEach((m) => materials.add(m)); else if (child.material) materials.add(child.material); });
     geometries.forEach((g) => g.dispose()); materials.forEach((m) => m.dispose()); world.renderer.dispose(); world = null;
   }
   function unavailable(message) { failed = true; disposeWorld(); layer.replaceChildren(Object.assign(document.createElement('p'), { className: 'cbba-webgl-message', textContent: message })); }
+  let following = false, cameraPreset = true;
+  const displayAltitude = 1.2;
+  function frameCamera(reset = false) {
+    if (!world) return;
+    const { camera, controls, THREE } = world;
+    if (following) {
+      const agent = run.agents[selected];
+      const target = new THREE.Vector3(agent.position[0], .8, -agent.position[1]);
+      if (reset) camera.position.copy(target).add(new THREE.Vector3(5.5, 4.5, 5.5));
+      else camera.position.add(target.clone().sub(controls.target));
+      controls.target.copy(target);
+    } else if (reset || cameraPreset) {
+      const fit = Math.max(8.5, 11 / Math.max(.55, camera.aspect));
+      const distance = fit / (2 * Math.tan(camera.fov * Math.PI / 360)) * 1.14;
+      controls.target.set(4.5, .55, -3);
+      camera.position.copy(controls.target).add(new THREE.Vector3(.1, .82, .84).normalize().multiplyScalar(distance));
+    }
+    controls.update(); world.cameraUI.setFollowing(following); world.cameraUI.setFollowLabel(`Follow A${selected + 1}`);
+    layer.dataset.camera = following ? `follow-A${selected + 1}` : 'whole';
+  }
   async function prepareThree() {
     if (world || loading || failed || disposed) return;
     loading = true; layer.textContent = 'Loading 3D…';
@@ -85,20 +107,48 @@ export function createCbbaView(container, { selectAgent = () => {} } = {}) {
       if (disposed || mode !== '3d') return;
       const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true }); pendingRenderer = renderer;
       renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-      renderer.domElement.setAttribute('aria-label', '3D view of static CBBA task claims. Drag to orbit; scroll to zoom. No task execution.');
+      renderer.domElement.setAttribute('aria-label', 'Stationary quadrotors and task stations showing CBBA claims. Fixed decorative height; no flight or service is executed. Drag to orbit; scroll to zoom.');
       renderer.domElement.addEventListener('webglcontextlost', (event) => { event.preventDefault(); unavailable('3D context lost. Use 2D to continue exploring the same run.'); });
       layer.replaceChildren(renderer.domElement);
-      const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(43, 1, .1, 100);
-      camera.position.set(5, 10, 7);
+      const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(43, 1, .1, 140);
       const controls = new OrbitControls(camera, renderer.domElement);
-      controls.target.set(4.5, 0, -3); controls.enablePan = false; controls.minDistance = 6; controls.maxDistance = 26; controls.maxPolarAngle = Math.PI / 2 - .1; controls.update();
-      scene.add(new THREE.AmbientLight(0xffffff, 2));
-      const light = new THREE.DirectionalLight(0xffffff, 2.3); light.position.set(-3, 8, 5); scene.add(light);
-      const grid = new THREE.GridHelper(10, 10, 0x48665c, 0x29483f); grid.position.set(4.5, 0, -3); scene.add(grid);
+      controls.enablePan = false; controls.minDistance = 4; controls.maxDistance = 50; controls.maxPolarAngle = Math.PI / 2 - .08;
+      controls.addEventListener('start', () => { cameraPreset = false; });
+      createWorkshopStage(THREE, scene, renderer, { center: [4.5, -3], size: [11, 8.5], grid: 1 });
+      const drones = run.agents.map((agent, index) => {
+        const drone = createWorkshopDrone(THREE, { color: COLORS[index], size: 1.05, id: agent.label });
+        setWorkshopDrone(drone, { position: [agent.position[0], displayAltitude, -agent.position[1]], heading: 0, phase: 0 }); scene.add(drone);
+        const pad = new THREE.Mesh(new THREE.CylinderGeometry(.56, .6, .08, 32), new THREE.MeshStandardMaterial({ color: '#334e43', roughness: .85 }));
+        pad.position.set(agent.position[0], .05, -agent.position[1]); pad.receiveShadow = true; scene.add(pad);
+        return drone;
+      });
+      const tasks = run.tasks.map((task) => {
+        const station = new THREE.Group(); station.position.set(task.position[0], 0, -task.position[1]);
+        const base = new THREE.Mesh(new THREE.BoxGeometry(.65, .13, .65), new THREE.MeshStandardMaterial({ color: '#40544a', roughness: .8 }));
+        base.position.y = .075; base.castShadow = true; base.receiveShadow = true; station.add(base);
+        const pillar = new THREE.Mesh(new THREE.BoxGeometry(.28, .62, .28), new THREE.MeshStandardMaterial({ color: '#759589', metalness: .2, roughness: .6 }));
+        pillar.position.y = .45; pillar.castShadow = true; station.add(pillar);
+        const beacon = new THREE.Mesh(new THREE.OctahedronGeometry(.16), new THREE.MeshStandardMaterial({ color: '#839d8d', emissive: '#839d8d', emissiveIntensity: .3 }));
+        beacon.position.y = .9; station.add(beacon);
+        const claimBands = COLORS.map((color, index) => {
+          const band = new THREE.Mesh(new THREE.TorusGeometry(.25, .03, 8, 32), new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: .25 }));
+          band.rotation.x = Math.PI / 2; band.position.y = .28 + index * .13; band.visible = false; station.add(band); return band;
+        });
+        station.userData = { beacon, claimBands }; scene.add(station); return station;
+      });
+      const marker = new THREE.Mesh(new THREE.RingGeometry(.64, .69, 40), new THREE.MeshBasicMaterial({ color: '#fff4dd', side: THREE.DoubleSide })); marker.rotation.x = -Math.PI / 2; scene.add(marker);
       const dynamic = new THREE.Group(); scene.add(dynamic);
       const overlay = Object.assign(document.createElement('div'), { className: 'cbba-labels' }); layer.append(overlay);
-      world = { THREE, renderer, scene, camera, controls, dynamic, overlay, labels: [], taskLabels: [], anchors: [], taskAnchors: [] };
-      controls.addEventListener('change', drawThree); updateThree(); resize();
+      const labels = run.agents.map((agent, index) => {
+        const label = Object.assign(document.createElement('button'), { textContent: agent.label, className: 'cbba-agent-label' });
+        label.style.color = COLORS[index]; label.setAttribute('aria-label', `Inspect agent ${agent.label}`); label.addEventListener('click', () => selectAgent(index)); overlay.append(label); return label;
+      });
+      const taskLabels = run.tasks.map((task) => { const label = Object.assign(document.createElement('span'), { textContent: task.label, className: 'cbba-task-label' }); overlay.append(label); return label; });
+      const cameraUI = addWorkshopCameraUI(layer, { prefix: 'cbba', caption: 'Stationary allocation plans · fixed display height 1.2 units · no flight',
+        onWhole: () => { following = false; cameraPreset = true; frameCamera(true); drawThree(); },
+        onFollow: () => { following = true; cameraPreset = false; frameCamera(true); drawThree(); } });
+      world = { THREE, renderer, scene, camera, controls, dynamic, overlay, labels, taskLabels, drones, tasks, marker, cameraUI, lastSelected: selected };
+      controls.addEventListener('change', drawThree); resize(); updateThree();
     } catch { if (!world) pendingRenderer?.dispose(); if (!disposed) unavailable('3D is unavailable. This view needs WebGL 2. The 2D experiment and state tables remain available.'); }
     finally { loading = false; }
   }
@@ -108,53 +158,76 @@ export function createCbbaView(container, { selectAgent = () => {} } = {}) {
   }
   function updateThree() {
     if (!world || !run || failed) return;
-    const { THREE, dynamic, overlay } = world;
-    clearDynamic(); world.anchors = []; world.taskAnchors = [];
-    if (world.labels.length !== run.agents.length) {
-      overlay.replaceChildren(); world.labels = run.agents.map((agent, index) => {
-        const label = Object.assign(document.createElement('button'), { textContent: agent.label, className: 'cbba-agent-label' });
-        label.style.color = COLORS[index]; label.setAttribute('aria-label', `Inspect agent ${agent.label}`); label.addEventListener('click', () => selectAgent(index)); overlay.append(label); return label;
-      });
-      world.taskLabels = run.tasks.map((task) => { const label = Object.assign(document.createElement('span'), { textContent: task.label, className: 'cbba-task-label' }); overlay.append(label); return label; });
-    }
-    const line = (a, b, tint, dashed = false, opacity = 1) => {
-      const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(a[0], .045, -a[1]), new THREE.Vector3(b[0], .045, -b[1])]);
+    const { THREE, dynamic } = world;
+    clearDynamic();
+    const line = (start, end, tint, dashed = false, opacity = 1, lift = 0) => {
+      const a = new THREE.Vector3(...start), b = new THREE.Vector3(...end);
+      const points = lift ? new THREE.QuadraticBezierCurve3(a, a.clone().add(b).multiplyScalar(.5).add(new THREE.Vector3(0, lift, 0)), b).getPoints(24) : [a, b];
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
       const material = dashed ? new THREE.LineDashedMaterial({ color: tint, dashSize: .15, gapSize: .13, transparent: true, opacity }) : new THREE.LineBasicMaterial({ color: tint, transparent: true, opacity });
       const object = new THREE.Line(geometry, material); if (dashed) object.computeLineDistances(); dynamic.add(object);
     };
-    for (const link of displayedLinks(run)) line(run.agents[link.from].position, run.agents[link.to].position, link.active ? '#a7c1b7' : '#b57759', true, link.active ? 1 : .55);
+    for (const link of displayedLinks(run)) {
+      const a = run.agents[link.from].position, b = run.agents[link.to].position;
+      line([a[0], displayAltitude, -a[1]], [b[0], displayAltitude, -b[1]], link.active ? '#a7c1b7' : '#c58369', true, link.active ? .9 : .55, .6);
+      if (!link.active) {
+        const center = [(a[0] + b[0]) / 2, displayAltitude + .3, -(a[1] + b[1]) / 2];
+        line([center[0] - .13, center[1] - .13, center[2]], [center[0] + .13, center[1] + .13, center[2]], '#edaa89');
+        line([center[0] - .13, center[1] + .13, center[2]], [center[0] + .13, center[1] - .13, center[2]], '#edaa89');
+      }
+    }
     run.agents.forEach((agent, index) => {
-      const mesh = new THREE.Mesh(new THREE.CylinderGeometry(.25, .25, .16, 28), new THREE.MeshStandardMaterial({ color: COLORS[index] }));
-      mesh.position.set(agent.position[0], .09, -agent.position[1]); dynamic.add(mesh); world.anchors.push(mesh.position.clone());
+      // A protocol round changes claims, never a physical pose or propeller phase.
+      setWorkshopDrone(world.drones[index], { position: [agent.position[0], displayAltitude, -agent.position[1]], heading: 0, phase: 0 });
+      world.labels[index].textContent = `${agent.label} · ${agent.bundle.length} claims`;
       world.labels[index].setAttribute('aria-pressed', String(index === selected));
-      for (const task of agent.bundle) line(agent.position, run.tasks[task].position, COLORS[index], false, index === selected ? 1 : .4);
+      for (const taskId of agent.bundle) {
+        const task = run.tasks[taskId];
+        line([agent.position[0], displayAltitude, -agent.position[1]], [task.position[0], .9, -task.position[1]], COLORS[index], false, index === selected ? .95 : .27, .35 + index * .12);
+      }
     });
     run.tasks.forEach((task) => {
       const claims = run.agents.filter((agent) => agent.bundle.includes(task.id));
       const tint = claims.length > 1 ? '#f0a784' : claims.length === 1 ? COLORS[claims[0].id] : '#839d8d';
-      const mesh = new THREE.Mesh(new THREE.BoxGeometry(.27, .11, .27), new THREE.MeshStandardMaterial({ color: tint }));
-      mesh.position.set(task.position[0], .06, -task.position[1]); mesh.rotation.y = Math.PI / 4; dynamic.add(mesh); world.taskAnchors.push(mesh.position.clone());
+      const { beacon, claimBands } = world.tasks[task.id].userData;
+      beacon.material.color.set(tint); beacon.material.emissive.set(tint);
+      claimBands.forEach((band, index) => { band.visible = claims.some((agent) => agent.id === index); });
       world.taskLabels[task.id].textContent = `${task.label} · ${claims.length ? claims.map((agent) => agent.label).join('+') : 'unclaimed'}`;
+      world.taskLabels[task.id].style.color = tint;
+      world.taskLabels[task.id].title = `${task.label}: ${claims.length} current own-bundle claims, no service executed`;
+      world.taskLabels[task.id].dataset.claims = String(claims.length);
     });
-    const agent = run.agents[selected], marker = new THREE.Mesh(new THREE.RingGeometry(.34, .37, 32), new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }));
-    marker.rotation.x = -Math.PI / 2; marker.position.set(agent.position[0], .02, -agent.position[1]); dynamic.add(marker);
+    const agent = run.agents[selected]; world.marker.position.set(agent.position[0], .11, -agent.position[1]);
+    frameCamera(following && world.lastSelected !== selected); world.lastSelected = selected;
+    layer.dataset.round = String(run.round);
+    layer.dataset.agents = JSON.stringify(run.agents.map((agent) => ({ id: agent.id, position: [...agent.position], displayAltitude, bundle: [...agent.bundle] })));
+    layer.dataset.links = JSON.stringify(displayedLinks(run));
     drawThree();
   }
   function drawThree() {
     if (!world || mode !== '3d' || failed || disposed) return;
     world.renderer.render(world.scene, world.camera);
-    const place = (anchor, label) => {
-      const point = anchor.clone().project(world.camera);
-      label.style.left = `${(point.x + 1) * container.clientWidth / 2}px`; label.style.top = `${(1 - point.y) * container.clientHeight / 2}px`;
+    const width = container.clientWidth, height = container.clientHeight, occupied = [];
+    const place = (anchor, label, priority = false) => {
+      const point = anchor.clone().project(world.camera), w = Math.min(width - 16, Math.max(35, label.textContent.length * 7.2 + 14)), h = 23;
       label.hidden = point.z < -1 || point.z > 1 || Math.abs(point.x) > 1 || Math.abs(point.y) > 1;
+      if (label.hidden) return;
+      const x = Math.max(8, Math.min(width - w - 8, (point.x + 1) * width / 2 - w / 2));
+      const baseY = (1 - point.y) * height / 2 - h - 10;
+      const candidates = [0, -26, 26, -52, 52].map((offset) => Math.max(76, Math.min(height - 65, baseY + offset)));
+      const y = candidates.find((candidate) => !occupied.some((box) => x < box.x + box.w + 4 && x + w + 4 > box.x && candidate < box.y + box.h + 3 && candidate + h + 3 > box.y));
+      if (y === undefined && !priority) { label.hidden = true; return; }
+      const top = y ?? candidates[0]; occupied.push({ x, y: top, w, h });
+      label.style.left = `${x}px`; label.style.top = `${top}px`;
     };
-    world.anchors.forEach((anchor, index) => place(anchor, world.labels[index]));
-    world.taskAnchors.forEach((anchor, index) => place(anchor, world.taskLabels[index]));
+    const order = run.agents.map((_, id) => id).sort((a, b) => Number(b === selected) - Number(a === selected));
+    order.forEach((id) => place(world.drones[id].position.clone().add(new world.THREE.Vector3(0, .3, 0)), world.labels[id], id === selected));
+    world.tasks.forEach((station, id) => place(station.position.clone().add(new world.THREE.Vector3(0, .95, 0)), world.taskLabels[id]));
   }
   function resize() {
     if (!world || failed || disposed) return;
     const width = Math.max(1, container.clientWidth), height = Math.max(1, container.clientHeight);
-    world.renderer.setSize(width, height, false); world.camera.aspect = width / height; world.camera.updateProjectionMatrix(); drawThree();
+    world.renderer.setSize(width, height, false); world.camera.aspect = width / height; world.camera.updateProjectionMatrix(); frameCamera(cameraPreset); drawThree();
   }
   const observer = new ResizeObserver(resize); observer.observe(container);
   return {

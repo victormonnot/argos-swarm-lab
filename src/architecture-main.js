@@ -55,7 +55,7 @@ for (const mode of ['2d', '3d']) $(`#arch-${mode}`).addEventListener('click', ()
   view.setMode(mode);
   for (const option of ['2d', '3d']) $(`#arch-${option}`).setAttribute('aria-pressed', String(option === mode));
   $('#arch-view-hint').textContent = mode === '3d'
-    ? 'Drag to orbit; scroll to zoom. Height is decorative. This is the same planar execution and report history as 2D.'
+    ? 'Drag to orbit; scroll to zoom. Whole site / Follow selected changes only the camera. Fixed display height; physical execution and the selected observer’s received knowledge remain separate.'
     : 'Select an agent to inspect its cache. Map positions do not determine the logical network links.';
 });
 document.querySelectorAll('[data-arch-case]').forEach((button) => button.addEventListener('click', () => {

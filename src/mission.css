@@ -85,3 +85,10 @@
 @media(max-width:1100px) { .mission-lab { grid-template-columns: minmax(0,1fr) 300px; } .mission-control { padding: 20px; } .mission-workboard,.mission-evidence { grid-template-columns: 1fr 1fr; } .mission-page .transport { flex-wrap: wrap; } }
 @media(max-width:850px) { .mission-lab,.mission-workboard,.mission-evidence { grid-template-columns: 1fr; } #mission-viewport { flex: auto; height: 440px; } .mission-intro h1 { font-size: 2.1rem; } .mission-page .mission-cases .exercise-grid { grid-template-columns: 1fr; } }
 @media(max-width:580px) { .mission-intro { padding: 22px 0; } .mission-intro h1 { font-size: 1.9rem; } .mission-intro h1 br { display: block; } .mission-metrics { grid-template-columns: 1fr 1fr; gap: 18px 12px; } .mission-metrics>div:nth-child(2) { border: 0; } .mission-metrics strong { font-size: 1.5rem; } #mission-viewport { height: 330px; min-height: 330px; } .mission-toolbar { padding: 15px; } .mission-task-section,.mission-agent-section,.mission-dispatch,.mission-events { padding: 16px; } .mission-task-grid { gap: 9px; } .mission-task { padding: 10px; } .mission-equation { font-size: .8125rem; padding: 14px; } .mission-dispatch .panel-heading { flex-direction: column; align-items: flex-start; } }
+
+/* Labels remain compact and never stand in for additional model state. */
+.mission-labels button,.mission-labels span { transform: none; padding: 3px 6px; font: 12px/1.25 ui-monospace,monospace; max-width: calc(100% - 16px); overflow: hidden; text-overflow: ellipsis; }
+.mission-labels [hidden] { display: none; }
+.mission-scene-observer { position: absolute; bottom: 48px; left: 10px; right: 10px; margin: 0; padding: 5px 7px; border: 1px solid #607b66; border-radius: 3px; color: #eee9cb; background: #173025ee; font: 10px/1.45 ui-monospace,monospace; pointer-events: none; }
+.mission-scene-observer[hidden] { display: none; }
+@media(max-width:580px) { .mission-scene-observer { bottom: 50px; left: 8px; right: 8px; font-size: 9px; } }

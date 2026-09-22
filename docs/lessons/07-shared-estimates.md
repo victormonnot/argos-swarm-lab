@@ -164,6 +164,17 @@ Observer, 2D/3D mode and camera changes are inspections, not simulation inputs.
 The network diagram is a communication layout, while map markers denote estimates
 of a target, not three moving robots. Both views show the same planar information.
 
+The 3D scene adds three detailed, stationary observer drones on labeled perimeter
+pads. Their placement is an illustrative layout based on the plotting bounds,
+not measured agent poses, a sensor baseline or part of the communication model.
+They stay on the same pads with stopped propellers throughout every fusion round.
+The separate circle, diamond and square markers still denote target estimates;
+their trails show numerical revisions, not aircraft motion. Reported covariance
+contours keep their original 2σ axes. Fixed marker heights only separate drawing
+layers. Whole-site and inspect-observer cameras expose the scene without moving
+an agent or generating an observation; zoom, orbit and keyboard panning are also
+display controls.
+
 Counters distinguish attempted, delivered and dropped directed packets. Delivered
 logical records count one per summary packet and the number of original entries
 per ledger packet. They are not bytes, bandwidth, latency or measured runtime.

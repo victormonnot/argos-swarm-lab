@@ -124,8 +124,15 @@ total travelled path length; these are evaluation measurements only.
   These predict a next command; after a terminal outcome no command is applied.
   After contact, the inspector reports the stopped controller.
 - Switch 2D/3D or orbit the camera without advancing or resetting the state.
-  Only 2D shows contribution arrows; arrow lengths are capped for legibility and
-  numerical components are available below. Wall/disk footprints use model sizes.
+  Both views show contribution arrows with capped lengths; numerical components
+  are available below. Detailed quadrotors use the modeled 0.24 m disk diameter,
+  at a shared fixed **0.65 m display height**. Ground disks show the actual planar
+  collision footprints. Capsule walls are extruded to 1.3 m without changing
+  their footprint; the height is illustrative and gives no vertical escape.
+  The bounded floor and outer fixtures are display furniture, not new obstacles.
+  **Whole site** and **Follow A1/A2/A3** frame the same snapshot; following tracks
+  the selected agent while preserving the learner's orbit angle. Rotor orientation
+  uses model time only. Neither view adds aircraft dynamics or simulated altitude.
 - Both workshops are reachable through ordinary page links. Navigation/reload
   starts a new run; no persistence or cross-page replay is implemented. Repeating
   the same configuration reproduces the same movement trace.

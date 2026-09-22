@@ -161,7 +161,16 @@ translate the last decision vectors to the current agent markers for readability
 Method, scenario and applied horizon changes create a new paused run. Reset
 repeats the applied configuration. Playback and finish execute model steps;
 changing observer, camera or 2D/3D display only changes inspection. Both views
-show the same planar state. The 3D view requires WebGL 2, with the 2D view and
+show the same planar state. Detailed 3D quadrotors have the modeled 0.60 m disk
+extent at one fixed **1.15 m display height**, with exact ground collision disks
+and projected trails. This height adds no vertical avoidance or aircraft physics.
+The raised floor and outer fixtures are decorative, not modeled obstacles.
+**Whole site** and **Follow selected** only change framing, with selection and
+camera orbit preserved as the run advances. Rotor orientation uses model time.
+Preferred/chosen arrows remain tied to the latest decision; faint dashed peer
+lines identify the selected agent's actual ORCA constraints rather than messages.
+They disappear when peer sensing is unavailable or when the method has no ORCA
+constraints. The 3D view requires WebGL 2, with the 2D view and
 numerical inspection available if it cannot initialize or loses its context.
 The comparison table runs separate copies and never replaces the active run.
 

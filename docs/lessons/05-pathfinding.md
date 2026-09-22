@@ -28,6 +28,19 @@ uncertainty, SLAM or shared estimates. It has no body radius, dynamic obstacle,
 local avoidance or flight dynamics. Each view displays the same physical run and
 the same selected search snapshot.
 
+The 3D view uses a detailed quadrotor at a fixed illustrative body height of
+0.8 m. A dashed vertical guide connects it to its exact planar position. Walls
+are 1.65 m tall and retain the occupied cells' exact 1 × 1 m footprints; search
+colors, frontier/settled labels, the selected cell and both routes remain on that
+same grid. Drone size, displayed heading and rotor phase are presentation only:
+contact still evaluates a point against the occupied cells. Whole-site and
+follow-drone cameras change framing without changing the run. Orbit, zoom and
+keyboard panning also remain inspection controls.
+Default cameras look through the western opening of the U. If a wall obscures
+the illustrative airframe, only the affected wall cells become translucent;
+their outlines and shadows remain. This camera-dependent cutaway applies during
+motion and orbiting and does not change occupancy or point-contact evaluation.
+
 ## Graph and maps
 
 Use a 12 × 9 grid of 1 m square cells, indexed by `id = 12y + x`, with y increasing

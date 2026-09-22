@@ -50,7 +50,7 @@ for (const mode of ['2d', '3d']) $(`#fusion-${mode}`).addEventListener('click', 
   view.setMode(mode);
   for (const option of ['2d', '3d']) $(`#fusion-${option}`).setAttribute('aria-pressed', String(mode === option));
   $('#fusion-view-hint').textContent = mode === '3d'
-    ? 'Drag to orbit; scroll to zoom. Same planar estimates and history. Marker heights are decorative; there is no robot motion. Contours show 2σ axes from reported covariance.'
+    ? 'Drag to orbit; scroll to zoom. Stationary drones illustrate the observers; colored markers show their target estimates. Display heights are fixed. Contours retain the reported 2σ axes.'
     : 'Markers are estimates of T, not moving robots. Trails show estimate revisions. Contours have 2σ axes from reported covariance, not a 95% joint coverage guarantee.';
 });
 document.querySelectorAll('[data-fusion-case]').forEach((button) => button.addEventListener('click', () => {

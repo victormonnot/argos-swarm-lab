@@ -57,3 +57,5 @@
 @media(max-width:1050px) { .cbba-lab { grid-template-columns: minmax(0,1fr) 300px; } .cbba-config { padding: 20px; } .cbba-inspection { grid-template-columns: 1fr; } }
 @media(max-width:850px) { .cbba-lab { grid-template-columns: 1fr; } #cbba-viewport { flex: auto; height: 470px; } .cbba-cases .exercise-grid { grid-template-columns: 1fr 1fr; } }
 @media(max-width:580px) { .cbba-intro h1 { font-size: 2rem; } .cbba-intro h1 br { display: block; } #cbba-viewport { height: 355px; min-height: 355px; } .cbba-panel { padding: 18px; } .cbba-equation { font-size: .8125rem; } .cbba-legend { padding-left: 15px; padding-right: 15px; gap: 7px 11px; } .cbba-details>div { gap: 9px; font-size: .8125rem; } .cbba-cases .exercise-grid { grid-template-columns: 1fr; } }
+
+.cbba-labels button,.cbba-task-label { transform: none; padding: 3px 6px; font: 12px/1.25 ui-monospace,monospace; max-width: calc(100% - 16px); overflow: hidden; text-overflow: ellipsis; }

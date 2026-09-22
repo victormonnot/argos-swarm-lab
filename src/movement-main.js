@@ -72,7 +72,7 @@ for (const mode of ['2d', '3d']) $(`#movement-${mode}`).addEventListener('click'
   view.setMode(mode);
   for (const option of ['2d', '3d']) $(`#movement-${option}`).setAttribute('aria-pressed', String(mode === option));
   $('#movement-view-hint').textContent = mode === '3d'
-    ? 'Drag to orbit · scroll to zoom. Same planar state. Inspect velocity components in the table below.'
+    ? 'Drag to orbit · scroll to zoom. Whole site / Follow selected changes only the camera. Arrows show the same capped contributions as 2D; ground disks show the collision footprint.'
     : 'Select an agent to inspect its decision. Arrows are capped for legibility; the table gives exact velocity components. Map distances are in metres.';
 });
 const guidedCases = {

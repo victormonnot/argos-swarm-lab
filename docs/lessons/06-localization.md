@@ -26,6 +26,21 @@ estimate that differs from its physical position?
 Both views observe the same true and estimated histories. Marker size and 3D wall
 height are illustrations. A valid grid route does not make biased execution safe.
 
+In 3D, a solid detailed quadrotor represents evaluator truth and a larger
+wireframe quadrotor represents the estimate. Both use the same fixed 0.8 m
+display height; their vertical guides land on the actual planar coordinates.
+The connecting line shows their horizontal position error. Covariance contours,
+true and estimated trails, the last delivered fix and the route retain their
+original planar values. The ghost's displayed orientation matches the solid
+drone; the filter does not estimate heading. Walls are 1.65 m tall with exact
+1 × 1 m occupied-cell footprints. Aircraft size and wall height do not change
+the point-contact rule. Whole-site and follow-truth cameras, orbit, zoom and
+keyboard panning never advance the run.
+The default camera looks through the western U opening. Wall cells obscuring
+either displayed pose become translucent while their edges and shadows remain.
+This cutaway is recalculated during motion and camera orbiting; it changes no
+occupied cell, sensor input, position or contact decision.
+
 ## Shared mission and sensor model
 
 Reuse the open and U maps, start `(3.5,4.5)` m, goal `(10.5,4.5)` m and A* route

@@ -101,6 +101,12 @@ test('timed playback, 2D/3D, trace inspection and camera motion preserve a singl
   expect(await physical(page)).toEqual(slow);
   await page.locator('#path-3d').click();
   const canvas = page.locator('#path-viewport canvas'); await expect(canvas).toBeVisible();
+  await page.locator('#path-camera-follow').click();
+  await expect(page.locator('#path-camera-follow')).toHaveAttribute('aria-pressed', 'true');
+  expect(await physical(page)).toEqual(slow);
+  await page.locator('#path-camera-whole').click();
+  await expect(page.locator('#path-camera-whole')).toHaveAttribute('aria-pressed', 'true');
+  expect(await physical(page)).toEqual(slow);
   await expect(page.locator('#path-3d')).toHaveAttribute('aria-pressed', 'true');
   const labels = () => page.locator('.path-agent-label').evaluate((item) => [item.style.left, item.style.top]);
   const before = await labels(), bounds = await canvas.boundingBox();

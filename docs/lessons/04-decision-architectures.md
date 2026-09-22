@@ -141,7 +141,13 @@ Switch architecture or network preset to start a fresh paused run. Provide
 play/pause, fixed steps, reset, advance to 2/8 s and run to the final outcome.
 Playback speed only changes scheduling. Selecting an observer, switching 2D/3D
 or moving the camera never changes model state. The physical map and network
-schematic have distinct meanings. Navigation/reload loses the in-memory run.
+schematic have distinct meanings. The 3D scene shows detailed quadrotors at a
+fixed display altitude of 1.5 m and task stations whose rings reflect physical
+service progress. Labels additionally show the selected observer's stale report
+ages and completed work it has not learned (`?`); these read the existing local
+cache without changing decision inputs. Whole-site and selected-agent camera
+controls do not advance the model. The illustrative yard adds no obstacles,
+altitude dynamics or radio model. Navigation/reload loses the in-memory run.
 
 Compare all nine architecture/network combinations with the same physical task
 set, budget and network schedule. Verify trace equality between central and peers

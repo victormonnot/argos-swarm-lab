@@ -96,6 +96,15 @@ test('playback speeds, both views and camera motion preserve one numerical seque
   await page.locator('#arch-3d').click();
   const canvas = page.locator('#arch-viewport canvas');
   await expect(canvas).toBeVisible();
+  await page.locator('#arch-observer').selectOption('1');
+  const inspected = await snapshot(page);
+  await page.locator('#arch-camera-follow').click();
+  await expect(page.locator('#arch-camera-follow')).toHaveAttribute('aria-pressed', 'true');
+  expect(await snapshot(page)).toEqual(inspected);
+  await page.locator('#arch-camera-whole').click();
+  await expect(page.locator('#arch-camera-whole')).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('#arch-observer').selectOption('0');
+  expect(await snapshot(page)).toEqual(slow);
   await expect(page.locator('#arch-3d')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('.mission-labels button')).toHaveCount(3);
   expect(await snapshot(page)).toEqual(slow);

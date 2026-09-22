@@ -87,6 +87,12 @@ test('view switches, camera orbit and playback setting preserve numerical state'
   await page.locator('#movement-3d').click();
   const canvas = page.locator('#movement-viewport canvas');
   await expect(canvas).toBeVisible();
+  await page.locator('#movement-camera-follow').click();
+  await expect(page.locator('#movement-camera-follow')).toHaveAttribute('aria-pressed', 'true');
+  expect(await snapshot(page)).toEqual(before);
+  await page.locator('#movement-camera-whole').click();
+  await expect(page.locator('#movement-camera-whole')).toHaveAttribute('aria-pressed', 'true');
+  expect(await snapshot(page)).toEqual(before);
   expect(await snapshot(page)).toEqual(before);
   await expect(page.locator('.movement-3d-labels button')).toHaveCount(3);
   const labels = () => page.locator('.movement-3d-labels button').evaluateAll((items) => items.map((item) => [item.style.left, item.style.top]));

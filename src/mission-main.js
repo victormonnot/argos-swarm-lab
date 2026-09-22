@@ -53,7 +53,7 @@ for (const mode of ['2d', '3d']) $(`#mission-${mode}`).addEventListener('click',
   view.setMode(mode);
   for (const choice of ['2d', '3d']) $(`#mission-${choice}`).setAttribute('aria-pressed', String(choice === mode));
   $('#mission-view-hint').textContent = mode === '3d'
-    ? 'Drag to orbit · scroll to zoom. Same planar mission; marker sizes and heights are illustrative. × unavailable · ✓ task completed.'
+    ? 'Drag to orbit · scroll to zoom. Whole site / Follow selected changes only the camera. Fixed display height; task stations show service progress. × unavailable · ✓ completed.'
     : 'Circles: agents · squares: tasks · dashed line: assigned target. Select an agent to inspect its executor.';
 });
 document.querySelectorAll('[data-mission-case]').forEach((button) => button.addEventListener('click', () => {

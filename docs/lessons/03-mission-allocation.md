@@ -130,7 +130,12 @@ Show task states/owners/service progress, executor states and targets, completed
 fraction, time, distance, reassignments, lost service and an event history.
 The dispatch inspector must show the matrix and selected cells for a recorded
 decision, clearly labeled as coordinator information. Both views observe the
-same run; 3D adds neither altitude nor independent simulation.
+same run. The 3D view presents detailed quadrotors at a fixed display altitude of
+1.5 m above an illustrative yard, with task stations, service-progress rings,
+existing trajectories and assigned-target lines. Whole-site and selected-agent
+cameras affect presentation only. Physical altitude, collisions and flight
+dynamics are not added. Unavailable agents remain at their last planar position;
+no crash or descent is fabricated.
 
 Reference comparisons hold starts, points, speed, service duration and budget
 constant. Compare all three policies both nominally and with A2's scheduled

@@ -104,6 +104,12 @@ test('playback rates, observer and linked 3D camera preserve the same numerical 
   expect(await snapshot(page)).toEqual(slow);
   await page.locator('#orca-observer').selectOption('2'); expect(await snapshot(page)).toEqual(slow);
   await page.locator('#orca-3d').click(); const canvas = page.locator('#orca-viewport canvas'); await expect(canvas).toBeVisible();
+  await page.locator('#orca-camera-follow').click();
+  await expect(page.locator('#orca-camera-follow')).toHaveAttribute('aria-pressed', 'true');
+  expect(await snapshot(page)).toEqual(slow);
+  await page.locator('#orca-camera-whole').click();
+  await expect(page.locator('#orca-camera-whole')).toHaveAttribute('aria-pressed', 'true');
+  expect(await snapshot(page)).toEqual(slow);
   await expect(page.locator('.orca-svg')).toBeHidden();
   await expect(page.locator('.orca-agent-label')).toHaveCount(3);
   await expect(page.locator('.orca-goal-label')).toHaveCount(3);

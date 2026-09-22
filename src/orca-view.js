@@ -1,5 +1,7 @@
+import { createWorkshopDrone, setWorkshopDrone, createWorkshopStage, addWorkshopCameraUI } from './workshop-scene.js';
 import { RADIUS, MAX_SPEED } from './orca-model.js';
 
+const DISPLAY_HEIGHT = 1.15;
 const NS = 'http://www.w3.org/2000/svg';
 const COLORS = ['#70d8bf', '#b8acff', '#eec077', '#91bafa'];
 const x = (v) => 350 + v * 42;
@@ -108,7 +110,7 @@ export function createOrcaView(container, { selectAgent = () => {} } = {}) {
     if (!world) return;
     world.controls.dispose();
     const geometries = new Set(), materials = new Set();
-    world.scene.traverse((child) => { if (child.geometry) geometries.add(child.geometry); if (Array.isArray(child.material)) child.material.forEach((m) => materials.add(m)); else if (child.material) materials.add(child.material); });
+    world.scene.traverse((child) => { child.shadow?.dispose(); if (child.geometry) geometries.add(child.geometry); if (Array.isArray(child.material)) child.material.forEach((m) => materials.add(m)); else if (child.material) materials.add(child.material); });
     geometries.forEach((g) => g.dispose()); materials.forEach((m) => m.dispose()); world.renderer.dispose(); world = null;
   }
   function unavailable(message) { failed = true; disposeWorld(); layer.replaceChildren(Object.assign(document.createElement('p'), { className: 'orca-webgl-message', textContent: message })); }
@@ -125,68 +127,118 @@ export function createOrcaView(container, { selectAgent = () => {} } = {}) {
       renderer.domElement.addEventListener('webglcontextlost', (event) => { event.preventDefault(); unavailable('3D context lost. Use 2D to continue exploring the same run.'); });
       layer.replaceChildren(renderer.domElement);
       const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(43, 1, .1, 100);
-      camera.position.set(0, 12, 13);
       const controls = new OrbitControls(camera, renderer.domElement);
-      controls.enablePan = false; controls.minDistance = 7; controls.maxDistance = 30; controls.maxPolarAngle = Math.PI / 2 - .1; controls.update();
-      scene.add(new THREE.AmbientLight(0xffffff, 2));
-      const light = new THREE.DirectionalLight(0xffffff, 2.3); light.position.set(-3, 8, 5); scene.add(light);
-      scene.add(new THREE.GridHelper(12, 12, 0x48665c, 0x29483f));
-      const dynamic = new THREE.Group(); scene.add(dynamic);
+      controls.enablePan = false; controls.minDistance = 2.5; controls.maxDistance = 32; controls.maxPolarAngle = Math.PI / 2 - .1;
+      createWorkshopStage(THREE, scene, renderer, { center: [0, 0], size: [13, 13], grid: 1 });
+      const bodies = new THREE.Group(), terrain = new THREE.Group(), dynamic = new THREE.Group(); scene.add(bodies, terrain, dynamic);
       const overlay = Object.assign(document.createElement('div'), { className: 'orca-labels' }); layer.append(overlay);
-      world = { THREE, renderer, scene, camera, controls, dynamic, overlay, labels: [], goalLabels: [], agents: [] };
-      controls.addEventListener('change', drawThree); updateThree(); resize();
+      world = { THREE, renderer, scene, camera, controls, bodies, terrain, dynamic, overlay, labels: [], goalLabels: [], agents: [], footprints: [], following: false, layout: null };
+      world.cameraUI = addWorkshopCameraUI(layer, {
+        prefix: 'orca', caption: 'Planar avoidance · 1.15 m display height · ground disks = collision footprint · no vertical avoidance',
+        onWhole: () => frameCamera(false), onFollow: () => frameCamera(true),
+      });
+      controls.addEventListener('change', drawThree); updateThree(); resize(); frameCamera(false);
     } catch { if (!world) pendingRenderer?.dispose(); if (!disposed) unavailable('3D is unavailable. This view needs WebGL 2. The 2D experiment and state table remain available.'); }
     finally { loading = false; }
   }
-  function clearDynamic() {
-    world.dynamic.traverse((child) => { child.geometry?.dispose(); if (Array.isArray(child.material)) child.material.forEach((m) => m.dispose()); else child.material?.dispose(); });
-    world.dynamic.clear();
+  function clearGroup(group) {
+    group.traverse((child) => { child.geometry?.dispose(); if (Array.isArray(child.material)) child.material.forEach((m) => m.dispose()); else child.material?.dispose(); });
+    group.clear();
+  }
+  function frameCamera(following) {
+    if (!world || !run) return;
+    world.following = following;
+    const p = run.agents[selected].position;
+    const target = following ? new world.THREE.Vector3(p[0], DISPLAY_HEIGHT * .8, -p[1]) : new world.THREE.Vector3(0, .35, 0);
+    const distance = following ? 5.3 : Math.max(17.5, 12 / Math.max(.6, world.camera.aspect));
+    world.camera.position.copy(target).add(new world.THREE.Vector3(.32, .8, 1).normalize().multiplyScalar(distance));
+    world.controls.target.copy(target); world.controls.update(); world.cameraUI.setFollowing(following);
+    layer.dataset.camera = following ? 'follow' : 'whole'; drawThree();
   }
   function updateThree() {
     if (!world || !run || failed) return;
-    const { THREE, dynamic, overlay } = world;
-    clearDynamic(); world.agents = [];
-    if (world.labels.length !== run.agents.length) {
+    const { THREE, dynamic, overlay, bodies, terrain } = world;
+    clearGroup(dynamic);
+    const layout = JSON.stringify(run.agents.map((agent) => agent.goal));
+    if (world.layout !== layout) {
+      clearGroup(bodies); clearGroup(terrain); world.agents = []; world.footprints = [];
       overlay.replaceChildren(); world.labels = run.agents.map((_, index) => {
         const label = Object.assign(document.createElement('button'), { textContent: `A${index + 1}`, className: 'orca-agent-label' });
         label.style.color = color(index); label.setAttribute('aria-label', `Inspect agent A${index + 1}`); label.addEventListener('click', () => selectAgent(index)); overlay.append(label); return label;
       });
-      world.goalLabels = run.agents.map((_, index) => {
+      world.goalLabels = run.agents.map((agent, index) => {
         const label = Object.assign(document.createElement('span'), { textContent: `G${index + 1}`, className: 'orca-goal-label' });
-        label.style.color = color(index); overlay.append(label); return label;
+        label.style.color = color(index); overlay.append(label);
+        const goal = new THREE.Mesh(new THREE.RingGeometry(.20, .25, 40), new THREE.MeshBasicMaterial({ color: color(index), side: THREE.DoubleSide }));
+        goal.rotation.x = -Math.PI / 2; goal.position.set(agent.goal[0], .02, -agent.goal[1]); terrain.add(goal);
+        const cross = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-.10, 0, 0), new THREE.Vector3(.10, 0, 0), new THREE.Vector3(0, 0, -.10), new THREE.Vector3(0, 0, .10)]), new THREE.LineBasicMaterial({ color: color(index) }));
+        cross.position.copy(goal.position); terrain.add(cross); return label;
       });
+      run.agents.forEach((_, index) => {
+        const drone = createWorkshopDrone(THREE, { color: color(index), size: 2 * RADIUS, id: `A${index + 1}` });
+        bodies.add(drone); world.agents.push(drone);
+        const group = new THREE.Group();
+        const disk = new THREE.Mesh(new THREE.CircleGeometry(RADIUS, 40), new THREE.MeshBasicMaterial({ color: color(index), transparent: true, opacity: .25, side: THREE.DoubleSide })); disk.rotation.x = -Math.PI / 2;
+        const edge = new THREE.Mesh(new THREE.RingGeometry(RADIUS - .016, RADIUS, 40), new THREE.MeshBasicMaterial({ color: color(index), side: THREE.DoubleSide })); edge.rotation.x = -Math.PI / 2;
+        const stem = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, .01, 0), new THREE.Vector3(0, DISPLAY_HEIGHT, 0)]), new THREE.LineDashedMaterial({ color: color(index), transparent: true, opacity: .32, dashSize: .07, gapSize: .06 }));
+        stem.computeLineDistances(); group.add(disk, edge, stem); bodies.add(group); world.footprints.push(group);
+      });
+      world.layout = layout;
     }
     run.agents.forEach((agent, index) => {
-      const mesh = new THREE.Mesh(new THREE.CylinderGeometry(RADIUS, RADIUS, .12, 28), new THREE.MeshStandardMaterial({ color: color(index) }));
-      mesh.position.set(agent.position[0], .07, -agent.position[1]); dynamic.add(mesh); world.agents.push(mesh);
+      const vector = Math.hypot(...agent.velocity) > 1e-9 ? agent.velocity : [agent.goal[0] - agent.position[0], agent.goal[1] - agent.position[1]];
+      setWorkshopDrone(world.agents[index], { position: [agent.position[0], DISPLAY_HEIGHT, -agent.position[1]], heading: Math.atan2(vector[1], vector[0]), phase: run.time * 34, active: run.status !== 'collision' });
+      world.footprints[index].position.set(agent.position[0], .015, -agent.position[1]);
       world.labels[index].setAttribute('aria-pressed', String(index === selected));
-      const goal = new THREE.Mesh(new THREE.RingGeometry(.20, .25, 28), new THREE.MeshBasicMaterial({ color: color(index), side: THREE.DoubleSide }));
-      goal.rotation.x = -Math.PI / 2; goal.position.set(agent.goal[0], .014, -agent.goal[1]); dynamic.add(goal);
-      const points = agent.trail.map((p) => new THREE.Vector3(p[0], .016, -p[1]));
-      if (points.length > 1) dynamic.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: color(index), transparent: true, opacity: .6 })));
+      for (const height of [.024, DISPLAY_HEIGHT]) {
+        const points = agent.trail.map((p) => new THREE.Vector3(p[0], height, -p[1]));
+        if (points.length > 1) dynamic.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: color(index), transparent: true, opacity: height === DISPLAY_HEIGHT ? .65 : .20 })));
+      }
     });
-    const agent = run.agents[selected], marker = new THREE.Mesh(new THREE.RingGeometry(RADIUS + .08, RADIUS + .1, 32), new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }));
-    marker.rotation.x = -Math.PI / 2; marker.position.set(agent.position[0], .018, -agent.position[1]); dynamic.add(marker);
-    for (const [vector, tint, height] of [[agent.preferred, 0xeec077, .14], [agent.command ?? agent.velocity, 0xf4f8ef, .22]]) {
+    const agent = run.agents[selected], marker = new THREE.Mesh(new THREE.RingGeometry(RADIUS + .07, RADIUS + .09, 40), new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }));
+    marker.rotation.x = -Math.PI / 2; marker.position.set(agent.position[0], .026, -agent.position[1]); dynamic.add(marker);
+    for (const [vector, tint, height] of [[agent.preferred, 0xeec077, DISPLAY_HEIGHT + .12], [agent.command ?? agent.velocity, 0xf4f8ef, DISPLAY_HEIGHT + .20]]) {
       const length = Math.hypot(...vector);
-      if (length > 1e-9) dynamic.add(new THREE.ArrowHelper(new THREE.Vector3(vector[0], 0, -vector[1]).normalize(), new THREE.Vector3(agent.position[0], height, -agent.position[1]), length * 1.25, tint, .15, .08));
+      if (length > 1e-9) dynamic.add(new THREE.ArrowHelper(new THREE.Vector3(vector[0], 0, -vector[1]).normalize(), new THREE.Vector3(agent.position[0], height, -agent.position[1]), length * 1.25, tint, Math.min(.18, length * .3), Math.min(.09, length * .2)));
     }
+    // Links identify the selected agent's actual observed constraints, not a
+    // communication network. The missing-sensing case therefore has none.
+    for (const constraint of agent.constraints ?? []) {
+      const peer = run.agents.find((item) => item.id === constraint.neighbor);
+      if (!peer) continue;
+      const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(agent.position[0], DISPLAY_HEIGHT, -agent.position[1]), new THREE.Vector3(peer.position[0], DISPLAY_HEIGHT, -peer.position[1])]), new THREE.LineDashedMaterial({ color: color(constraint.neighbor), transparent: true, opacity: .25, dashSize: .10, gapSize: .13 }));
+      line.computeLineDistances(); dynamic.add(line);
+    }
+    world.cameraUI.setFollowLabel(`Follow ${agent.id}`);
+    if (world.following) {
+      const target = new THREE.Vector3(agent.position[0], DISPLAY_HEIGHT * .8, -agent.position[1]);
+      world.camera.position.add(target.clone().sub(world.controls.target)); world.controls.target.copy(target); world.controls.update();
+    }
+    layer.dataset.agents = JSON.stringify(run.agents.map((a) => [a.position[0], DISPLAY_HEIGHT, -a.position[1]]));
     drawThree();
   }
   function drawThree() {
     if (!world || mode !== '3d' || failed || disposed) return;
     world.renderer.render(world.scene, world.camera);
-    world.agents.forEach((mesh, index) => {
-      const p = mesh.position.clone().project(world.camera), label = world.labels[index];
-      label.style.left = `${(p.x + 1) * container.clientWidth / 2}px`; label.style.top = `${(1 - p.y) * container.clientHeight / 2}px`; label.hidden = p.z < -1 || p.z > 1;
-      const goal = run.agents[index].goal, projected = new world.THREE.Vector3(goal[0], .02, -goal[1]).project(world.camera), goalLabel = world.goalLabels[index];
-      goalLabel.style.left = `${(projected.x + 1) * container.clientWidth / 2}px`; goalLabel.style.top = `${(1 - projected.y) * container.clientHeight / 2}px`; goalLabel.hidden = projected.z < -1 || projected.z > 1;
-    });
+    const placed = [], width = container.clientWidth, height = container.clientHeight;
+    const positionLabel = (label, vector, gap) => {
+      const p = vector.project(world.camera), left = Math.max(25, Math.min(width - 25, (p.x + 1) * width / 2));
+      let top = Math.max(80, Math.min(height - 45, (1 - p.y) * height / 2));
+      while (placed.some((other) => Math.abs(other[0] - left) < 44 && Math.abs(other[1] - top) < gap)) top += gap;
+      label.style.left = `${left}px`; label.style.top = `${top}px`;
+      label.hidden = p.z < -1 || p.z > 1 || Math.abs(p.x) > 1.08 || Math.abs(p.y) > 1.08;
+      if (!label.hidden) placed.push([left, top]);
+    };
+    world.agents.forEach((mesh, index) => positionLabel(world.labels[index], mesh.position.clone().add(new world.THREE.Vector3(0, .22, 0)), 27));
+    run.agents.forEach((agent, index) => positionLabel(world.goalLabels[index], new world.THREE.Vector3(agent.goal[0], .02, -agent.goal[1]), 27));
   }
   function resize() {
     if (!world || failed) return;
     const width = Math.max(1, container.clientWidth), height = Math.max(1, container.clientHeight);
-    world.renderer.setSize(width, height, false); world.camera.aspect = width / height; world.camera.updateProjectionMatrix(); drawThree();
+    const changed = world.width !== width || world.height !== height;
+    world.width = width; world.height = height;
+    world.renderer.setSize(width, height, false); world.camera.aspect = width / height; world.camera.updateProjectionMatrix();
+    if (changed && !world.following && run) frameCamera(false); else drawThree();
   }
   const observer = new ResizeObserver(resize); observer.observe(container);
   return {

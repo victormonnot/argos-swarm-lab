@@ -15,6 +15,7 @@
 .path-labels .path-site-label { transform: translate(9px,7px); }
 .path-labels .path-waypoint-label { transform: translate(calc(-100% - 12px),-30%); }
 .path-labels .path-search-label { transform: translate(-50%,-50%); background: transparent; padding: 0; font-size: .6875rem; }
+.path-three canvas:focus-visible { outline: 2px solid #d3e8ce; outline-offset: -3px; }
 .path-webgl-message { padding: 30px; font-size: 1rem; line-height: 1.7; }
 .path-svg [role=button] { cursor: pointer; outline: none; }
 .path-svg [role=button]:focus-visible rect { stroke: white; stroke-width: 3; }
@@ -57,3 +58,4 @@
 @media(max-width:1050px) { .path-lab { grid-template-columns: minmax(0,1fr) 280px; } .path-config { padding: 20px; } .path-inspection { grid-template-columns: 1fr; } }
 @media(max-width:850px) { .path-lab { grid-template-columns: 1fr; } #path-viewport { flex: auto; height: 480px; } .path-cases .exercise-grid { grid-template-columns: 1fr; } }
 @media(max-width:580px) { .path-intro h1 { font-size: 2rem; } .path-intro h1 br { display: block; } #path-viewport { height: 325px; min-height: 325px; } .path-search,.path-execution { padding: 16px; } .path-trace-buttons button { padding: 9px 10px; } .path-legend { padding: 8px 15px 0; font-size: .75rem; } .path-equation { font-size: .875rem; padding: 14px; } }
+@media(max-width:580px) { .path-labels span { font-size: .6875rem; } .path-labels .path-search-label { font-size: .5625rem; } }

@@ -53,7 +53,7 @@ for (const mode of ['2d', '3d']) $(`#loc-${mode}`).addEventListener('click', () 
   view.setMode(mode);
   for (const option of ['2d', '3d']) $(`#loc-${option}`).setAttribute('aria-pressed', String(option === mode));
   $('#loc-view-hint').textContent = mode === '3d'
-    ? 'Drag to orbit; scroll to zoom. Same planar truth, estimate and history. Wall/marker heights are decorative; the 2σ contour is assumed uncertainty, not a safety guarantee.'
+    ? 'Drag to orbit; scroll to zoom. Solid drone: truth; wireframe: estimate. Both use one fixed display height. The 2σ contour shows assumed uncertainty, not a safety guarantee.'
     : 'The controller uses E. The learner can also see T. The contour has 2σ semiaxes from assumed covariance; it is not a safety or 95% coverage guarantee.';
 });
 document.querySelectorAll('[data-loc-case]').forEach((button) => button.addEventListener('click', () => {

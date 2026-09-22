@@ -135,7 +135,13 @@ test('playback, observer and linked 3D camera preserve one numerical allocation 
   const state = await snapshot(page);
   await page.locator('#cbba-observer').selectOption('2'); expect(await snapshot(page)).toEqual(state);
   await page.locator('#cbba-3d').click(); const canvas = page.locator('#cbba-viewport canvas');
-  await expect(canvas).toBeVisible(); await expect(page.locator('.cbba-svg')).toBeHidden();
+  await expect(canvas).toBeVisible();
+  await page.locator('#cbba-camera-follow').click();
+  await expect(page.locator('#cbba-camera-follow')).toHaveAttribute('aria-pressed', 'true');
+  expect(await snapshot(page)).toEqual(state);
+  await page.locator('#cbba-camera-whole').click();
+  await expect(page.locator('#cbba-camera-whole')).toHaveAttribute('aria-pressed', 'true');
+  expect(await snapshot(page)).toEqual(state); await expect(page.locator('.cbba-svg')).toBeHidden();
   await expect(page.locator('.cbba-agent-label')).toHaveCount(3);
   await expect(page.locator('.cbba-task-label')).toHaveCount(6);
   const positions = () => page.locator('.cbba-agent-label').evaluateAll((labels) => labels.map((label) => [label.style.left, label.style.top]));

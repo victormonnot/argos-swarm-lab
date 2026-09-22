@@ -46,7 +46,7 @@ for (const [id, value] of [['first', () => 0], ['prev', () => traceIndex - 1], [
 for (const mode of ['2d', '3d']) $(`#path-${mode}`).addEventListener('click', () => {
   view.setMode(mode);
   for (const option of ['2d', '3d']) $(`#path-${option}`).setAttribute('aria-pressed', String(option === mode));
-  $('#path-view-hint').textContent = mode === '3d' ? 'Drag to orbit; scroll to zoom. W: next waypoint. Wall heights and robot size are illustrative. Same planar route, motion and search snapshot.'
+  $('#path-view-hint').textContent = mode === '3d' ? 'Drag to orbit; scroll to zoom. Whole site / Follow drone changes only the camera. W: next waypoint. Wall footprints match the grid; height and drone size are illustrative.'
     : 'S: start · G: goal · A: robot. Select a cell to inspect search costs. Robot marker size is illustrative; this is point motion.';
 });
 document.querySelectorAll('[data-path-case]').forEach((button) => button.addEventListener('click', () => {

@@ -27,6 +27,13 @@ mission execution with central greedy assignment and per-vehicle MAVLink address
 and **three drones sharing one Gazebo world with measured separation and physical contacts**.
 The [catalog](docs/learning-path.md) also describes possible further extensions.
 
+Workshops **2–9** pair their original 2D diagrams with detailed drone scenes,
+volumetric sites and whole-site/follow cameras. They remain planar kinematics
+or static information models: display altitude and scenery do not add flight
+physics, vertical avoidance or task execution. Model footprints, truth versus
+estimates, and claims versus completed work remain explicit. See the
+[3D display conventions](docs/lessons/02-09-3d-views.md).
+
 ## Run locally
 
 Use Node.js **22.12 or newer** and npm. The implementation was verified with

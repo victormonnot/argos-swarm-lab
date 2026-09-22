@@ -115,6 +115,12 @@ test('playback, both views, camera and coordinate inspection preserve the same p
   await page.locator('#loc-play').click(); await page.clock.runFor(50); await page.locator('#loc-play').click();
   expect(await snapshot(page)).toEqual(slow);
   await page.locator('#loc-3d').click(); const canvas = page.locator('#loc-viewport canvas'); await expect(canvas).toBeVisible();
+  await page.locator('#loc-camera-follow').click();
+  await expect(page.locator('#loc-camera-follow')).toHaveAttribute('aria-pressed', 'true');
+  expect(await snapshot(page)).toEqual(slow);
+  await page.locator('#loc-camera-whole').click();
+  await expect(page.locator('#loc-camera-whole')).toHaveAttribute('aria-pressed', 'true');
+  expect(await snapshot(page)).toEqual(slow);
   const labels = () => page.locator('.loc-truth-label,.loc-estimate-label').evaluateAll((items) => items.map((item) => [item.style.left, item.style.top]));
   const prior = await labels(), bounds = await canvas.boundingBox();
   await page.mouse.move(bounds.x + bounds.width * .7, bounds.y + bounds.height * .7); await page.mouse.down();

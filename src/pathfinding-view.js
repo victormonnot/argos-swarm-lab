@@ -1,7 +1,9 @@
 import { cellCenter, cellXY } from './pathfinding-model.js';
+import { createWorkshopDrone, setWorkshopDrone, createWorkshopStage, addWorkshopCameraUI } from './workshop-scene.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const COLORS = { floor: '#19372f', wall: '#526762', open: '#365e49', closed: '#304746', current: '#656037', route: '#f1c17d', trail: '#72dabb', ink: '#dcebe2', collision: '#f3a291' };
+const DISPLAY_HEIGHT = .8, WALL_HEIGHT = 1.65;
 
 function element(name, attributes = {}, text) {
   const node = document.createElementNS(NS, name);
@@ -13,6 +15,7 @@ function element(name, attributes = {}, text) {
 function releaseGroup(group) {
   const geometries = new Set(), materials = new Set();
   group.traverse((node) => {
+    node.shadow?.dispose();
     if (node.geometry) geometries.add(node.geometry);
     for (const material of Array.isArray(node.material) ? node.material : node.material ? [node.material] : []) materials.add(material);
   });
@@ -25,7 +28,7 @@ function releaseGroup(group) {
  * changes never run search or advance the point agent. Both views use x, y in
  * the same planar world; positive model y maps to negative Three.js z. */
 export function createPathfindingView(container, { selectCell = () => {} } = {}) {
-  let run, mode = '2d', world, loading = false, failed = false, disposed = false;
+  let run, mode = '2d', world, loading = false, failed = false, disposed = false, following = false;
   let options = { traceIndex: 0, selectedCell: null, showSearch: true };
   const svg = element('svg', { viewBox: '0 0 760 600', class: 'path-svg', role: 'group', 'aria-label': 'Pathfinding grid. Select a cell to inspect it; arrow keys move between cells. The positive y direction is upward.' });
   const layer = document.createElement('div'); layer.className = 'path-three'; layer.hidden = true;
@@ -102,9 +105,14 @@ export function createPathfindingView(container, { selectCell = () => {} } = {})
     if (focusedCell !== null) svg.querySelector(`[data-path-cell="${focusedCell}"]`)?.focus({ preventScroll: true });
   }
 
+  function disposeWorld() {
+    if (!world) return;
+    const previous = world; world = undefined;
+    previous.controls.removeEventListener('change', drawThree);
+    previous.controls.dispose(); releaseGroup(previous.scene); previous.renderer.dispose();
+  }
   function unavailable(message) {
-    failed = true;
-    if (world) world.controls.enabled = false;
+    failed = true; disposeWorld();
     layer.replaceChildren(Object.assign(document.createElement('p'), { className: 'path-webgl-message', textContent: message }));
   }
   async function prepareThree() {
@@ -116,16 +124,20 @@ export function createPathfindingView(container, { selectCell = () => {} } = {})
       if (disposed || mode !== '3d') return;
       renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-      renderer.domElement.setAttribute('aria-label', '3D display of the same planar grid and point agent. Drag to orbit, scroll to zoom. Inspect cells with the cell selector.');
+      renderer.domElement.setAttribute('aria-label', 'Detailed drone in the same planar pathfinding run at fixed display height. Exact blocked-cell footprints form the walls. Drag to orbit, scroll to zoom, or use arrow keys to pan.');
+      renderer.domElement.tabIndex = 0;
       renderer.domElement.addEventListener('webglcontextlost', (event) => { event.preventDefault(); if (!disposed) unavailable('3D context lost. Continue the same search and run in 2D.'); });
       scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(46, 1, .1, 150);
       controls = new OrbitControls(camera, renderer.domElement);
-      controls.enablePan = false; controls.minDistance = 7; controls.maxDistance = 34; controls.maxPolarAngle = Math.PI / 2 - .2;
-      scene.add(new THREE.AmbientLight(0xffffff, 2));
-      const light = new THREE.DirectionalLight(0xffffff, 2); light.position.set(2, 14, 4); scene.add(light);
+      controls.minDistance = 2; controls.maxDistance = 52; controls.maxPolarAngle = Math.PI / 2 - .12;
+      controls.listenToKeyEvents(renderer.domElement);
+      createWorkshopStage(THREE, scene, renderer, { center: [run.grid.width / 2, -run.grid.height / 2], size: [run.grid.width, run.grid.height], grid: 1 });
       const grid = new THREE.Group(), paths = new THREE.Group(); scene.add(grid, paths);
-      const agent = new THREE.Mesh(new THREE.CylinderGeometry(.14, .14, .22, 24), new THREE.MeshStandardMaterial({ color: COLORS.trail })); scene.add(agent);
+      const agent = createWorkshopDrone(THREE, { color: COLORS.trail, size: .65, id: 'A' }); scene.add(agent);
+      const projection = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]),
+        new THREE.LineDashedMaterial({ color: COLORS.trail, dashSize: .06, gapSize: .04, transparent: true, opacity: .6 }));
+      projection.frustumCulled = false; scene.add(projection);
       const makeRing = (inner, outer, color) => {
         const ring = new THREE.Mesh(new THREE.RingGeometry(inner, outer, 32), new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide }));
         ring.rotation.x = -Math.PI / 2; scene.add(ring); return ring;
@@ -142,14 +154,20 @@ export function createPathfindingView(container, { selectCell = () => {} } = {})
       };
       const labels = { agent: label('A', COLORS.trail, 'path-agent-label'), start: label('S', '#dcebe2', 'path-site-label'), goal: label('G', COLORS.route, 'path-site-label'), waypoint: label('W', '#ffffff', 'path-waypoint-label') };
       layer.replaceChildren(renderer.domElement, overlay);
-      world = { THREE, renderer, scene, camera, controls, grid, paths, agent, start, goal, waypoint, selectedOutline, currentOutline, overlay, labels, cells: [], gridKey: null, history: null, plan: null };
+      const cameraUI = addWorkshopCameraUI(layer, { prefix: 'path',
+        caption: 'DISPLAY HEIGHT 0.8 m · OCCLUDING WALLS FADE · BLOCKED CELLS AND POINT CONTACT UNCHANGED',
+        onWhole: () => frameCamera(false), onFollow: () => frameCamera(true) });
+      cameraUI.setFollowLabel('Follow drone');
+      world = { THREE, renderer, scene, camera, controls, cameraUI, grid, paths, agent, projection, start, goal, waypoint, selectedOutline, currentOutline, overlay, labels, cells: [], walls: [], gridKey: null, history: null, plan: null };
       controls.addEventListener('change', drawThree);
       updateThree(); resize();
     } catch {
-      controls?.dispose();
-      if (scene) releaseGroup(scene);
-      renderer?.dispose();
-      world = undefined;
+      if (world) disposeWorld();
+      else {
+        controls?.removeEventListener('change', drawThree); controls?.dispose();
+        if (scene) releaseGroup(scene);
+        renderer?.dispose();
+      }
       if (!disposed) unavailable('3D is unavailable. This view needs WebGL 2; the 2D map, search trace and run controls remain available.');
     } finally { loading = false; }
   }
@@ -159,13 +177,21 @@ export function createPathfindingView(container, { selectCell = () => {} } = {})
     if (key === world.gridKey) return;
     const { THREE } = world;
     releaseGroup(world.grid);
-    world.cells.forEach((cell) => cell.label.remove()); world.cells = [];
-    const floorGeometry = new THREE.PlaneGeometry(.97, .97), wallGeometry = new THREE.BoxGeometry(.98, .45, .98), walls = new Set(blocked);
+    world.cells.forEach((cell) => cell.label.remove()); world.cells = []; world.walls = [];
+    const floorGeometry = new THREE.PlaneGeometry(.97, .97), wallGeometry = new THREE.BoxGeometry(1, WALL_HEIGHT, 1), walls = new Set(blocked);
     for (let id = 0; id < width * height; id += 1) {
       const [x, y] = cellCenter(id, width), wall = walls.has(id);
       const mesh = new THREE.Mesh(wall ? wallGeometry : floorGeometry, new THREE.MeshStandardMaterial({ color: wall ? COLORS.wall : COLORS.floor, roughness: 1, side: THREE.DoubleSide }));
       if (!wall) mesh.rotation.x = -Math.PI / 2;
-      mesh.position.set(x, wall ? .225 : .008, -y); world.grid.add(mesh);
+      mesh.position.set(x, wall ? WALL_HEIGHT / 2 : .016, -y); mesh.castShadow = wall; mesh.receiveShadow = true; world.grid.add(mesh);
+      if (wall) {
+        const edges = new THREE.LineSegments(new THREE.EdgesGeometry(wallGeometry), new THREE.LineBasicMaterial({ color: '#9aa996', transparent: true, opacity: .5 }));
+        edges.position.copy(mesh.position); world.grid.add(edges);
+        // Expand only the sightline test by the illustrative drone's extent.
+        // The displayed wall geometry and the model's blocked cell stay exact.
+        world.walls.push({ mesh, bounds: new THREE.Box3(new THREE.Vector3(x - .5, 0, -y - .5), new THREE.Vector3(x + .5, WALL_HEIGHT, -y + .5))
+          .expandByVector(new THREE.Vector3(.34, .15, .34)) });
+      }
       const label = document.createElement('span'); label.className = 'path-search-label'; label.hidden = true; world.overlay.append(label);
       world.cells.push({ mesh, label, wall, anchor: new THREE.Vector3(x + .28, .055, -y - .28) });
     }
@@ -177,10 +203,7 @@ export function createPathfindingView(container, { selectCell = () => {} } = {})
     world.grid.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: '#48675b' })));
     const origin = cellCenter(start, width), destination = cellCenter(goal, width);
     world.start.position.set(origin[0], .04, -origin[1]); world.goal.position.set(destination[0], .04, -destination[1]);
-    if (world.gridKey === null) {
-      world.camera.position.set(width / 2, 13, 8);
-      world.controls.target.set(width / 2, 0, -height / 2); world.controls.update();
-    }
+    if (world.gridKey === null) frameCamera(false);
     world.gridKey = key; world.history = null; world.plan = null;
   }
   function updateThree() {
@@ -196,12 +219,25 @@ export function createPathfindingView(container, { selectCell = () => {} } = {})
       cell.visibleLabel = !cell.label.hidden;
     });
     const agentColor = run.status === 'collision' ? COLORS.collision : COLORS.trail;
-    world.agent.position.set(run.position[0], .15, -run.position[1]); world.agent.material.color.set(agentColor);
+    const previous = run.history.slice(0, -1).reverse().find(row => Math.hypot(row.position[0] - run.position[0], row.position[1] - run.position[1]) > 1e-8);
+    const next = run.plan.waypoints[run.waypointIndex] ?? cellCenter(run.grid.goal, run.grid.width);
+    const direction = previous ? run.position.map((value, axis) => value - previous.position[axis]) : next.map((value, axis) => value - run.position[axis]);
+    setWorkshopDrone(world.agent, { position: [run.position[0], DISPLAY_HEIGHT, -run.position[1]],
+      heading: Math.atan2(direction[1], direction[0]), phase: run.step * .1, active: run.status === 'following' });
+    world.agent.userData.bodyMaterial?.color.set(agentColor);
+    world.agent.userData.modelPosition = [...run.position];
+    const projection = world.projection.geometry.attributes.position;
+    projection.setXYZ(0, run.position[0], .025, -run.position[1]); projection.setXYZ(1, run.position[0], DISPLAY_HEIGHT, -run.position[1]);
+    projection.needsUpdate = true; world.projection.computeLineDistances();
+    if (following) {
+      const target = world.agent.position.clone(); world.camera.position.add(target.clone().sub(world.controls.target));
+      world.controls.target.copy(target); world.controls.update();
+    }
     world.labels.agent.textContent = run.status === 'collision' ? 'A ×' : 'A'; world.labels.agent.style.color = agentColor;
     world.selectedOutline.visible = selectionValid();
     if (selectionValid()) {
       const [x, y] = cellXY(options.selectedCell, run.grid.width);
-      world.selectedOutline.position.set(x, world.cells[options.selectedCell].wall ? .45 : 0, -y);
+      world.selectedOutline.position.set(x, world.cells[options.selectedCell].wall ? WALL_HEIGHT : 0, -y);
     }
     world.currentOutline.visible = search.current !== null;
     if (search.current !== null) { const [x, y] = cellXY(search.current, run.grid.width); world.currentOutline.position.set(x, 0, -y); }
@@ -220,13 +256,40 @@ export function createPathfindingView(container, { selectCell = () => {} } = {})
     }
     drawThree();
   }
+  function frameCamera(follow) {
+    if (!world || !run) return;
+    following = follow; world.cameraUI.setFollowing(follow);
+    if (follow) {
+      world.controls.target.set(run.position[0], DISPLAY_HEIGHT, -run.position[1]);
+      world.camera.position.copy(world.controls.target).add(new world.THREE.Vector3(-3.6, 4.1, 1.8));
+    } else {
+      const span = Math.max(run.grid.width, run.grid.height), fit = Math.max(1, 1.08 / world.camera.aspect);
+      world.controls.target.set(run.grid.width / 2, .4, -run.grid.height / 2);
+      world.camera.position.copy(world.controls.target).add(new world.THREE.Vector3(-span * .65, span * 1.25, span * .65).multiplyScalar(fit));
+    }
+    world.controls.update(); drawThree();
+  }
   function drawThree() {
     if (!world || mode !== '3d' || failed || disposed) return;
+    // A camera cutaway reveals the whole drone while retaining the occupied
+    // cells' edges and shadows. Recompute after orbiting as well as motion.
+    const direction = world.agent.position.clone().sub(world.camera.position), distance = direction.length();
+    const ray = new world.THREE.Ray(world.camera.position, direction.normalize()), hit = new world.THREE.Vector3();
+    let faded = 0;
+    for (const { mesh, bounds } of world.walls) {
+      const occludes = bounds.containsPoint(world.agent.position) || Boolean(ray.intersectBox(bounds, hit) && world.camera.position.distanceTo(hit) < distance);
+      const material = mesh.material;
+      if (material.transparent !== occludes) { material.transparent = occludes; material.depthWrite = !occludes; material.needsUpdate = true; }
+      material.opacity = occludes ? .14 : 1;
+      if (occludes) faded += 1;
+    }
+    layer.dataset.occludedWalls = String(faded);
     world.renderer.render(world.scene, world.camera);
     const place = (anchor, label, visible = true) => {
       const point = anchor.clone().project(world.camera);
-      label.style.left = `${(point.x + 1) * container.clientWidth / 2}px`;
-      label.style.top = `${(1 - point.y) * container.clientHeight / 2}px`;
+      const x = (point.x + 1) * container.clientWidth / 2, y = (1 - point.y) * container.clientHeight / 2;
+      label.style.left = `${Math.max(30, Math.min(container.clientWidth - 30, x))}px`;
+      label.style.top = `${Math.max(65, Math.min(container.clientHeight - 54, y))}px`;
       label.hidden = !visible || point.z < -1 || point.z > 1 || Math.abs(point.x) > 1 || Math.abs(point.y) > 1;
     };
     place(world.agent.position, world.labels.agent); place(world.start.position, world.labels.start); place(world.goal.position, world.labels.goal);
@@ -236,7 +299,10 @@ export function createPathfindingView(container, { selectCell = () => {} } = {})
   function resize() {
     if (!world || failed || disposed) return;
     const width = Math.max(1, container.clientWidth), height = Math.max(1, container.clientHeight);
-    world.renderer.setSize(width, height, false); world.camera.aspect = width / height; world.camera.updateProjectionMatrix(); drawThree();
+    const changed = world.viewportWidth !== width || world.viewportHeight !== height;
+    world.viewportWidth = width; world.viewportHeight = height;
+    world.renderer.setSize(width, height, false); world.camera.aspect = width / height; world.camera.updateProjectionMatrix();
+    if (changed && !following) frameCamera(false); else drawThree();
   }
   const observer = new ResizeObserver(resize); observer.observe(container);
   return {
@@ -254,7 +320,7 @@ export function createPathfindingView(container, { selectCell = () => {} } = {})
     },
     dispose() {
       disposed = true; observer.disconnect();
-      if (world) { world.controls.dispose(); releaseGroup(world.scene); world.renderer.dispose(); world = undefined; }
+      disposeWorld();
       container.replaceChildren();
     },
   };

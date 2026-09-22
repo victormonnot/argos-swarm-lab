@@ -1,3 +1,6 @@
+import { SERVICE_STEPS, MISSION_DT } from './mission-model.js';
+import { createWorkshopDrone, setWorkshopDrone, createWorkshopStage, addWorkshopCameraUI } from './workshop-scene.js';
+
 const NS = 'http://www.w3.org/2000/svg';
 const AGENT_COLORS = ['#72dabb', '#f1c17d', '#91adff'];
 const TASK_COLORS = { pending: '#758982', assigned: '#c7cec1', servicing: '#e7b976', completed: '#74cba4' };
@@ -57,36 +60,87 @@ export function createMissionView(container, { selectAgent = () => {} } = {}) {
     }
     if (focus !== null) svg.querySelector(`[data-mission-agent="${focus}"]`)?.focus({ preventScroll: true });
   }
+  const displayAltitude = 1.5;
+  const prefix = container.id.startsWith('arch-') ? 'arch' : 'mission';
+  let following = false, cameraPreset = true;
+  function disposeWorld() {
+    if (!world) return;
+    world.controls.dispose();
+    const geometries = new Set(), materials = new Set();
+    world.scene.traverse((child) => {
+      child.shadow?.dispose();
+      if (child.geometry) geometries.add(child.geometry);
+      if (Array.isArray(child.material)) child.material.forEach((m) => materials.add(m));
+      else if (child.material) materials.add(child.material);
+    });
+    geometries.forEach((g) => g.dispose()); materials.forEach((m) => m.dispose());
+    world.renderer.dispose(); world = null;
+  }
   function unavailable(message) {
-    failed = true;
+    failed = true; disposeWorld();
     layer.replaceChildren(Object.assign(document.createElement('p'), { className: 'mission-webgl-message', textContent: message }));
+  }
+  function frameCamera(reset = false) {
+    if (!world) return;
+    const { camera, controls, THREE } = world;
+    if (following && selected !== null) {
+      const agent = run.agents[selected];
+      const target = new THREE.Vector3(agent.position[0], displayAltitude * .7, -agent.position[1]);
+      if (reset) camera.position.copy(target).add(new THREE.Vector3(4.3, 4.2, 5.5));
+      else camera.position.add(target.clone().sub(controls.target));
+      controls.target.copy(target);
+    } else if (reset || cameraPreset) {
+      // Enclose the complete task yard at both wide and portrait aspect ratios.
+      const width = 14, depth = 11, fit = Math.max(depth, width / Math.max(.55, camera.aspect));
+      const distance = fit / (2 * Math.tan(camera.fov * Math.PI / 360)) * 1.12;
+      controls.target.set(0, .45, -3.5);
+      camera.position.copy(controls.target).add(new THREE.Vector3(.16, .76, .86).normalize().multiplyScalar(distance));
+    }
+    controls.update();
+    world.cameraUI.setFollowing(following && selected !== null);
+    world.cameraUI.setFollowLabel(selected === null ? 'Select an agent' : `Follow A${selected + 1}`);
+    world.cameraUI.followButton.disabled = selected === null;
+    layer.dataset.camera = following && selected !== null ? `follow-A${selected + 1}` : 'whole';
   }
   async function prepareThree() {
     if (world || loading || failed || disposed) return;
     loading = true; layer.textContent = 'Loading 3D…';
+    let pendingRenderer;
     try {
       const [THREE, { OrbitControls }] = await Promise.all([import('three'), import('three/addons/controls/OrbitControls.js')]);
       if (disposed || mode !== '3d') return;
-      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true }); pendingRenderer = renderer;
       renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-      renderer.domElement.setAttribute('aria-label', '3D view of the planar mission. Drag to orbit, scroll to zoom.');
+      renderer.domElement.setAttribute('aria-label', 'Quadrotors and task stations showing the planar mission at a fixed display altitude of 1.5 metres. Drag to orbit, scroll to zoom.');
       renderer.domElement.addEventListener('webglcontextlost', (event) => { event.preventDefault(); unavailable('3D context lost. Continue the same mission in 2D.'); });
       layer.replaceChildren(renderer.domElement);
-      const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(46, 1, .1, 100);
-      camera.position.set(0, 14, 11);
+      const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(43, 1, .1, 140);
       const controls = new OrbitControls(camera, renderer.domElement);
-      controls.target.set(0, 0, -3.5); controls.enablePan = false; controls.minDistance = 7; controls.maxDistance = 30; controls.maxPolarAngle = Math.PI / 2 - .15; controls.update();
-      scene.add(new THREE.AmbientLight(0xffffff, 2.2));
-      const light = new THREE.DirectionalLight(0xffffff, 2); light.position.set(3, 10, 5); scene.add(light);
-      const grid = new THREE.GridHelper(14, 14, 0x48675b, 0x29483f); grid.position.z = -3.5; scene.add(grid);
+      controls.enablePan = false; controls.minDistance = 4; controls.maxDistance = 60; controls.maxPolarAngle = Math.PI / 2 - .08;
+      controls.addEventListener('start', () => { cameraPreset = false; });
+      createWorkshopStage(THREE, scene, renderer, { center: [0, -3.5], size: [14, 11], grid: 1 });
       const agents = run.agents.map((agent) => {
-        const mesh = new THREE.Mesh(new THREE.CylinderGeometry(.16, .16, .2, 24), new THREE.MeshStandardMaterial({ color: AGENT_COLORS[agent.id] })); scene.add(mesh); return mesh;
+        const drone = createWorkshopDrone(THREE, { color: AGENT_COLORS[agent.id], size: .95, id: `A${agent.id + 1}` });
+        scene.add(drone); return drone;
       });
       const tasks = run.tasks.map((task) => {
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(.35, .035, .35), new THREE.MeshBasicMaterial({ color: TASK_COLORS[task.state] }));
-        mesh.position.set(task.position[0], .02, -task.position[1]); scene.add(mesh); return mesh;
+        const station = new THREE.Group(); station.position.set(task.position[0], 0, -task.position[1]);
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(.48, .53, .13, 32), new THREE.MeshStandardMaterial({ color: '#354b45', roughness: .8 }));
+        base.position.y = .08; base.receiveShadow = true; base.castShadow = true; station.add(base);
+        const pillar = new THREE.Mesh(new THREE.BoxGeometry(.28, .42, .28), new THREE.MeshStandardMaterial({ color: '#778f85', metalness: .25, roughness: .55 }));
+        pillar.position.y = .35; pillar.castShadow = true; station.add(pillar);
+        const beacon = new THREE.Mesh(new THREE.SphereGeometry(.10, 12, 8), new THREE.MeshStandardMaterial({ color: TASK_COLORS.pending, emissive: TASK_COLORS.pending, emissiveIntensity: .4 }));
+        beacon.position.y = .65; station.add(beacon);
+        const segments = Array.from({ length: SERVICE_STEPS }, (_, index) => {
+          const segment = new THREE.Mesh(new THREE.BoxGeometry(.052, .04, .12), new THREE.MeshStandardMaterial({ color: '#43584f', roughness: .8 }));
+          const angle = index / SERVICE_STEPS * Math.PI * 2;
+          segment.position.set(.39 * Math.cos(angle), .165, .39 * Math.sin(angle)); segment.rotation.y = -angle + Math.PI / 2;
+          station.add(segment); return segment;
+        });
+        station.userData = { base, pillar, beacon, segments }; scene.add(station); return station;
       });
-      const ring = new THREE.Mesh(new THREE.RingGeometry(.26, .29, 32), new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })); ring.rotation.x = -Math.PI / 2; scene.add(ring);
+      const ring = new THREE.Mesh(new THREE.RingGeometry(.57, .62, 48), new THREE.MeshBasicMaterial({ color: '#f2eddb', side: THREE.DoubleSide }));
+      ring.rotation.x = -Math.PI / 2; scene.add(ring);
       const paths = new THREE.Group(); scene.add(paths);
       const overlay = document.createElement('div'); overlay.className = 'mission-labels';
       const agentLabels = agents.map((_, id) => {
@@ -95,61 +149,97 @@ export function createMissionView(container, { selectAgent = () => {} } = {}) {
       });
       const taskLabels = tasks.map(() => { const span = document.createElement('span'); overlay.append(span); return span; });
       layer.append(overlay);
-      world = { THREE, renderer, scene, camera, controls, agents, tasks, ring, paths, agentLabels, taskLabels, history: null };
-      controls.addEventListener('change', drawThree); updateThree(); resize();
-    } catch { if (!disposed) unavailable('3D is unavailable. This view needs WebGL 2; the 2D map and mission controls remain available.'); }
+      const cameraUI = addWorkshopCameraUI(layer, { prefix, caption: 'Fixed display altitude 1.5 m · planar model · station rings show service',
+        onWhole: () => { following = false; cameraPreset = true; frameCamera(true); drawThree(); },
+        onFollow: () => { if (selected === null) return; following = true; cameraPreset = false; frameCamera(true); drawThree(); } });
+      const observerNote = Object.assign(document.createElement('p'), { className: 'mission-scene-observer' });
+      layer.append(observerNote);
+      world = { THREE, renderer, scene, camera, controls, agents, tasks, ring, paths, agentLabels, taskLabels, cameraUI, observerNote, history: null, lastSelected: selected };
+      controls.addEventListener('change', drawThree); resize(); updateThree();
+    } catch { if (!world) pendingRenderer?.dispose(); if (!disposed) unavailable('3D is unavailable. This view needs WebGL 2; the 2D map and mission controls remain available.'); }
     finally { loading = false; }
   }
   function updateThree() {
     if (!world || !run || failed) return;
+    const observerId = selected === null ? 0 : selected + 1;
+    const knowledge = run.knowledge?.[observerId], observerName = observerId === 0 ? 'C' : `A${observerId}`;
+    world.observerNote.hidden = !knowledge;
+    world.observerNote.textContent = knowledge ? `Physical state shown · ${observerName} knows ${knowledge.completed.length}/6 completed · ? = completion not learned` : '';
     run.agents.forEach((agent, id) => {
-      world.agents[id].position.set(agent.position[0], .13, -agent.position[1]);
-      world.agents[id].material.color.set(agent.state === 'unavailable' ? '#52605b' : AGENT_COLORS[id]);
-      world.agentLabels[id].textContent = `A${id + 1}${agent.state === 'unavailable' ? ' ×' : ''}`;
+      const previous = run.history.findLast((point) => Math.hypot(point.positions[id][0] - agent.position[0], point.positions[id][1] - agent.position[1]) > 1e-6);
+      const target = agent.taskId === null ? null : run.tasks[agent.taskId].position;
+      const dx = previous ? agent.position[0] - previous.positions[id][0] : target ? target[0] - agent.position[0] : 0;
+      const dy = previous ? agent.position[1] - previous.positions[id][1] : target ? target[1] - agent.position[1] : 1;
+      setWorkshopDrone(world.agents[id], { position: [agent.position[0], displayAltitude, -agent.position[1]], heading: Math.atan2(dy, dx), phase: (agent.state === 'unavailable' ? run.history.find((point) => point.states?.[id] === 'unavailable')?.step ?? run.step : run.step) * .8, active: agent.state !== 'unavailable' });
+      const report = knowledge?.reports[id];
+      const age = report ? (run.step - report.step) * MISSION_DT : null;
+      world.agentLabels[id].textContent = `A${id + 1}${agent.state === 'unavailable' ? ' ×' : agent.state === 'servicing' ? ' · service' : ''}${knowledge && (age === null || age > 0) ? age === null ? ' · no report' : ` · report ${age.toFixed(1)}s old` : ''}`;
+      world.agentLabels[id].title = `A${id + 1}: physical ${agent.state}${knowledge ? `; ${observerName}'s report ${age === null ? 'missing' : `${age.toFixed(1)} s old`}` : ''}`;
       world.agentLabels[id].setAttribute('aria-pressed', String(id === selected));
+      world.agents[id].userData.planarPosition = [...agent.position];
     });
     run.tasks.forEach((task, id) => {
-      world.tasks[id].material.color.set(TASK_COLORS[task.state]);
-      world.taskLabels[id].textContent = `T${id + 1}${task.state === 'completed' ? ' ✓' : ''}`;
-      world.taskLabels[id].style.color = TASK_COLORS[task.state];
+      const { beacon, segments } = world.tasks[id].userData;
+      beacon.material.color.set(TASK_COLORS[task.state]); beacon.material.emissive.set(TASK_COLORS[task.state]);
+      const progress = task.state === 'completed' ? SERVICE_STEPS : SERVICE_STEPS - task.serviceRemaining;
+      segments.forEach((segment, index) => segment.material.color.set(index < progress ? TASK_COLORS.completed : task.state === 'servicing' ? '#816e49' : '#43584f'));
+      const unlearned = knowledge && task.state === 'completed' && !knowledge.completed.includes(task.id);
+      world.taskLabels[id].textContent = `T${id + 1}${task.state === 'completed' ? ' ✓' : task.state === 'servicing' ? ` · ${Math.round(progress / SERVICE_STEPS * 100)}%` : ''}${unlearned ? ` · ${observerName} ?` : ''}`;
+      world.taskLabels[id].title = `T${id + 1}: physical ${task.state}${knowledge ? `; ${observerName} ${knowledge.completed.includes(task.id) ? 'knows completion' : 'has not learned completion'}` : ''}`;
+      world.taskLabels[id].style.color = unlearned ? '#f0bb83' : TASK_COLORS[task.state];
+      world.taskLabels[id].dataset.state = task.state;
     });
     world.ring.visible = selected !== null;
     if (selected !== null) world.ring.position.set(run.agents[selected].position[0], .012, -run.agents[selected].position[1]);
     if (world.history !== run.history) {
       for (const child of [...world.paths.children]) { child.geometry.dispose(); child.material.dispose(); world.paths.remove(child); }
       run.agents.forEach((agent, id) => {
-        const points = run.history.map((point) => new world.THREE.Vector3(point.positions[id][0], .01, -point.positions[id][1]));
-        world.paths.add(new world.THREE.Line(new world.THREE.BufferGeometry().setFromPoints(points), new world.THREE.LineBasicMaterial({ color: AGENT_COLORS[id], transparent: true, opacity: .7 })));
+        const points = run.history.map((point) => new world.THREE.Vector3(point.positions[id][0], displayAltitude, -point.positions[id][1]));
+        world.paths.add(new world.THREE.Line(new world.THREE.BufferGeometry().setFromPoints(points), new world.THREE.LineBasicMaterial({ color: AGENT_COLORS[id], transparent: true, opacity: .45 })));
         if (agent.taskId !== null) {
           const target = run.tasks[agent.taskId].position;
-          const line = new world.THREE.Line(new world.THREE.BufferGeometry().setFromPoints([new world.THREE.Vector3(agent.position[0], .025, -agent.position[1]), new world.THREE.Vector3(target[0], .025, -target[1])]), new world.THREE.LineDashedMaterial({ color: AGENT_COLORS[id], dashSize: .12, gapSize: .12 }));
+          const line = new world.THREE.Line(new world.THREE.BufferGeometry().setFromPoints([new world.THREE.Vector3(agent.position[0], displayAltitude, -agent.position[1]), new world.THREE.Vector3(target[0], displayAltitude, -target[1])]), new world.THREE.LineDashedMaterial({ color: AGENT_COLORS[id], dashSize: .15, gapSize: .13, transparent: true, opacity: .7 }));
           line.computeLineDistances(); world.paths.add(line);
         }
       });
       world.history = run.history;
     }
+    if (following && selected === null) { following = false; cameraPreset = true; }
+    frameCamera(following && world.lastSelected !== selected);
+    world.lastSelected = selected;
+    layer.dataset.agents = JSON.stringify(run.agents.map((agent) => ({ id: agent.id, position: [...agent.position], displayAltitude, state: agent.state })));
+    layer.dataset.tasks = JSON.stringify(run.tasks.map((task) => ({ id: task.id, state: task.state, serviceRemaining: task.serviceRemaining, knownCompleted: knowledge ? knowledge.completed.includes(task.id) : null })));
+    layer.dataset.step = String(run.step);
     drawThree();
   }
   function drawThree() {
     if (!world || mode !== '3d' || failed || disposed) return;
     world.renderer.render(world.scene, world.camera);
-    const place = (mesh, label) => {
-      const point = mesh.position.clone().project(world.camera);
-      label.style.left = `${(point.x + 1) * container.clientWidth / 2}px`;
-      label.style.top = `${(1 - point.y) * container.clientHeight / 2}px`;
-      label.hidden = point.z < -1 || point.z > 1;
+    const width = container.clientWidth, height = container.clientHeight, occupied = [];
+    const place = (anchor, label, priority = false) => {
+      const point = anchor.clone().project(world.camera), w = Math.min(width - 16, Math.max(30, label.textContent.length * 7.2 + 14)), h = 23;
+      label.hidden = point.z < -1 || point.z > 1 || Math.abs(point.x) > 1 || Math.abs(point.y) > 1;
+      if (label.hidden) return;
+      const x = Math.max(8, Math.min(width - w - 8, (point.x + 1) * width / 2 - w / 2));
+      const baseY = (1 - point.y) * height / 2 - h - 10;
+      const candidates = [0, -26, 26, -52, 52].map((offset) => Math.max(80, Math.min(height - (run.knowledge ? 100 : 65), baseY + offset)));
+      const y = candidates.find((candidate) => !occupied.some((box) => x < box.x + box.w + 4 && x + w + 4 > box.x && candidate < box.y + box.h + 3 && candidate + h + 3 > box.y));
+      if (y === undefined && !priority) { label.hidden = true; return; }
+      const top = y ?? candidates[0]; occupied.push({ x, y: top, w, h });
+      label.style.left = `${x}px`; label.style.top = `${top}px`;
     };
-    world.agents.forEach((mesh, id) => place(mesh, world.agentLabels[id]));
-    world.tasks.forEach((mesh, id) => place(mesh, world.taskLabels[id]));
+    const order = run.agents.map((_, id) => id).sort((a, b) => Number(b === selected) - Number(a === selected));
+    order.forEach((id) => place(world.agents[id].position.clone().add(new world.THREE.Vector3(0, .28, 0)), world.agentLabels[id], id === selected));
+    world.tasks.forEach((station, id) => place(station.position.clone().add(new world.THREE.Vector3(0, .65, 0)), world.taskLabels[id]));
   }
   function resize() {
     if (!world || failed) return;
     const width = Math.max(1, container.clientWidth), height = Math.max(1, container.clientHeight);
-    world.renderer.setSize(width, height, false); world.camera.aspect = width / height; world.camera.updateProjectionMatrix(); drawThree();
+    world.renderer.setSize(width, height, false); world.camera.aspect = width / height; world.camera.updateProjectionMatrix(); frameCamera(cameraPreset); drawThree();
   }
   const observer = new ResizeObserver(resize); observer.observe(container);
   return {
-    update(state, agent = selected) { run = state; selected = agent; drawSvg(); updateThree(); },
+    update(state, agent = selected) { if (disposed) return; run = state; selected = agent; drawSvg(); updateThree(); },
     setMode(nextMode) {
       if (!['2d', '3d'].includes(nextMode)) throw new Error('Unknown mission view.');
       mode = nextMode; svg.style.display = mode === '2d' ? '' : 'none'; layer.hidden = mode !== '3d';
@@ -159,11 +249,7 @@ export function createMissionView(container, { selectAgent = () => {} } = {}) {
     },
     dispose() {
       disposed = true; observer.disconnect();
-      if (world) {
-        world.controls.dispose();
-        world.scene.traverse((node) => { node.geometry?.dispose(); node.material?.dispose(); });
-        world.renderer.dispose();
-      }
+      disposeWorld();
       container.replaceChildren();
     },
   };

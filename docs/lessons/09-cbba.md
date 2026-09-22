@@ -141,7 +141,13 @@ They are abstract display units. Claim edges denote current own-bundle entries,
 not the winner believed by every other agent. Communication links are the
 separate chain above. A task may have multiple claim edges while allocation is
 unresolved. Both views show the same stationary nodes and current claims;
-height, camera movement and line crossings have no physical meaning.
+height, camera movement and line crossings have no physical meaning. The 3D
+view uses detailed stationary quadrotors at a fixed display height of 1.2 units,
+volumetric task stations and a bounded illustrative yard. Colored station bands
+identify each current claimant; an orange beacon indicates competing claims.
+Elevated solid curves represent own-bundle claims, while dashed links represent
+the communication chain. The rotors and poses do not animate with protocol
+rounds. Whole-site and selected-agent cameras change inspection only.
 
 ## Comparing quality without inventing execution
 

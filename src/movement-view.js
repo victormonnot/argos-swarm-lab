@@ -1,5 +1,8 @@
+import { createWorkshopDrone, setWorkshopDrone, createWorkshopStage, addWorkshopCameraUI } from './workshop-scene.js';
 import { AGENT_RADIUS, WALL_RADIUS, GOAL, GOAL_RADIUS, observeMovement, movementCommand } from './movement-model.js';
 
+const DISPLAY_HEIGHT = 0.65;
+const WALL_HEIGHT = 1.3;
 const NS = 'http://www.w3.org/2000/svg';
 const COLORS = ['#70d8bf', '#eec077', '#8faaf7'];
 const VECTOR_COLORS = { attraction: '#70d8bf', obstacle: '#edaa72', separation: '#a29be9', velocity: '#f2f5ed' };
@@ -78,52 +81,70 @@ export function createMovementView(container, { selectAgent = () => {} } = {}) {
     });
   }
 
+  function disposeScene(scene) {
+    const geometries = new Set(), materials = new Set();
+    scene.traverse((node) => {
+      if (node.geometry) geometries.add(node.geometry);
+      if (Array.isArray(node.material)) node.material.forEach((material) => materials.add(material));
+      else if (node.material) materials.add(node.material);
+      node.shadow?.dispose();
+    });
+    geometries.forEach((geometry) => geometry.dispose());
+    materials.forEach((material) => material.dispose());
+  }
+  function disposeWorld() {
+    if (!world) return;
+    world.controls.dispose();
+    disposeScene(world.scene);
+    world.renderer.dispose(); world = null;
+  }
   function unavailable(message) {
-    failed = true;
+    failed = true; disposeWorld();
     threeLayer.replaceChildren(Object.assign(document.createElement('p'), { className: 'movement-webgl-message', textContent: message }));
   }
   async function prepareThree() {
     if (world || loading || failed || disposed) return;
     loading = true;
     threeLayer.textContent = 'Loading 3D…';
+    let pendingRenderer, pendingScene, pendingControls;
     try {
       const [THREE, { OrbitControls }] = await Promise.all([import('three'), import('three/addons/controls/OrbitControls.js')]);
       if (disposed || mode !== '3d') return;
-      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true }); pendingRenderer = renderer;
       renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
       renderer.domElement.setAttribute('aria-label', '3D view of planar movement. Drag to orbit, scroll to zoom.');
       renderer.domElement.addEventListener('webglcontextlost', (event) => { event.preventDefault(); unavailable('3D context lost. Use 2D to keep exploring the same run.'); });
       threeLayer.replaceChildren(renderer.domElement);
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(44, 1, 0.1, 80);
-      camera.position.set(0, 9.7, 9.7);
-      const controls = new OrbitControls(camera, renderer.domElement);
-      controls.target.set(0, 0, 0);
+      const scene = new THREE.Scene(); pendingScene = scene;
+      const camera = new THREE.PerspectiveCamera(44, 1, 0.05, 100);
+      const controls = new OrbitControls(camera, renderer.domElement); pendingControls = controls;
       controls.enablePan = false;
-      controls.minDistance = 6;
-      controls.maxDistance = 23;
-      controls.maxPolarAngle = Math.PI / 2 - 0.12;
-      controls.update();
-      scene.add(new THREE.AmbientLight(0xffffff, 2));
-      const light = new THREE.DirectionalLight(0xffffff, 2.3);
-      light.position.set(-3, 8, 5);
-      scene.add(light);
-      scene.add(new THREE.GridHelper(12, 24, 0x48665c, 0x29483f));
-      const geometry = new THREE.CylinderGeometry(AGENT_RADIUS, AGENT_RADIUS, 0.08, 28);
-      const agents = COLORS.map((color) => {
-        const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color }));
-        scene.add(mesh);
-        return mesh;
+      controls.minDistance = 1.6;
+      controls.maxDistance = 28;
+      controls.maxPolarAngle = Math.PI / 2 - 0.08;
+      createWorkshopStage(THREE, scene, renderer, { center: [0, 0], size: [11, 6], grid: 1 });
+      const agents = COLORS.map((color, index) => {
+        const drone = createWorkshopDrone(THREE, { color, size: 2 * AGENT_RADIUS, id: `A${index + 1}` });
+        scene.add(drone);
+        return drone;
       });
-      const goal = new THREE.Mesh(new THREE.CircleGeometry(GOAL_RADIUS, 64), new THREE.MeshBasicMaterial({ color: 0x83aa61, transparent: true, opacity: 0.32, side: THREE.DoubleSide }));
-      goal.rotation.x = -Math.PI / 2;
-      goal.position.set(GOAL[0], 0.006, -GOAL[1]);
-      scene.add(goal);
-      const marker = new THREE.Mesh(new THREE.RingGeometry(0.20, 0.23, 32), new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }));
-      marker.rotation.x = -Math.PI / 2;
-      scene.add(marker);
-      const environment = new THREE.Group(), trajectories = new THREE.Group();
-      scene.add(environment, trajectories);
+      const footprints = COLORS.map((color) => {
+        const group = new THREE.Group();
+        const disk = new THREE.Mesh(new THREE.CircleGeometry(AGENT_RADIUS, 32), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .26, side: THREE.DoubleSide }));
+        disk.rotation.x = -Math.PI / 2;
+        const edge = new THREE.Mesh(new THREE.RingGeometry(AGENT_RADIUS - .01, AGENT_RADIUS, 32), new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide }));
+        edge.rotation.x = -Math.PI / 2;
+        const stem = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, .01, 0), new THREE.Vector3(0, DISPLAY_HEIGHT, 0)]), new THREE.LineDashedMaterial({ color, transparent: true, opacity: .38, dashSize: .05, gapSize: .04 }));
+        stem.computeLineDistances(); group.add(disk, edge, stem); scene.add(group); return group;
+      });
+      const goal = new THREE.Mesh(new THREE.CylinderGeometry(GOAL_RADIUS, GOAL_RADIUS, .025, 64), new THREE.MeshStandardMaterial({ color: 0x6d9c63, transparent: true, opacity: .48 }));
+      goal.position.set(GOAL[0], .013, -GOAL[1]); goal.receiveShadow = true; scene.add(goal);
+      const goalRing = new THREE.Mesh(new THREE.RingGeometry(GOAL_RADIUS - .02, GOAL_RADIUS, 64), new THREE.MeshBasicMaterial({ color: 0xb1d797, side: THREE.DoubleSide }));
+      goalRing.rotation.x = -Math.PI / 2; goalRing.position.set(GOAL[0], .027, -GOAL[1]); scene.add(goalRing);
+      const marker = new THREE.Mesh(new THREE.RingGeometry(AGENT_RADIUS + .035, AGENT_RADIUS + .05, 32), new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }));
+      marker.rotation.x = -Math.PI / 2; scene.add(marker);
+      const environment = new THREE.Group(), trajectories = new THREE.Group(), arrows = new THREE.Group();
+      scene.add(environment, trajectories, arrows);
       const overlay = document.createElement('div');
       overlay.className = 'movement-3d-labels';
       const labels = COLORS.map((color, index) => {
@@ -136,79 +157,117 @@ export function createMovementView(container, { selectAgent = () => {} } = {}) {
         return label;
       });
       threeLayer.append(overlay);
-      world = { THREE, renderer, scene, camera, controls, agents, marker, environment, trajectories, labels, mapKey: null, historyLength: -1 };
+      world = { THREE, renderer, scene, camera, controls, agents, footprints, marker, environment, trajectories, arrows, labels, mapKey: null, historyLength: -1, following: false };
+      world.cameraUI = addWorkshopCameraUI(threeLayer, {
+        prefix: 'movement', caption: 'Planar APF · 0.65 m display height · ground disks = collision footprint · no vertical avoidance',
+        onWhole: () => frameCamera(false), onFollow: () => frameCamera(true),
+      });
       controls.addEventListener('change', drawThree);
       updateThree();
       resize();
+      frameCamera(false);
     } catch {
+      if (!world) { pendingControls?.dispose(); if (pendingScene) disposeScene(pendingScene); pendingRenderer?.dispose(); }
       if (!disposed) unavailable('3D is unavailable. This view needs WebGL 2. The 2D experiment and state table remain available.');
     } finally { loading = false; }
   }
   function clearGroup(group) {
-    for (const child of [...group.children]) {
-      child.geometry?.dispose();
-      child.material?.dispose();
-      group.remove(child);
-    }
+    group.traverse((child) => { child.geometry?.dispose(); if (Array.isArray(child.material)) child.material.forEach((m) => m.dispose()); else child.material?.dispose(); });
+    group.clear();
+  }
+  function frameCamera(following) {
+    if (!world || !run) return;
+    world.following = following;
+    const target = following ? new world.THREE.Vector3(run.positions[selected][0], DISPLAY_HEIGHT * .75, -run.positions[selected][1]) : new world.THREE.Vector3(0, .3, 0);
+    const distance = following ? 3.2 : Math.max(10.8, 12.6 / Math.max(.55, world.camera.aspect));
+    world.camera.position.copy(target).add(new world.THREE.Vector3(.12, .85, 1).normalize().multiplyScalar(distance));
+    world.controls.target.copy(target); world.controls.update();
+    world.cameraUI.setFollowing(following);
+    threeLayer.dataset.camera = following ? 'follow' : 'whole';
+    drawThree();
   }
   function updateThree() {
     if (!world || !run || failed) return;
-    const { THREE, environment, trajectories } = world;
+    const { THREE, environment, trajectories, arrows } = world;
     const mapKey = run.initial.preset;
     if (world.mapKey !== mapKey) {
       clearGroup(environment);
       for (const [a, b] of run.walls) {
-        // Capsule cross-section matches the 2D wall: a central rectangle plus
-        // semicircular ends. Height is only a visual extrusion of that footprint.
+        // Extruding the exact capsule footprint adds no path or vertical escape.
         const dx = b[0] - a[0], dy = b[1] - a[1], wallLength = Math.hypot(dx, dy);
-        const box = new THREE.Mesh(new THREE.BoxGeometry(wallLength, 0.4, 2 * WALL_RADIUS), new THREE.MeshStandardMaterial({ color: 0x7d938b }));
-        box.position.set((a[0] + b[0]) / 2, 0.2, -(a[1] + b[1]) / 2);
-        box.rotation.y = Math.atan2(dy, dx);
-        environment.add(box);
+        const material = new THREE.MeshStandardMaterial({ color: 0x80938c, roughness: .85 });
+        const box = new THREE.Mesh(new THREE.BoxGeometry(wallLength, WALL_HEIGHT, 2 * WALL_RADIUS), material);
+        box.position.set((a[0] + b[0]) / 2, WALL_HEIGHT / 2, -(a[1] + b[1]) / 2);
+        box.rotation.y = Math.atan2(dy, dx); box.castShadow = true; box.receiveShadow = true; environment.add(box);
         for (const point of [a, b]) {
-          const end = new THREE.Mesh(new THREE.CylinderGeometry(WALL_RADIUS, WALL_RADIUS, 0.4, 16), new THREE.MeshStandardMaterial({ color: 0x7d938b }));
-          end.position.set(point[0], 0.2, -point[1]);
-          environment.add(end);
+          const end = new THREE.Mesh(new THREE.CylinderGeometry(WALL_RADIUS, WALL_RADIUS, WALL_HEIGHT, 24), material.clone());
+          end.position.set(point[0], WALL_HEIGHT / 2, -point[1]); end.castShadow = true; end.receiveShadow = true; environment.add(end);
         }
       }
       world.mapKey = mapKey;
     }
+    const phase = run.history.at(-1).time * 34;
     run.positions.forEach((point, index) => {
-      world.agents[index].position.set(point[0], 0.05, -point[1]);
+      const previous = run.history.length > 1 ? run.history.at(-2).positions[index] : point;
+      const delta = [point[0] - previous[0], point[1] - previous[1]];
+      const heading = Math.hypot(...delta) > 1e-10 ? Math.atan2(delta[1], delta[0]) : Math.atan2(GOAL[1] - point[1], GOAL[0] - point[0]);
+      setWorkshopDrone(world.agents[index], { position: [point[0], DISPLAY_HEIGHT, -point[1]], heading, phase, active: run.status !== 'collision' });
+      world.footprints[index].position.set(point[0], .012, -point[1]);
       world.labels[index].setAttribute('aria-pressed', String(index === selected));
     });
-    world.marker.position.set(run.positions[selected][0], 0.009, -run.positions[selected][1]);
-    // Rebuild paths only when the numerical history changes, not on selection.
+    world.marker.position.set(run.positions[selected][0], .025, -run.positions[selected][1]);
+    clearGroup(arrows);
+    if (run.status !== 'collision') {
+      const command = movementCommand(observeMovement(run, selected), run.gains), position = run.positions[selected];
+      for (const [index, key] of ['attraction', 'obstacle', 'separation', 'velocity'].entries()) {
+        const vector = command[key], magnitude = Math.hypot(...vector);
+        if (magnitude < .00001) continue;
+        const length = Math.min(magnitude, 2.3) * (36 / 78);
+        arrows.add(new THREE.ArrowHelper(new THREE.Vector3(vector[0], 0, -vector[1]).normalize(), new THREE.Vector3(position[0], DISPLAY_HEIGHT + .04 + index * .035, -position[1]), length, VECTOR_COLORS[key], Math.min(.10, length * .3), Math.min(.055, length * .2)));
+      }
+    }
     if (world.historyLength !== run.history.length || world.historyStart !== run.history[0]) {
       clearGroup(trajectories);
       run.positions.forEach((_, index) => {
-        const geometry = new THREE.BufferGeometry().setFromPoints(run.history.map((state) => new THREE.Vector3(state.positions[index][0], 0.018, -state.positions[index][1])));
-        trajectories.add(new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: COLORS[index], transparent: true, opacity: 0.75 })));
+        for (const height of [.022, DISPLAY_HEIGHT]) {
+          const geometry = new THREE.BufferGeometry().setFromPoints(run.history.map((state) => new THREE.Vector3(state.positions[index][0], height, -state.positions[index][1])));
+          trajectories.add(new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: COLORS[index], transparent: true, opacity: height === DISPLAY_HEIGHT ? .7 : .22 })));
+        }
       });
-      world.historyLength = run.history.length;
-      world.historyStart = run.history[0];
+      world.historyLength = run.history.length; world.historyStart = run.history[0];
     }
+    world.cameraUI.setFollowLabel(`Follow A${selected + 1}`);
+    if (world.following) {
+      const target = new THREE.Vector3(run.positions[selected][0], DISPLAY_HEIGHT * .75, -run.positions[selected][1]);
+      world.camera.position.add(target.clone().sub(world.controls.target)); world.controls.target.copy(target); world.controls.update();
+    }
+    threeLayer.dataset.agents = JSON.stringify(run.positions.map((p) => [p[0], DISPLAY_HEIGHT, -p[1]]));
     drawThree();
   }
   function drawThree() {
     if (!world || mode !== '3d' || failed || disposed) return;
     const { renderer, scene, camera } = world;
     renderer.render(scene, camera);
+    const placed = [], width = container.clientWidth, height = container.clientHeight;
     world.agents.forEach((mesh, index) => {
-      const point = mesh.position.clone().project(camera);
-      const label = world.labels[index];
-      label.style.left = `${(point.x + 1) * container.clientWidth / 2}px`;
-      label.style.top = `${(1 - point.y) * container.clientHeight / 2}px`;
-      label.hidden = point.z < -1 || point.z > 1;
+      const point = mesh.position.clone().add(new world.THREE.Vector3(0, .13, 0)).project(camera), label = world.labels[index];
+      const left = Math.max(24, Math.min(width - 24, (point.x + 1) * width / 2));
+      let top = Math.max(80, Math.min(height - 35, (1 - point.y) * height / 2));
+      while (placed.some((other) => Math.abs(other[0] - left) < 40 && Math.abs(other[1] - top) < 27)) top += 28;
+      label.style.left = `${left}px`; label.style.top = `${top}px`;
+      label.hidden = point.z < -1 || point.z > 1 || Math.abs(point.x) > 1.08 || Math.abs(point.y) > 1.08;
+      if (!label.hidden) placed.push([left, top]);
     });
   }
   function resize() {
     if (!world || failed) return;
     const width = Math.max(1, container.clientWidth), height = Math.max(1, container.clientHeight);
+    const changed = world.width !== width || world.height !== height;
+    world.width = width; world.height = height;
     world.renderer.setSize(width, height, false);
     world.camera.aspect = width / height;
     world.camera.updateProjectionMatrix();
-    drawThree();
+    if (changed && !world.following && run) frameCamera(false); else drawThree();
   }
   const observer = new ResizeObserver(resize);
   observer.observe(container);
@@ -234,14 +293,7 @@ export function createMovementView(container, { selectAgent = () => {} } = {}) {
     dispose() {
       disposed = true;
       observer.disconnect();
-      if (world) {
-        world.controls.dispose();
-        const geometries = new Set(), materials = new Set();
-        world.scene.traverse((node) => { if (node.geometry) geometries.add(node.geometry); if (node.material) materials.add(node.material); });
-        geometries.forEach((geometry) => geometry.dispose());
-        materials.forEach((material) => material.dispose());
-        world.renderer.dispose();
-      }
+      disposeWorld();
       container.replaceChildren();
     },
   };

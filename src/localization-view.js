@@ -1,7 +1,9 @@
 import { cellCenter, cellXY } from './pathfinding-model.js';
+import { createWorkshopDrone, setWorkshopDrone, createWorkshopStage, addWorkshopCameraUI } from './workshop-scene.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const COLORS = { floor: '#19372f', wall: '#526762', truth: '#72dabb', estimate: '#b5acff', goal: '#f1c17d', fix: '#b7d7ff', route: '#9cafa5', uncertainty: '#988bdd' };
+const DISPLAY_HEIGHT = .8, WALL_HEIGHT = 1.65;
 
 function element(name, attributes = {}, text) {
   const node = document.createElementNS(NS, name);
@@ -12,6 +14,7 @@ function element(name, attributes = {}, text) {
 function releaseGroup(group) {
   const geometries = new Set(), materials = new Set();
   group.traverse((node) => {
+    node.shadow?.dispose();
     if (node.geometry) geometries.add(node.geometry);
     for (const material of Array.isArray(node.material) ? node.material : node.material ? [node.material] : []) materials.add(material);
   });
@@ -25,7 +28,7 @@ function releaseGroup(group) {
  * never advance the estimator or controller. Model y maps to negative 3D z;
  * wall height and marker height are decorative, not vertical dynamics. */
 export function createLocalizationView(container) {
-  let run, mode = '2d', world, loading = false, failed = false, disposed = false;
+  let run, mode = '2d', world, loading = false, failed = false, disposed = false, following = false;
   const svg = element('svg', { viewBox: '0 0 760 600', class: 'loc-svg', role: 'img', 'aria-label': 'Localization map: solid T is physical truth, hollow E is the position estimate, G is the goal, and cross Z is the latest absolute reading. The ellipse has two-standard-deviation axes from the filter covariance. Positive y is upward.' });
   const layer = document.createElement('div'); layer.className = 'loc-three'; layer.hidden = true;
   container.append(svg, layer);
@@ -93,21 +96,26 @@ export function createLocalizationView(container) {
       if (disposed || mode !== '3d') return;
       renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-      renderer.domElement.setAttribute('aria-label', '3D display of the same planar localization run. Solid T is physical truth; hollow E is the estimate. Drag to orbit and scroll to zoom.');
+      renderer.domElement.setAttribute('aria-label', 'Detailed solid drone is physical truth; wireframe drone is its estimate. Both use fixed display height above the unchanged planar localization map. Drag to orbit, scroll to zoom, or use arrow keys to pan.');
+      renderer.domElement.tabIndex = 0;
       renderer.domElement.addEventListener('webglcontextlost', (event) => { event.preventDefault(); if (!disposed) unavailable('3D context lost. Continue the same localization run in 2D.'); });
       scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(46, 1, .1, 150);
       controls = new OrbitControls(camera, renderer.domElement);
-      controls.enablePan = false; controls.minDistance = 7; controls.maxDistance = 34; controls.maxPolarAngle = Math.PI / 2 - .2;
-      scene.add(new THREE.AmbientLight(0xffffff, 2));
-      const light = new THREE.DirectionalLight(0xffffff, 2); light.position.set(2, 14, 4); scene.add(light);
+      controls.minDistance = 2; controls.maxDistance = 52; controls.maxPolarAngle = Math.PI / 2 - .12;
+      controls.listenToKeyEvents(renderer.domElement);
+      createWorkshopStage(THREE, scene, renderer, { center: [run.grid.width / 2, -run.grid.height / 2], size: [run.grid.width, run.grid.height], grid: 1 });
       const grid = new THREE.Group(), paths = new THREE.Group(); scene.add(grid, paths);
-      const truth = new THREE.Mesh(new THREE.CylinderGeometry(.105, .105, .16, 24), new THREE.MeshStandardMaterial({ color: COLORS.truth })); scene.add(truth);
+      const truth = createWorkshopDrone(THREE, { color: COLORS.truth, size: .65, id: 'T' }); scene.add(truth);
+      const estimate = createWorkshopDrone(THREE, { color: COLORS.estimate, size: .76, ghost: true, id: 'E' }); scene.add(estimate);
+      const projections = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(Array.from({ length: 4 }, () => new THREE.Vector3())),
+        new THREE.LineDashedMaterial({ color: '#cfdfd1', dashSize: .05, gapSize: .045, transparent: true, opacity: .5 }));
+      projections.frustumCulled = false; scene.add(projections);
       const ring = (inner, outer, color) => {
         const result = new THREE.Mesh(new THREE.RingGeometry(inner, outer, 40), new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide }));
         result.rotation.x = -Math.PI / 2; scene.add(result); return result;
       };
-      const estimate = ring(.17, .215, COLORS.estimate), goal = ring(.21, .25, COLORS.goal), waypoint = ring(.055, .08, '#ffffff');
+      const estimateFootprint = ring(.17, .215, COLORS.estimate), goal = ring(.21, .25, COLORS.goal), waypoint = ring(.055, .08, '#ffffff');
       const unitCircle = Array.from({ length: 64 }, (_, index) => {
         const angle = index * Math.PI * 2 / 64; return new THREE.Vector3(Math.cos(angle), 0, -Math.sin(angle));
       });
@@ -122,7 +130,11 @@ export function createLocalizationView(container) {
       };
       const labels = { truth: label('T', COLORS.truth, 'loc-truth-label'), estimate: label('E', COLORS.estimate, 'loc-estimate-label'), goal: label('G', COLORS.goal, 'loc-goal-label'), fix: label('Z', COLORS.fix, 'loc-fix-label') };
       layer.replaceChildren(renderer.domElement, overlay);
-      world = { THREE, renderer, scene, camera, controls, grid, paths, truth, estimate, goal, waypoint, uncertainty, fix, error, labels, gridKey: null, history: null, plan: null };
+      const cameraUI = addWorkshopCameraUI(layer, { prefix: 'loc',
+        caption: 'SOLID: TRUTH · WIREFRAME: ESTIMATE · HEIGHT 0.8 m · OCCLUDING WALLS FADE; CONTACT UNCHANGED',
+        onWhole: () => frameCamera(false), onFollow: () => frameCamera(true) });
+      cameraUI.setFollowLabel('Follow truth');
+      world = { THREE, renderer, scene, camera, controls, cameraUI, grid, paths, truth, estimate, estimateFootprint, projections, goal, waypoint, uncertainty, fix, error, labels, walls: [], gridKey: null, history: null, plan: null };
       controls.addEventListener('change', drawThree);
       updateThree(); resize();
     } catch {
@@ -137,33 +149,56 @@ export function createLocalizationView(container) {
     const key = `${width}/${height}/${blocked.join(',')}/${start}/${goal}`;
     if (key === world.gridKey) return;
     const { THREE } = world;
-    releaseGroup(world.grid);
-    const floorGeometry = new THREE.PlaneGeometry(.97, .97), wallGeometry = new THREE.BoxGeometry(.98, .45, .98), walls = new Set(blocked);
+    releaseGroup(world.grid); world.walls = [];
+    const floorGeometry = new THREE.PlaneGeometry(.97, .97), wallGeometry = new THREE.BoxGeometry(1, WALL_HEIGHT, 1), walls = new Set(blocked);
     const floorMaterial = new THREE.MeshStandardMaterial({ color: COLORS.floor, roughness: 1, side: THREE.DoubleSide });
     const wallMaterial = new THREE.MeshStandardMaterial({ color: COLORS.wall, roughness: 1 });
     for (let id = 0; id < width * height; id += 1) {
       const [x, y] = cellCenter(id, width), wall = walls.has(id);
-      const mesh = new THREE.Mesh(wall ? wallGeometry : floorGeometry, wall ? wallMaterial : floorMaterial);
+      const mesh = new THREE.Mesh(wall ? wallGeometry : floorGeometry, wall ? wallMaterial.clone() : floorMaterial);
       if (!wall) mesh.rotation.x = -Math.PI / 2;
-      mesh.position.set(x, wall ? .225 : .008, -y); world.grid.add(mesh);
+      mesh.position.set(x, wall ? WALL_HEIGHT / 2 : .016, -y); mesh.castShadow = wall; mesh.receiveShadow = true; world.grid.add(mesh);
+      if (wall) {
+        const edges = new THREE.LineSegments(new THREE.EdgesGeometry(wallGeometry), new THREE.LineBasicMaterial({ color: '#9aa996', transparent: true, opacity: .5 }));
+        edges.position.copy(mesh.position); world.grid.add(edges);
+        // A slightly expanded sightline test covers both illustrative airframes;
+        // the wall and the occupied-cell footprint themselves remain unchanged.
+        world.walls.push({ mesh, bounds: new THREE.Box3(new THREE.Vector3(x - .5, 0, -y - .5), new THREE.Vector3(x + .5, WALL_HEIGHT, -y + .5))
+          .expandByVector(new THREE.Vector3(.39, .15, .39)) });
+      }
     }
-    if (!walls.size) { wallGeometry.dispose(); wallMaterial.dispose(); }
+    wallMaterial.dispose();
+    if (!walls.size) wallGeometry.dispose();
     const points = [];
     for (let x = 0; x <= width; x += 1) points.push(new THREE.Vector3(x, 0, 0), new THREE.Vector3(x, 0, -height));
     for (let y = 0; y <= height; y += 1) points.push(new THREE.Vector3(0, 0, -y), new THREE.Vector3(width, 0, -y));
     world.grid.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: '#48675b' })));
     const destination = cellCenter(goal, width); world.goal.position.set(destination[0], .04, -destination[1]);
-    if (world.gridKey === null) {
-      world.camera.position.set(width / 2, 13, 8);
-      world.controls.target.set(width / 2, 0, -height / 2); world.controls.update();
-    }
+    if (world.gridKey === null) frameCamera(false);
     world.gridKey = key; world.history = null; world.plan = null;
   }
   function updateThree() {
     if (!world || !run || failed || disposed) return;
     buildThreeGrid();
-    world.truth.position.set(run.position[0], .13, -run.position[1]);
-    world.estimate.position.set(run.estimate[0], .09, -run.estimate[1]);
+    const previous = run.history.slice(0, -1).reverse().find(row => Math.hypot(row.position[0] - run.position[0], row.position[1] - run.position[1]) > 1e-8);
+    const next = run.plan.waypoints[run.waypointIndex] ?? cellCenter(run.grid.goal, run.grid.width);
+    const direction = previous ? run.position.map((value, axis) => value - previous.position[axis]) : next.map((value, axis) => value - run.estimate[axis]);
+    const heading = Math.atan2(direction[1], direction[0]), phase = run.step * .1;
+    setWorkshopDrone(world.truth, { position: [run.position[0], DISPLAY_HEIGHT, -run.position[1]], heading, phase, active: run.status === 'following' });
+    setWorkshopDrone(world.estimate, { position: [run.estimate[0], DISPLAY_HEIGHT, -run.estimate[1]], heading, phase, active: run.status === 'following' });
+    world.truth.userData.bodyMaterial?.color.set(run.status === 'collision' ? '#f3a291' : COLORS.truth);
+    world.estimate.userData.bodyMaterial?.color.set(COLORS.estimate);
+    world.estimateFootprint.position.set(run.estimate[0], .06, -run.estimate[1]);
+    const projections = world.projections.geometry.attributes.position;
+    for (const [index, position] of [run.position, run.estimate].entries()) {
+      projections.setXYZ(index * 2, position[0], .025, -position[1]);
+      projections.setXYZ(index * 2 + 1, position[0], DISPLAY_HEIGHT, -position[1]);
+    }
+    projections.needsUpdate = true; world.projections.computeLineDistances();
+    if (following) {
+      const target = world.truth.position.clone(); world.camera.position.add(target.clone().sub(world.controls.target));
+      world.controls.target.copy(target); world.controls.update();
+    }
     world.uncertainty.visible = Boolean(run.covariance);
     if (run.covariance) {
       world.uncertainty.position.set(run.estimate[0], .07, -run.estimate[1]);
@@ -176,8 +211,8 @@ export function createLocalizationView(container) {
       world.labels.fix.style.opacity = String(world.fix.material.opacity);
     }
     const errorPositions = world.error.geometry.attributes.position;
-    errorPositions.setXYZ(0, run.position[0], .08, -run.position[1]);
-    errorPositions.setXYZ(1, run.estimate[0], .08, -run.estimate[1]); errorPositions.needsUpdate = true;
+    errorPositions.setXYZ(0, run.position[0], DISPLAY_HEIGHT, -run.position[1]);
+    errorPositions.setXYZ(1, run.estimate[0], DISPLAY_HEIGHT, -run.estimate[1]); errorPositions.needsUpdate = true;
     const waypoint = run.plan.waypoints[run.waypointIndex];
     world.waypoint.visible = Boolean(waypoint);
     if (waypoint) world.waypoint.position.set(waypoint[0], .055, -waypoint[1]);
@@ -198,13 +233,44 @@ export function createLocalizationView(container) {
     }
     drawThree();
   }
+  function frameCamera(follow) {
+    if (!world || !run) return;
+    following = follow; world.cameraUI.setFollowing(follow);
+    if (follow) {
+      const error = Math.hypot(run.position[0] - run.estimate[0], run.position[1] - run.estimate[1]);
+      const fit = Math.max(1, Math.min(3, error / 2));
+      world.controls.target.set(run.position[0], DISPLAY_HEIGHT, -run.position[1]);
+      world.camera.position.copy(world.controls.target).add(new world.THREE.Vector3(-3.6, 4.1, 1.8).multiplyScalar(fit));
+    } else {
+      const span = Math.max(run.grid.width, run.grid.height), fit = Math.max(1, 1.08 / world.camera.aspect);
+      world.controls.target.set(run.grid.width / 2, .4, -run.grid.height / 2);
+      world.camera.position.copy(world.controls.target).add(new world.THREE.Vector3(-span * .65, span * 1.25, span * .65).multiplyScalar(fit));
+    }
+    world.controls.update(); drawThree();
+  }
   function drawThree() {
     if (!world || mode !== '3d' || failed || disposed) return;
+    // Reveal either displayed pose when a wall blocks its sightline. Camera
+    // orbiting changes only wall opacity, never truth, estimation or contact.
+    const rays = [world.truth, world.estimate].map(({ position }) => {
+      const direction = position.clone().sub(world.camera.position);
+      return { position, distance: direction.length(), ray: new world.THREE.Ray(world.camera.position, direction.normalize()) };
+    });
+    const hit = new world.THREE.Vector3(); let faded = 0;
+    for (const { mesh, bounds } of world.walls) {
+      const occludes = rays.some(({ position, distance, ray }) => bounds.containsPoint(position) || Boolean(ray.intersectBox(bounds, hit) && world.camera.position.distanceTo(hit) < distance));
+      const material = mesh.material;
+      if (material.transparent !== occludes) { material.transparent = occludes; material.depthWrite = !occludes; material.needsUpdate = true; }
+      material.opacity = occludes ? .14 : 1;
+      if (occludes) faded += 1;
+    }
+    layer.dataset.occludedWalls = String(faded);
     world.renderer.render(world.scene, world.camera);
     const place = (anchor, label, visible = true) => {
       const point = anchor.clone().project(world.camera);
-      label.style.left = `${(point.x + 1) * container.clientWidth / 2}px`;
-      label.style.top = `${(1 - point.y) * container.clientHeight / 2}px`;
+      const x = (point.x + 1) * container.clientWidth / 2, y = (1 - point.y) * container.clientHeight / 2;
+      label.style.left = `${Math.max(32, Math.min(container.clientWidth - 32, x))}px`;
+      label.style.top = `${Math.max(65, Math.min(container.clientHeight - 54, y))}px`;
       label.hidden = !visible || point.z < -1 || point.z > 1 || Math.abs(point.x) > 1 || Math.abs(point.y) > 1;
     };
     place(world.truth.position, world.labels.truth); place(world.estimate.position, world.labels.estimate);
@@ -213,7 +279,10 @@ export function createLocalizationView(container) {
   function resize() {
     if (!world || failed || disposed) return;
     const width = Math.max(1, container.clientWidth), height = Math.max(1, container.clientHeight);
-    world.renderer.setSize(width, height, false); world.camera.aspect = width / height; world.camera.updateProjectionMatrix(); drawThree();
+    const changed = world.viewportWidth !== width || world.viewportHeight !== height;
+    world.viewportWidth = width; world.viewportHeight = height;
+    world.renderer.setSize(width, height, false); world.camera.aspect = width / height; world.camera.updateProjectionMatrix();
+    if (changed && !following) frameCamera(false); else drawThree();
   }
   const observer = new ResizeObserver(resize); observer.observe(container);
   return {

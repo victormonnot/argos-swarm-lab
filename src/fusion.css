@@ -8,6 +8,7 @@
 .fusion-svg,.fusion-three { position: absolute; inset: 0; width: 100%; height: 100%; }
 .fusion-three[hidden] { display: none; }
 .fusion-three canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+.fusion-three canvas:focus-visible { outline: 2px solid #d3e8ce; outline-offset: -3px; }
 .fusion-labels { position: absolute; inset: 0; pointer-events: none; }
 .fusion-labels span { position: absolute; font-size: .8125rem; padding: 2px 4px; white-space: nowrap; background: #142c26e8; border-radius: 3px; }
 .fusion-labels span[hidden] { display: none; }
@@ -15,6 +16,7 @@
 .fusion-labels [data-agent="1"] { transform: translate(9px,calc(-100% - 9px)); }
 .fusion-labels [data-agent="2"] { transform: translate(9px,9px); }
 .fusion-labels .fusion-truth-label { transform: translate(calc(-100% - 10px),10px); }
+.fusion-labels .fusion-observer-label { transform: translate(-50%,15px); font-size: .6875rem; background: #1c372de8; }
 .fusion-webgl-message { padding: 30px; font-size: 1rem; line-height: 1.7; }
 .fusion-legend { display: flex; flex-wrap: wrap; gap: 8px 15px; font-size: .8125rem; color: #b6c9be; padding: 10px 22px 0; }
 .fusion-legend span:first-child { color: #72dabb; }
@@ -67,3 +69,4 @@
 @media(max-width:1050px) { .fusion-lab { grid-template-columns: minmax(0,1fr) 300px; } .fusion-config { padding: 20px; } .fusion-inspection { grid-template-columns: 1fr; } }
 @media(max-width:850px) { .fusion-lab { grid-template-columns: 1fr; } #fusion-viewport { flex: auto; height: 470px; } .fusion-cases .exercise-grid { grid-template-columns: 1fr; } }
 @media(max-width:580px) { .fusion-intro h1 { font-size: 2rem; } .fusion-intro h1 br { display: block; } #fusion-viewport { height: 335px; min-height: 335px; } .fusion-panel { padding: 18px; } .fusion-equation { font-size: .8125rem; } .fusion-legend { padding-left: 15px; padding-right: 15px; gap: 7px 11px; } #fusion-lineage { gap: 6px; } #fusion-lineage>div { padding: 8px; } .fusion-details>div { gap: 9px; font-size: .8125rem; } }
+@media(max-width:580px) { .fusion-labels span { font-size: .625rem; padding: 2px 3px; } .fusion-labels .fusion-observer-label { font-size: .5625rem; } }

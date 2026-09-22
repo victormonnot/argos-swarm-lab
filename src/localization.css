@@ -15,6 +15,7 @@
 .loc-labels .loc-estimate-label { transform: translate(9px,calc(-100% - 8px)); }
 .loc-labels .loc-goal-label { transform: translate(9px,8px); }
 .loc-labels .loc-fix-label { transform: translate(calc(-100% - 10px),8px); }
+.loc-three canvas:focus-visible { outline: 2px solid #d3e8ce; outline-offset: -3px; }
 .loc-webgl-message { padding: 30px; font-size: 1rem; line-height: 1.7; }
 .loc-legend { display: flex; flex-wrap: wrap; gap: 8px 15px; font-size: .8125rem; color: #b6c9be; padding: 10px 22px 0; }
 .loc-legend span:first-child { color: #72dabb; }
@@ -62,3 +63,4 @@
 @media(max-width:1050px) { .loc-lab { grid-template-columns: minmax(0,1fr) 300px; } .loc-config { padding: 20px; } .loc-inspection { grid-template-columns: 1fr; } }
 @media(max-width:850px) { .loc-lab { grid-template-columns: 1fr; } #loc-viewport { flex: auto; height: 480px; } .loc-cases .exercise-grid { grid-template-columns: 1fr; } }
 @media(max-width:580px) { .loc-intro h1 { font-size: 2rem; } .loc-intro h1 br { display: block; } #loc-viewport { height: 325px; min-height: 325px; } .loc-filter,.loc-evidence,.loc-state { padding: 16px; } .loc-legend { padding: 8px 15px 0; font-size: .75rem; } .loc-equation { font-size: .875rem; padding: 14px; } }
+@media(max-width:580px) { .loc-labels span { font-size: .6875rem; } }

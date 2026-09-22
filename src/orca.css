@@ -52,3 +52,6 @@
 @media(max-width:1050px) { .orca-lab { grid-template-columns: minmax(0,1fr) 300px; } .orca-config { padding: 20px; } .orca-inspection { grid-template-columns: 1fr; } }
 @media(max-width:850px) { .orca-lab { grid-template-columns: 1fr; } #orca-viewport { flex: auto; height: 470px; } .orca-cases .exercise-grid { grid-template-columns: 1fr 1fr; } }
 @media(max-width:580px) { .orca-intro h1 { font-size: 2rem; } .orca-intro h1 br { display: block; } #orca-viewport { height: 355px; min-height: 355px; } .orca-panel { padding: 18px; } .orca-equation { font-size: .8125rem; } .orca-legend { padding-left: 15px; padding-right: 15px; gap: 7px 11px; } .orca-details>div { gap: 9px; font-size: .8125rem; } .orca-cases .exercise-grid { grid-template-columns: 1fr; } }
+
+.orca-goal-label { transform: translate(-50%,calc(-100% - 12px)); pointer-events: none; }
+.orca-labels button,.orca-goal-label { z-index: 1; }

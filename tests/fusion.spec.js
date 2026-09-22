@@ -107,6 +107,12 @@ test('playback speed, observer and 2D/3D camera changes preserve the same run, i
   expect(await snapshot(page)).toEqual(slow);
   await page.locator('#fusion-observer').selectOption('2'); await page.locator('#fusion-observer').selectOption('0'); expect(await snapshot(page)).toEqual(slow);
   await page.locator('#fusion-3d').click(); const canvas = page.locator('#fusion-viewport canvas'); await expect(canvas).toBeVisible();
+  await page.locator('#fusion-camera-follow').click();
+  await expect(page.locator('#fusion-camera-follow')).toHaveAttribute('aria-pressed', 'true');
+  expect(await snapshot(page)).toEqual(slow);
+  await page.locator('#fusion-camera-whole').click();
+  await expect(page.locator('#fusion-camera-whole')).toHaveAttribute('aria-pressed', 'true');
+  expect(await snapshot(page)).toEqual(slow);
   await expect(page.locator('.fusion-agent-label')).toHaveCount(3);
   const positions = () => page.locator('.fusion-agent-label').evaluateAll((items) => items.map((item) => [item.style.left, item.style.top]));
   const before = await positions(), bounds = await canvas.boundingBox();
