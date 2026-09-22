@@ -27,6 +27,7 @@ export default defineConfig({
         failsafe: resolve(import.meta.dirname, 'failsafe/index.html'),
         fleet: resolve(import.meta.dirname, 'fleet/index.html'),
         recovery: resolve(import.meta.dirname, 'recovery/index.html'),
+        sharedWorld: resolve(import.meta.dirname, 'shared-world/index.html'),
       },
     },
   },

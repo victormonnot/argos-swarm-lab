@@ -175,9 +175,19 @@ export function validateRecoveryTrace(trace) {
   check(rt.vehicleCount === 3 && rt.physics === 'independent-SITL-worlds' && rt.assignment === 'central-online-nearest-pair-greedy'
     && rt.behaviorTree === 'reactive-fallback-sequence' && rt.positionFrame === 'supplied-ENU-layout-from-independent-local-NED'
     && rt.memoryMetric === 'process-VmRSS-KiB-snapshots', 'simulation and coordinator contract');
-  check(Array.isArray(trace.cases) && trace.cases.length >= 1 && trace.cases.length <= 2, 'one or two recorded cases');
+  validateRecoveryMissionCases(trace.cases, rt);
+  return trace;
+}
+
+/** Shared execution evidence; physics/runtime contracts remain in each trace validator.
+ * The profile is selected by trusted module code, never by imported JSON.
+ */
+export function validateRecoveryMissionCases(cases, rt, profile = 'builtin') {
+  check(['builtin', 'gazebo-shared'].includes(profile), 'known mission validation profile');
+  const sharedWorld = profile === 'gazebo-shared';
+  check(Array.isArray(cases) && cases.length >= 1 && cases.length <= 2, 'one or two recorded cases');
   const ids = new Set(), runs = new Set();
-  for (const run of trace.cases) {
+  for (const run of cases) {
     check(run && ['nominal', 'withdrawal'].includes(run.id) && !ids.has(run.id) && text(run.label)
       && text(run.runId, 100) && !runs.has(run.runId), 'unique run and case identities');
     ids.add(run.id); runs.add(run.runId);
@@ -212,14 +222,15 @@ export function validateRecoveryTrace(trace) {
         && Number.isSafeInteger(vehicle.pid) && vehicle.pid > 0 && !pids.has(vehicle.pid), 'three distinct process, vehicle and route identities'); pids.add(vehicle.pid);
       check(sameVector(vehicle.padEnu, [[-6,0,0],[0,0,0],[6,0,0]][i]) && vector(vehicle.originNed)
         && vehicle.originNed.every(value => Math.abs(value) < 1000) && inRun(vehicle.originTimeMs), 'supplied independent frame registration');
-      const home = [-35.363261, 149.165230 + vehicle.padEnu[0] / (6378137 * Math.cos(-35.363261 * Math.PI / 180)) * 180 / Math.PI, 584, 0];
+      const home = [-35.363261, 149.165230 + (sharedWorld ? 0 : vehicle.padEnu[0] / (6378137 * Math.cos(-35.363261 * Math.PI / 180)) * 180 / Math.PI), 584, 0];
       check(Array.isArray(vehicle.homeGps) && vehicle.homeGps.length === 4 && vehicle.homeGps.every((value, axis) => close(value, home[axis], 1e-9)), 'declared geographic homes');
       check(vehicle.setup && finite(vehicle.setup.durationMs) && vehicle.setup.durationMs > 0
         && Number.isSafeInteger(vehicle.setup.startupTextBytes) && vehicle.setup.startupTextBytes >= 0
         && Number.isSafeInteger(vehicle.setup.autopilotVersion?.flight_sw_version)
         && [24,16,8].map(shift => (vehicle.setup.autopilotVersion.flight_sw_version >>> shift) & 255).join('.') === rt.ardupilotVersion, 'setup and actual firmware report');
-      check(vehicle.parameters && Object.entries({ ARMING_SKIPCHK: 0, FRAME_CLASS: 1, FRAME_TYPE: 0, FS_GCS_ENABLE: 0,
-        FS_THR_ENABLE: 1, SIM_WIND_SPD: 0, MAV_SYSID: vehicle.systemId }).every(([key, value]) => vehicle.parameters[key] === value), 'parameter readback');
+      check(vehicle.parameters && Object.entries({ ARMING_SKIPCHK: 0, FRAME_CLASS: 1, FRAME_TYPE: sharedWorld ? 1 : 0, FS_GCS_ENABLE: 0,
+        FS_THR_ENABLE: 1, SIM_WIND_SPD: 0, MAV_SYSID: vehicle.systemId,
+        ...(sharedWorld ? { AHRS_EKF_TYPE: 3, EK3_ENABLE: 1, SIM_SPEEDUP: 1 } : {}) }).every(([key, value]) => vehicle.parameters[key] === value), 'parameter readback');
       check(Array.isArray(vehicle.commands) && vehicle.commands.length >= 5 && vehicle.commands.length <= 12, 'bounded flight requests');
       let previous = -1; const commands = new Set();
       for (const command of vehicle.commands) {
@@ -298,7 +309,7 @@ export function validateRecoveryTrace(trace) {
       && run.events.some(e => e.stage === 'mission' && e.status === 'complete' && close(e.timeMs,run.missionClosedMs)), 'recorded mission start and closure');
     for (const vehicle of run.vehicles) check(vehicle.commands.at(-1).timeMs >= (run.id === 'withdrawal' && vehicle.id === 'A1' ? withdrawal.requestedTimeMs : run.missionClosedMs), 'LAND follows retirement or mission closure');
   }
-  return trace;
+  return cases;
 }
 
 function validateAttempts(run, inRun) {

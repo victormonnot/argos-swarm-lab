@@ -212,7 +212,7 @@ test('single-case imports render labels as plain text and restore the bundled pa
   await expectFrame(page, misaddressed, 0);
 });
 
-test('390px without WebGL retains both vehicle streams, outcomes and all twenty-two workshop links', async ({ page }) => {
+test('390px without WebGL retains both vehicle streams, outcomes and all twenty-three workshop links', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => {
     const original = HTMLCanvasElement.prototype.getContext;
@@ -233,6 +233,6 @@ test('390px without WebGL retains both vehicle streams, outcomes and all twenty-
   expect(frame.landedVehicles).toBe(2);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(22);
+  await expect(navigation.getByRole('link')).toHaveCount(23);
   await expect(navigation.getByRole('link', { name: /21.*Two-vehicle/i })).toHaveAttribute('aria-current', 'page');
 });

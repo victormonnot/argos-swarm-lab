@@ -180,7 +180,7 @@ test('single-case imports treat labels as text and remove a comparison that need
   await expectFrame(page, withdrawal, 0);
 });
 
-test('390px without WebGL preserves all three streams, recovery controls and twenty-two workshops', async ({ page }) => {
+test('390px without WebGL preserves all three streams, recovery controls and twenty-three workshops', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => {
     const original = HTMLCanvasElement.prototype.getContext;
@@ -196,6 +196,6 @@ test('390px without WebGL preserves all three streams, recovery controls and twe
   await expect(page.locator('#recovery-landing-count')).toHaveText('3 / 3');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(22);
+  await expect(navigation.getByRole('link')).toHaveCount(23);
   await expect(navigation.getByRole('link', { name: /22.*Mission recovery/i })).toHaveAttribute('aria-current', 'page');
 });

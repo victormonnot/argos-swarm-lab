@@ -4,7 +4,7 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
-**Available:** twenty-two local workshops with explanations, linked 2D/3D views, step
+**Available:** twenty-three local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
 **Artificial Potential Fields**, **task allocation with finite-state
 execution**, **decision architectures under network partition**, **A* path
@@ -23,7 +23,8 @@ failure/restart with heartbeat suspicion and epoch/sequence admission**, plus
 **Gazebo external physics with a bounded force disturbance and observed recovery**,
 **GCS heartbeat loss with an onboard LAND failsafe**, **two-vehicle
 mission execution with central greedy assignment and per-vehicle MAVLink addressing**,
-and **three-vehicle mission recovery with reactive Behavior Trees and exclusive task reassignment**.
+**three-vehicle mission recovery with reactive Behavior Trees and exclusive task reassignment**,
+and **three drones sharing one Gazebo world with measured separation and physical contacts**.
 The [catalog](docs/learning-path.md) also describes possible further extensions.
 
 ## Run locally
@@ -43,7 +44,7 @@ the workshops load their assets locally. Use the workshop links to switch pages;
 the additional workshops are at `/movement/`, `/mission/`, `/architecture/`,
 `/pathfinding/`, `/localization/`, `/fusion/`, `/orca/`, `/cbba/`, `/behavior/`,
 `/cooperative/`, `/slam/`, `/pose-graph/`, `/ros2/`, `/qos/`, `/restart/`, `/middleware/`,
-`/sitl/`, `/gazebo/`, `/failsafe/`, `/fleet/`, and `/recovery/`. Navigation starts a new run or rewinds a recording.
+`/sitl/`, `/gazebo/`, `/failsafe/`, `/fleet/`, `/recovery/`, and `/shared-world/`. Navigation starts a new run or rewinds a recording.
 
 If the local server has stopped after sleep or shutdown, run `npm run dev` again
 from this project directory and keep that terminal open. To reuse a chosen port,
@@ -83,6 +84,8 @@ npm run compare:fleet            # two task outcomes, per-vehicle evidence and l
 npm run record:fleet             # Docker: two SITL processes, correct versus wrong target ID
 npm run compare:recovery         # mission duration, cancelled attempt and confirmed handover
 npm run record:recovery          # Docker: three vehicles, reactive BTs and withdrawal/reassignment
+npm run compare:shared-world     # simultaneous world poses, separation, contacts and mission results
+npm run record:shared-world      # Docker: three JSON autopilots inside one Gazebo world
 npx playwright install chromium  # first browser-test setup
 npm run test:e2e                  # Chromium interactions and both views
 npm run build                    # static output in dist/
@@ -112,8 +115,9 @@ hardware rendering performance. The [consensus results](docs/lessons/01-consensu
 [SITL results](docs/lessons/18-sitl-mavlink-results.md),
 [Gazebo results](docs/lessons/19-gazebo-physics-results.md),
 [GCS failsafe results](docs/lessons/20-gcs-failsafe-results.md),
-[two-vehicle results](docs/lessons/21-two-vehicle-mission-results.md) and
-[mission recovery results](docs/lessons/22-mission-recovery-results.md) list the checks actually run and their limitations.
+[two-vehicle results](docs/lessons/21-two-vehicle-mission-results.md),
+[mission recovery results](docs/lessons/22-mission-recovery-results.md) and
+[shared-world results](docs/lessons/23-shared-world-mission-results.md) list the checks actually run and their limitations.
 
 ## First workshop: distributed average consensus
 
@@ -711,6 +715,35 @@ collision physics, peer allocation, camera sensing or battery-failure model.
 [specification](docs/lessons/22-mission-recovery.md) for control-flow semantics,
 cancellation versus release, receipt clocks and completion criteria.
 
+## Twenty-third workshop: three drones in one shared world
+
+**What changes when three autopilots control bodies in the same physical scene?**
+The shared-world mission combines the six known visits and reactive Behavior
+Trees of workshop 22 with one **Gazebo Harmonic / DART** environment. Three
+ArduCopter instances control three Iris X-frame quadrotors through separate
+JSON bridges. **Central online nearest-pair greedy allocation** remains unchanged.
+
+Compare nominal execution with controlled A1 withdrawal and confirmed task
+handover. Inspect the allocator's received estimates alongside independent world
+observations. All three world poses come from the same physics update, allowing
+measured center-to-center separation. Cumulative contact histories monitor the
+vehicles, ground and site buildings between displayed pose samples.
+
+The page offers linked 2D/3D, world/estimate/both layers, per-vehicle cameras,
+actual tree traversals and separate host/simulation clocks. The physical scene
+matches the declared simulator geometry. World truth is evaluator-only: it does
+not select an assignment or confirm a task. A clear known route does not establish
+obstacle avoidance, and a sampled center distance does not establish continuous
+hull clearance.
+
+`npm run record:shared-world` records two fresh isolated worlds and saves
+`local/ardupilot-shared-world.json` for import. See the
+[specification](docs/lessons/23-shared-world-mission.md) and
+[recorded results](docs/lessons/23-shared-world-mission-results.md) for the exact
+clock, contact coverage, coordinate registration and completed verification.
+Live mission editing and systematic fault campaigns are
+[planned subsequent stages](docs/learning-path.md#next-integration-stages).
+
 ## Implementation
 
 - **Plain JavaScript modules and HTML/CSS:** each workshop has an independent
@@ -722,7 +755,7 @@ cancellation versus release, receipt clocks and completion criteria.
   contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with twenty-two explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with twenty-three explicit HTML entries in `vite.config.js`. The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same
@@ -771,8 +804,12 @@ vehicle-specific completion within the shared mission deadline. Workshop 22
 reuses those flight helpers in `recovery/record.py` while executing three actual
 reactive Behavior Trees and online task ownership. `src/recovery-trace.js` checks
 per-attempt dwell, complete allocation inputs, fresh release evidence and
-recorded traversal/command causality independently.
-The external stack was verified against official sources on 2026-09-18.
+recorded traversal/command causality independently. Workshop 23 reuses that
+coordinator in `shared-world/record.py` with three bodies in one Gazebo world.
+`SharedWorldObserver.cc` reports synchronous world poses and cumulative contacts;
+`src/shared-world-trace.js` checks this evidence separately from mission completion.
+The shared-world integration documentation was checked against official sources
+on 2026-09-22.
 Browser dependencies remain shared.
 
 ## Read next
@@ -804,5 +841,6 @@ Browser dependencies remain shared.
 | [GCS failsafe results](docs/lessons/20-gcs-failsafe-results.md) | Selective heartbeat suppression, continued telemetry, onboard LAND response and clearing without automatic mode restoration. |
 | [Two-vehicle results](docs/lessons/21-two-vehicle-mission-results.md) | Central greedy assignment, isolated addressing, bounded task failure and separately confirmed fleet landing. |
 | [Mission recovery results](docs/lessons/22-mission-recovery-results.md) | Three-vehicle task execution, reactive cancellation, retained ownership, reassignment and elapsed mission time. |
+| [Shared-world results](docs/lessons/23-shared-world-mission-results.md) | Three Gazebo bodies, evaluator-only synchronized poses, sampled separation and cumulative physical contacts. |
 
 Additional modules and integrations need their own specifications and validation.

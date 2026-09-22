@@ -39,7 +39,9 @@
     "record:fleet": "node scripts/record-fleet.js",
     "compare:fleet": "node scripts/compare-fleet.js",
     "record:recovery": "node scripts/record-recovery.js",
-    "compare:recovery": "node scripts/compare-recovery.js"
+    "compare:recovery": "node scripts/compare-recovery.js",
+    "record:shared-world": "node scripts/record-shared-world.js",
+    "compare:shared-world": "node scripts/compare-shared-world.js"
   },
   "engines": {
     "node": ">=22.12.0"

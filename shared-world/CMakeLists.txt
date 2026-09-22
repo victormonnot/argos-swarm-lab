@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.16)
+project(argos_shared_world)
+set(CMAKE_CXX_STANDARD 17)
+find_package(gz-sim8 REQUIRED)
+add_library(SharedWorldObserver SHARED SharedWorldObserver.cc)
+target_link_libraries(SharedWorldObserver PRIVATE gz-sim8::gz-sim8)

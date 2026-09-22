@@ -1,0 +1,3 @@
+# Normal arming checks and actual EKF3 sensor estimation with synchronized JSON.
+AHRS_EKF_TYPE 3
+ARMING_SKIPCHK 0

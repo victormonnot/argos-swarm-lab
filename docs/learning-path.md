@@ -5,11 +5,14 @@ architectures, A* planning, individual Kalman estimation, shared target
 estimates, ORCA, CBBA, Behavior Trees/FSM, cooperative localization, EKF-SLAM,
 pose-graph SLAM, ROS 2 nodes/topics, message freshness, process restart, a
 Fast DDS/Zenoh comparison, ArduPilot SITL, Gazebo external physics, a GCS
-heartbeat failsafe, a two-vehicle mission and three-vehicle mission recovery are
-implemented local workshops **1–22**. Workshops 14–17 replay actual ROS 2 process runs; workshops 18–22 replay
+heartbeat failsafe, a two-vehicle mission, three-vehicle mission recovery and
+a shared-world mission are implemented local workshops **1–23**. Workshops
+14–17 replay actual ROS 2 process runs; workshops 18–23 replay
 actual autopilot execution, with an external Gazebo world in workshop 19 and two
 simultaneous independent SITL vehicles in workshop 21. Workshop 22 integrates
 online allocation and reactive Behavior Trees with three actual autopilots.
+Workshop 23 puts those vehicles in one Gazebo world with independent world-pose
+and contact observations.
 Further extensions below remain possible work.
 
 A **phase** groups related subjects. A **workshop** answers one bounded question
@@ -43,6 +46,7 @@ and displays the observed results. Each follows the
 | 20. [GCS heartbeat loss and an onboard failsafe](lessons/20-gcs-failsafe.md) | Does restoring contact resume the flight? | Two fresh SITL flights with identical LAND failsafe parameters; interrupt only GCS heartbeat sends in one case, retain telemetry reception, then restore sends. | Source identity, onboard timeout, command silence versus heartbeat loss, received status versus send age, autonomous landing and clearing without automatic mode restoration. |
 | 21. [Two vehicles and one addressed mission](lessons/21-two-vehicle-mission.md) | Did the assigned vehicle complete its own task? | Two actual SITL processes, central nearest-pair greedy assignment and isolated MAVLink routes; compare correct addressing with one wrong destination system ID, then land both vehicles. | Identity versus route, independent local frames and supplied registration, asynchronous evidence, fixed mission deadline and task success versus flight cleanup. |
 | 22. [Three-vehicle mission recovery](lessons/22-mission-recovery.md) | When may unfinished work acquire a new owner? | Three actual SITL vehicles, six tasks, online greedy assignment and reactive Behavior Trees; compare nominal execution with controlled A1 withdrawal, retained ownership through landing, then reassignment. | Actual tree traversal, action cancellation versus physical completion, exclusive ownership, fresh release evidence, new-attempt dwell and mission duration versus fleet landing. |
+| 23. [Three drones in one shared world](lessons/23-shared-world-mission.md) | What changes when three autopilots control bodies in the same world? | Three Iris quadrotors in one collidable Gazebo scene; retain central greedy allocation, reactive BTs and the nominal/withdrawal comparison. | Shared physics, evaluator-only synchronous poses, independent estimates, separate clocks, sampled center distances and cumulative contact coverage. |
 
 ## Algorithm sequence and method context
 
@@ -179,8 +183,38 @@ trace; its 2D/3D views must not run a separate browser approximation presented a
 ROS 2 or autopilot execution. A small adapter can be introduced when needed by
 that specific experiment. Software versions, installation/resource requirements,
 supported vehicle counts and acceptance criteria must be verified before delivery.
-Workshops 14–22 include runnable process recorders and interactive pages for
-their actual traces. No additional numbered workshop is specified yet.
+Workshops 14–23 include runnable process recorders and interactive pages for
+their actual traces. Workshop 23 extends this integration to one shared world.
+
+## Next integration stages
+
+Workshop **23 — shared-world mission** brings the three-vehicle
+mission coordinator into one Gazebo world with collidable site geometry and
+independent evaluator observations. The first scope keeps six known visits,
+central nearest-pair greedy allocation and reactive Behavior Trees. World pose,
+sampled vehicle separation and physics-step contact history supplement the
+received estimates used by the controller. No live operator interface or general
+fault campaign is implemented by this stage.
+
+Two subsequent stages are planned:
+
+- **Live local mission supervision:** start an actual simulator run, receive
+  telemetry and change bounded mission inputs during execution. Record requested
+  changes, admitted commands and observed adaptation for later replay.
+- **Mission robustness test bench:** define a mission and fleet, inject declared
+  failures, and repeat a reproducible scenario matrix. Candidate interventions
+  include vehicle unavailability, selected communication loss/delay and removal
+  of a modeled positioning measurement. These require distinct mechanisms and
+  observation rules; a requested landing is not a crashed or disconnected drone.
+
+A robustness campaign should report the empirical mission success rate with its
+run count, completed-task fraction, deadline violations, contacts, recovery time
+and uncompleted work. Define mission success before running the campaign and
+retain each run's configuration, event schedule, seed where applicable, runtime
+revision and trace. A success rate describes that tested scenario distribution;
+it is not a universal probability of real-world mission success. The
+[experiment guide](experiment-guide.md) defines controller information and failure
+reporting boundaries. Implementation of each stage remains a separate scope.
 
 ## Comparisons must answer a specific question
 

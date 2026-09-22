@@ -250,6 +250,6 @@ test('390px without WebGL retains observed failsafe evidence, controls and twent
   expect((await expectFrame(page, loss, failsafeSummary(loss).clearMs)).mode).toBe('Land');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(22);
+  await expect(navigation.getByRole('link')).toHaveCount(23);
   await expect(navigation.getByRole('link', { name: /20.*GCS.*failsafe/i })).toHaveAttribute('aria-current', 'page');
 });
