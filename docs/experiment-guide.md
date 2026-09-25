@@ -95,10 +95,9 @@ Count simulated messages as messages. Payload-size estimates are not measured
 network traffic. A simulator knows when it injects a failure; an agent only knows
 what its observations or detection policy reveal.
 
-Introduce saved experiment records when the first lesson needs replay. A small
-record of configuration, initial state, step-indexed events and results is enough;
-a general benchmarking framework is not required. Once implementations exist,
-include code revision and relevant software versions with reported results.
+Experiment records capture configuration, initial state, events and results.
+Reported results identify the source revision or hashes and relevant software
+versions so readers can distinguish implementations and reproduce comparisons.
 
 ## Evidence for a completed lesson
 

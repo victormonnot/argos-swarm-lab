@@ -76,8 +76,7 @@ and contacts the same wall.
   pages, with no console/page errors or failed requests. A final compiled check
   verified separated start/waypoint labels and usable trace/motion controls.
 - Local 2D/3D captures were inspected. A read-only audit verified the result
-  table, all nine full-precision JSON rows, the source hash and 29 local Markdown
-  links. No dependency was added or installed.
+  table, all nine full-precision JSON rows and the source hash.
 
 The optional Three.js chunk retains the existing build size warning (about
 737 kB minified / 187 kB gzip). The pathfinding script is about 24.8 kB minified;

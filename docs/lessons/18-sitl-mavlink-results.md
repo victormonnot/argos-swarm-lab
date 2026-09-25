@@ -128,4 +128,5 @@ The supplied successful flight demonstrates these configured thresholds in one
 wind-free built-in SITL model. It does not establish real-aircraft readiness,
 obstacle avoidance, estimator accuracy, radio behavior, hardware timing or
 general mission success. The illustrated browser yard is not external simulator
-geometry. A future Gazebo workshop must define and verify that additional boundary.
+geometry. [Workshop 19](19-gazebo-physics.md) documents the separate external-physics
+boundary.

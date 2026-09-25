@@ -92,7 +92,8 @@ consensus algorithm. ROS 2 does not supply this application-level round barrier.
 The omission is deliberate **application behavior**, not injected DDS packet
 loss, a dead process, a radio partition or a QoS reliability comparison. A
 reliable publisher cannot deliver a value the application never publishes.
-Freshness/QoS and process restart are separate proposed workshops 15 and 16.
+Freshness/QoS and process restart are covered separately in
+[workshop 15](15-ros2-freshness.md) and [workshop 16](16-process-restart.md).
 
 Metrics are the number of completed rounds, recorded publication calls and
 neighbor receipt callbacks, the range `max(x) − min(x)`, and the mean. Agreement
@@ -140,8 +141,8 @@ web setup. To regenerate the public reference explicitly:
 npm run record:ros2 -- --output docs/results/ros2-consensus.json
 ```
 
-This command replaces the reference file locally; it does not publish it.
-Review the source hash, numerical comparisons and results before committing.
+This command overwrites `docs/results/ros2-consensus.json`. Use
+`npm run compare:ros2` to check the trace and source fingerprint.
 
 ## Acceptance and boundaries
 

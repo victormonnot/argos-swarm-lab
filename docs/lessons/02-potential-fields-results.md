@@ -18,8 +18,8 @@ npm run compare:movement
 The [JSON record](../results/potential-fields.json) contains exact initial
 conditions, maps, gains, thresholds, outcomes, final positions and source hash.
 It records the base revision `2975625c469f7dd2d9609f22d36fade500fbfea3` and
-`workingTreeModified: true`: the movement implementation was measured before its
-commit. The model SHA-256 identifies the actual numerical source used.
+`workingTreeModified: true`, so that revision alone does not identify the
+executed source. The model SHA-256 identifies the actual numerical source used.
 To save a fresh JSON record without npm's command header:
 
 ```sh

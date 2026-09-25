@@ -8,9 +8,9 @@ observations; it does not emulate a replacement DDS or Zenoh implementation.
 ## Runtime and reproduction
 
 Both implementations ran the same application in one shared Docker image on
-Linux x86_64, Ubuntu Noble, ROS 2 Jazzy and Python 3.12.3. The recorded image adds
-two pinned Zenoh packages to the earlier ROS Base image; the installation made
-no host-wide ROS changes and upgraded no existing image packages.
+Linux x86_64, Ubuntu Noble, ROS 2 Jazzy and Python 3.12.3. The recorded image extends
+the pinned ROS Base image with two pinned Zenoh packages; existing image packages
+are unchanged. ROS dependencies are contained in the image.
 
 | Component | Recorded version |
 | --- | --- |

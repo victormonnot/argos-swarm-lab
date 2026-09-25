@@ -7,10 +7,8 @@ compare multi-robot algorithms and architectures. The tool combines explanations
 state visualization, configurable scenarios and quantitative results.
 
 Serve both curious visitors and technical readers through accessible explanations
-and optional technical depth. Twenty-three workshops are implemented. The
-[public-site proposal](public-site-plan.md) defines the next website layer:
-home, catalog, guided paths, glossary, sourced history, method/sensor profiles
-and a bounded interactive explainer. That layer is proposed, not yet delivered.
+and technical detail. Twenty-three workshops combine interactive lessons with
+inspectable state, reproducible comparisons and explicit limitations.
 
 The supported experiments use browser models or recorded software execution
 with declared simulated inputs and dynamics. Physical deployment is outside
@@ -28,8 +26,8 @@ the current scope.
 - Connect workshops to concepts and sources without presenting demonstrations,
   product announcements and research results as equivalent evidence.
 
-The [module catalog](learning-path.md) describes possible extensions. Their
-algorithms and dependencies remain subject to each module's requirements.
+The [module catalog](learning-path.md) describes the available workshops and
+their implemented algorithms, software integrations and limits.
 
 ## Three independent questions
 
@@ -60,8 +58,8 @@ recorded replays of external processes, and neither is a live mission interface.
 Keep experiment state, rendering, page interaction and evidence validation
 separate without inventing interfaces for every possible future simulator.
 The current web implementation uses HTML/CSS/JavaScript, Vite, SVG and Three.js.
-Extend it with small components for the public site; document any additional
-dependencies and their rationale when an implemented feature needs them.
+The [README](../README.md#implementation) documents the components and the role
+of each dependency.
 
 Bounded SLAM workshops are implemented. Python, C++, ROS 2, middleware and
 autopilot/Gazebo simulation support optional local recording workflows for the
@@ -69,11 +67,10 @@ later workshops. Their browser pages replay saved evidence; visitors do not need
 those runtimes installed. No cloud account, physical drone, external service or
 user authentication is required to use the workshops.
 
-Public-site preparation precedes live local mission supervision and the mission
-robustness test bench. Those integrations retain separate specifications and
-acceptance criteria. Learned policies and language-model interfaces remain
-optional topics. Hosting and publication choices are outside the current audit
-and design proposal.
+The browser does not supervise live missions. The recorded nominal and failure
+cases are bounded experiments, not a general mission robustness benchmark.
+Physical deployments, learned policies and language-model interfaces are outside
+the implemented scope.
 
 Specifications distinguish abstract models, software integration and physical
 simulation. Document the assumptions and validation supporting each experiment;
@@ -86,6 +83,5 @@ comparison, a failure or limitation the learner can reproduce, and checks that
 support its stated behavior. A polished image by itself is insufficient.
 
 Each workshop has its own implementation brief and results report, starting with
-the [consensus brief](lessons/01-consensus.md). Website release criteria are
-proposed in the [public-site plan](public-site-plan.md#delivery-stages-and-acceptance).
-Preparing the website does not select a license, purchase hardware or deploy it.
+the [consensus brief](lessons/01-consensus.md). These documents state the model,
+supported interactions, verification and limits of the reported results.

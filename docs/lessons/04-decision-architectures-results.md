@@ -102,13 +102,11 @@ packet counts are not measured latency, bandwidth or byte counts.
   layout and fresh usable pages after browser back/forward. It emitted no page
   or console errors and no failed requests.
 - Read-only review verified all nine exported outcomes, all three result tables,
-  source hashes and 26 local Markdown links. Two documentation wording issues
-  were corrected: selecting the permanent-cut preset explicitly, and naming the
-  report field `completed` consistently with the implementation.
+  and source hashes.
 
-No dependency was added or installed. The optional shared Three.js chunk retains
-the existing build size warning (about 737 kB minified / 187 kB gzip). The new
-architecture page script is about 18.7 kB minified, plus shared view/model code.
+The optional shared Three.js chunk retains the existing build size warning
+(about 737 kB minified / 187 kB gzip). The architecture page script is about
+18.7 kB minified, plus shared view/model code.
 
 These checks use a single browser process simulating distinct caches with a
 deterministic scheduler. They do not verify real distributed deployment,

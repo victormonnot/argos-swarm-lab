@@ -1,4 +1,9 @@
-# Public educational site: audit and first-release proposal
+# Private local plan: public educational site
+
+Local working document, excluded through `.gitignore`. Keep implementation
+planning, design alternatives and release preparation here; do not stage,
+publish or link to this file from public documentation. Public documents describe
+the implemented tool, its methods, reproducibility and verified limitations.
 
 Status: **proposed**, 2026-09-25. This document defines a reviewable website
 direction; the new pages, metadata, navigation and tools below are not yet

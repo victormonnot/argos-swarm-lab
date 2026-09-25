@@ -72,9 +72,9 @@ do not establish that stopping an infeasible agent would prevent collisions.
   display, agent and goal labels, context loss, unavailable WebGL, keyboard,
   390 px layout and navigation across eight pages. No page exceptions occurred;
   deliberately unavailable WebGL produces Three.js's expected diagnostic.
-- The production build passed for eight HTML entries. No dependency installation
-  or version change occurred. The existing optional Three.js chunk still triggers
-  Vite's large-chunk advisory; it loads only when a 3D view is requested.
+- The production build passed for eight HTML entries. The existing optional
+  Three.js chunk still triggers Vite's large-chunk advisory; it loads only when
+  a 3D view is requested.
 - Production-preview smoke checks passed on all eight routes. ORCA stepping,
   arrival, symmetry timeout, missing-sensing collision, independent comparisons,
   lazy 3D with unchanged numerical state, goal labels, 390 px layout and usable
@@ -82,9 +82,7 @@ do not establish that stopping an infeasible agent would prevent collisions.
   Desktop 2D, velocity inspection, 3D and mobile captures were inspected.
 - The exported source hash, runtime, base revision, nine numerical constants,
   three initial-condition sets and five reference summaries were checked against
-  the model. All eighty local public Markdown links resolve. Whitespace and
-  private-content checks pass; private continuity and local captures remain
-  excluded from public changes.
+  the model.
 
 These checks concern this browser teaching model. They do not test physical
 robots, noisy sensors, acceleration constraints, networking or middleware.

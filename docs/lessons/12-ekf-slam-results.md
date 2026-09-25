@@ -133,8 +133,7 @@ dependencies on 2026-09-14:
   independent reference copies, playback, view/camera invariance, keyboard
   selection, mobile navigation and WebGL fallback.
 - `npm run build`: all **twelve** HTML entries built. The existing optional
-  Three.js chunk advisory remains (736.58 kB minified, 186.86 kB gzip). No new
-  dependency was installed or selected.
+  Three.js chunk advisory remains (736.58 kB minified, 186.86 kB gzip).
 - The exporter completed six reference cases and two 200-pair ensembles.
   Its source hash records the actual pure model used for the saved results.
 
@@ -152,10 +151,9 @@ the 200-pair summary, map growth, loss/restoration, baseline/bias outcomes,
 2D/3D and camera controls, 390 px layout and back navigation. No page/console
 errors or failed HTTP responses occurred in that smoke run. Whole-yard 3D,
 drone close-up, first-observation and late-reobservation inspectors, joint
-covariance, top-down map and mobile captures were visually reviewed. All **116**
-local public Markdown links resolved; source-hash, private-content and
-whitespace checks passed. WebGL fallback tests deliberately prevent or lose a
-graphics context; software rendering does not measure hardware GPU performance.
+covariance, top-down map and mobile captures were visually reviewed. Source-hash
+checks passed. WebGL fallback tests deliberately prevent or lose a graphics
+context; software rendering does not measure hardware GPU performance.
 
 These checks validate the declared small approximation and user-visible
 experiment, not a real drone sensor, unknown data association, hardware GPU

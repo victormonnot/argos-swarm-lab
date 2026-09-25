@@ -17,9 +17,9 @@ npm run build
 
 The [machine-readable record](../results/consensus.json) includes the runtime,
 Git base revision, modified-working-tree flag, SHA-256 hashes of the executed
-model and comparison sources, initial conditions, events and outcomes. The first
-implementation was measured before committing; its base revision alone does not
-identify its new source files. The source hashes identify the measured model.
+model and comparison sources, initial conditions, events and outcomes. Because
+the record reports a modified working tree, its base revision alone does not
+identify the executed sources. The source hashes identify the measured model.
 
 To create another JSON record without npm's command banner:
 

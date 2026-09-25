@@ -24,8 +24,8 @@ middleware run.
   `ae8993a402d6b1dc3d840a1b9c6a72773596f4a53ed44aaa6696f4584bb36fff`.
 - Recording timestamp: `2026-09-16T15:25:38.036084+00:00`.
 
-The cached image from workshops 14–15 was reused; no new dependency or host-wide
-ROS installation was needed. Each independent case gets a fresh ROS context.
+The recorder uses the same pinned image as workshops 14–15, with no host-wide
+ROS installation required. Each independent case gets a fresh ROS context.
 One observer and one source run as distinct processes, alongside the collector;
 a replacement source has its own new PID. Only the harness-owned source is
 killed. All owned workers and the container are removed after recording.
@@ -101,12 +101,12 @@ those processes running.
 
 ## Setup behavior and verification
 
-Initial experiments exposed variable discovery and control-start acknowledgement
-delays. The final recorder uses periodic readiness announcements, repeated
-idempotent start messages until acknowledgement, a future start guard and a
-fresh ROS context for each case. Setup deadlines fail explicitly rather than
-exporting an incomplete run as successful. The 8 s window leaves room to observe
-admission after the measured startup. These choices affect the measured times.
+The recorder handles variable discovery and control-start acknowledgement
+delays with periodic readiness announcements, repeated idempotent start messages
+until acknowledgement, a future start guard and a fresh ROS context for each
+case. Setup deadlines fail explicitly rather than exporting an incomplete run
+as successful. The 8 s window leaves room to observe admission after the measured
+startup. These choices affect the measured times.
 
 - Full Python protocol suite: **25/25 passed**, including **9/9** heartbeat
   tests covering

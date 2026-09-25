@@ -13,7 +13,6 @@ simultaneous independent SITL vehicles in workshop 21. Workshop 22 integrates
 online allocation and reactive Behavior Trees with three actual autopilots.
 Workshop 23 puts those vehicles in one Gazebo world with independent world-pose
 and contact observations.
-Further extensions below remain possible work.
 
 A **phase** groups related subjects. A **workshop** answers one bounded question
 with an experiment. Its **lesson page** explains the method, exposes controls
@@ -177,55 +176,27 @@ The heartbeat experiment follows the documented
 Vehicle identity and spawning are described in
 [Using SITL](https://ardupilot.org/dev/docs/using-sitl-for-ardupilot-testing.html).
 
-Each future workshop retains an explanatory lesson page. For process and flight
-experiments, that page should inspect/control the actual run or its recorded
-trace; its 2D/3D views must not run a separate browser approximation presented as
-ROS 2 or autopilot execution. A small adapter can be introduced when needed by
-that specific experiment. Software versions, installation/resource requirements,
-supported vehicle counts and acceptance criteria must be verified before delivery.
 Workshops 14–23 include runnable process recorders and interactive pages for
-their actual traces. Workshop 23 extends this integration to one shared world.
+their actual traces. Their linked 2D/3D views observe the same recording rather
+than running a separate browser approximation of ROS 2 or an autopilot. Lesson
+specifications describe software versions, runtime requirements, supported
+vehicle counts and evaluation criteria.
 
-## Public educational site
-
-The next proposed workstream organizes the existing 23 workshops for public
-readers before extending runtime capabilities. The
-[public-site proposal](public-site-plan.md) defines an accessible home page,
-a catalog by theme/difficulty/prerequisites, four guided paths, a glossary,
-method and sensor profiles, a sourced timeline and one small LiDAR explainer.
-These pages and editorial additions are not yet implemented. They preserve the
-workshops and distinguish browser models, recorded replays and future live
-execution. Hosting and publication remain separate decisions.
-
-## Next integration stages
+## Current integration limits
 
 Workshop **23 — shared-world mission** brings the three-vehicle
 mission coordinator into one Gazebo world with collidable site geometry and
-independent evaluator observations. The first scope keeps six known visits,
+independent evaluator observations. The experiment uses six known visits,
 central nearest-pair greedy allocation and reactive Behavior Trees. World pose,
 sampled vehicle separation and physics-step contact history supplement the
-received estimates used by the controller. No live operator interface or general
-fault campaign is implemented by this stage.
+received estimates used by the controller. The browser replays recorded evidence;
+it does not operate a live simulator or provide a general fault-campaign runner.
 
-Two subsequent stages are planned after the public-site workstream:
-
-- **Live local mission supervision:** start an actual simulator run, receive
-  telemetry and change bounded mission inputs during execution. Record requested
-  changes, admitted commands and observed adaptation for later replay.
-- **Mission robustness test bench:** define a mission and fleet, inject declared
-  failures, and repeat a reproducible scenario matrix. Candidate interventions
-  include vehicle unavailability, selected communication loss/delay and removal
-  of a modeled positioning measurement. These require distinct mechanisms and
-  observation rules; a requested landing is not a crashed or disconnected drone.
-
-A robustness campaign should report the empirical mission success rate with its
-run count, completed-task fraction, deadline violations, contacts, recovery time
-and uncompleted work. Define mission success before running the campaign and
-retain each run's configuration, event schedule, seed where applicable, runtime
-revision and trace. A success rate describes that tested scenario distribution;
-it is not a universal probability of real-world mission success. The
-[experiment guide](experiment-guide.md) defines controller information and failure
-reporting boundaries. Implementation of each stage remains a separate scope.
+The nominal and controlled-withdrawal cases do not establish a general mission
+success probability. Requested landing, process failure, communication loss and
+missing position observations are distinct mechanisms. The
+[experiment guide](experiment-guide.md) defines the information and failure
+reporting boundaries of a valid comparison.
 
 ## Comparisons must answer a specific question
 
@@ -254,13 +225,3 @@ the corresponding mechanism exists.
 For mission lessons, report what was completed, what remains possible and what
 requires intervention. An agent process staying alive is not a mission metric.
 The [experiment guide](experiment-guide.md) defines the reporting rules.
-
-## Further extensions
-
-The numbered sequence includes ORCA, CBBA, Behavior Trees, cooperative
-localization and introductory SLAM. Further work may deepen any of those topics,
-for example automatic data association, visual/LiDAR sensing or collaborative
-SLAM, but these are not silently included in the small initial experiments.
-Learned policies and language-model interfaces remain optional. Select additional
-methods through a specific question and an understandable baseline; the roadmap
-is not a requirement to cover every technique.

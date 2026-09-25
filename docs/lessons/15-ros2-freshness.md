@@ -25,9 +25,8 @@ process observations, with linked 2D and 3D views.
 The previous workshop used a full-roster round barrier. Such a barrier stops new
 rounds while a reader is waiting, so it does not expose an accumulating telemetry
 history. This lesson reuses the runtime and process boundaries with a continuous
-stream: one publisher and three readers, plus a setup/trace collector. This is a
-bounded scope change from the proposed six-agent consensus reuse, not a new
-consensus rule or an extension that assumes its convergence properties.
+stream: one publisher and three readers, plus a setup/trace collector. The
+experiment studies message freshness independently of consensus convergence.
 
 ## Source, roles and available information
 

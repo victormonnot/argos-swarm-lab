@@ -33,11 +33,11 @@ a number is correct about the outside world.
 Start with a visible example before introducing the equation. These are abstract
 agents, not simulated aircraft executing a flight mission.
 
-## First delivery
+## Workshop contents
 
-One local web lesson containing an explanation, linked 2D/3D views, controls,
-state values and disagreement history. No course portal, backend service,
-robotics middleware or vehicle physics is required.
+The browser lesson contains an explanation, linked 2D/3D views, controls,
+state values and disagreement history. It runs without a backend service,
+robotics middleware or vehicle physics.
 
 Use six agents with initial values `[0, 2, 4, 8, 10, 12]`. Display identifiers,
 values and links. Graph layout is purely visual and has no physical units.
@@ -149,6 +149,6 @@ Foundational context: R. Olfati-Saber and R. M. Murray,
 IEEE Transactions on Automatic Control, 2004. This lesson uses the simple
 discrete-time rule above; it does not reproduce every case analyzed in the paper.
 
-Later lessons can introduce other update rules, directed communication, delay
-or membership changes. GPS/localization loss and mission completion have no
-meaning in this scalar-only model and are outside this lesson.
+Other update rules, directed communication, delay and membership changes are
+outside this lesson. GPS/localization loss and mission completion have no
+meaning in this scalar-only model.

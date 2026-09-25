@@ -21,10 +21,10 @@ this data; it does not generate replacement ROS observations in JavaScript.
 - Runtime source SHA-256:
   `36b41e87eb61c5b7f143560d2f12b486e052829149e55649df5ca58e41344116`.
 
-The image was downloaded and actual runs executed. No host-wide ROS packages or
-new npm dependencies were installed. The inspected image reports about 881 MB
-uncompressed; first-use download and disk needs differ. The pinned index also
-contains other architectures, but only x86_64 was verified here.
+ROS runs inside the pinned container; no host-wide ROS installation is required.
+The inspected image reports about 881 MB uncompressed; first-use download and
+disk needs differ. The pinned index also contains other architectures, but only
+x86_64 was verified here.
 
 ```sh
 npm run record:ros2

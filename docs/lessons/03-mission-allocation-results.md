@@ -18,9 +18,9 @@ npm run compare:missions
 The [JSON record](../results/missions.json) contains initial positions, task
 coordinates, fixed owners, timing, failure ordering and six measured results.
 It records base revision `0cffe21407a241ba03439f22752639f039169e93` with
-`workingTreeModified: true`: the new workshop was measured before its commit.
-SHA-256 hashes identify the actual matching and execution sources. To replace
-the record with a fresh export without npm's command header:
+`workingTreeModified: true`, so that revision alone does not identify the
+executed sources. SHA-256 hashes identify the actual matching and execution
+sources. To replace the record with a fresh export without npm's command header:
 
 ```sh
 npm run --silent compare:missions > docs/results/missions.json
@@ -98,7 +98,7 @@ available execution capacity visible.
 - **Production build passed** with all three HTML entry points. The mission
   page script is approximately 23.2 kB minified. The optional shared Three.js
   chunk remains approximately 737 kB minified / 187 kB gzip, with Vite's existing
-  size warning. No dependency installation or dependency changes were needed.
+  size warning.
 - **Built-page smoke check passed:** both older lessons advance, navigation
   reaches the mission page, Hungarian recovers after the scheduled failure and
   completes 6/6 at 15.3 s, lazy 3D preserves raw positions, agent/task labels do

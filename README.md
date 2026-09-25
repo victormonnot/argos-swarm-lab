@@ -25,13 +25,8 @@ failure/restart with heartbeat suspicion and epoch/sequence admission**, plus
 mission execution with central greedy assignment and per-vehicle MAVLink addressing**,
 **three-vehicle mission recovery with reactive Behavior Trees and exclusive task reassignment**,
 and **three drones sharing one Gazebo world with measured separation and physical contacts**.
-The [catalog](docs/learning-path.md) also describes possible further extensions.
-
-The [public-site proposal](docs/public-site-plan.md) audits this foundation and
-defines a staged home page, workshop catalog, guided paths, glossary, sourced
-timeline, method/sensor profiles and a small LiDAR explainer. These website
-additions are planned, not yet implemented; the current root page remains the
-consensus workshop. Hosting and publication are not configured by this proposal.
+The [module catalog](docs/learning-path.md) describes the questions, comparisons
+and boundaries of each workshop.
 
 Workshops **2–9** pair their original 2D diagrams with detailed drone scenes,
 volumetric sites and whole-site/follow cameras. They remain planar kinematics
@@ -59,10 +54,9 @@ the additional workshops are at `/movement/`, `/mission/`, `/architecture/`,
 `/cooperative/`, `/slam/`, `/pose-graph/`, `/ros2/`, `/qos/`, `/restart/`, `/middleware/`,
 `/sitl/`, `/gazebo/`, `/failsafe/`, `/fleet/`, `/recovery/`, and `/shared-world/`. Navigation starts a new run or rewinds a recording.
 
-If the local server has stopped after sleep or shutdown, run `npm run dev` again
-from this project directory and keep that terminal open. To reuse a chosen port,
-run `npm run dev -- --port 4175 --strictPort`, then open the URL printed by Vite.
-If the server is running but an embedded preview is stale, reopen that URL.
+Keep the development server running while using the workshops. To choose another
+port, append `-- --port <port> --strictPort` to `npm run dev` and open the URL
+printed by Vite.
 
 ```sh
 npm test                         # mathematical properties, failures and replay
@@ -754,8 +748,9 @@ hull clearance.
 [specification](docs/lessons/23-shared-world-mission.md) and
 [recorded results](docs/lessons/23-shared-world-mission-results.md) for the exact
 clock, contact coverage, coordinate registration and completed verification.
-Live mission editing and systematic fault campaigns are
-[planned subsequent stages](docs/learning-path.md#next-integration-stages).
+The browser replays saved runs; live mission editing and systematic fault
+campaigns are not implemented. See the
+[integration limits](docs/learning-path.md#current-integration-limits).
 
 ## Implementation
 
@@ -830,8 +825,7 @@ Browser dependencies remain shared.
 | Document | Purpose |
 | --- | --- |
 | [Project scope](docs/charter.md) | Purpose, design principles and implementation boundaries. |
-| [Public-site proposal](docs/public-site-plan.md) | Existing-product audit, site structure, visual direction and bounded first-release plan. |
-| [Module catalog](docs/learning-path.md) | Available modules and proposed extensions. |
+| [Module catalog](docs/learning-path.md) | Available modules, method context and integration limits. |
 | [Experiment guide](docs/experiment-guide.md) | Lesson format, comparisons and failure-model rules. |
 | [Consensus results](docs/lessons/01-consensus-results.md) | Observed outcomes, verification and limits. |
 | [Potential-field results](docs/lessons/02-potential-fields-results.md) | Measured arrival, stalls and contact failures. |

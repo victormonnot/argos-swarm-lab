@@ -219,10 +219,9 @@ to ±10,000 m/s to keep derived metrics and graphics numerically representable.
 These deliberately generous admission bounds do not establish physical validity
 or flight safety.
 
-The optional recorder is local and isolated. Browser playback should use a
-bundled actual recording without requiring a simulator installation. Live
-supervision and general fault-injection campaigns are separate prospective
-extensions, not capabilities implied by this replay.
+The optional recorder is local and isolated. Browser playback uses the bundled
+actual recording without requiring a simulator installation. Live supervision
+and general fault-injection campaigns are not implemented.
 
 ## Primary references
 

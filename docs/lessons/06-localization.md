@@ -1,10 +1,10 @@
 # Lesson 06 — Dead reckoning and linear Kalman position filtering
 
 **Status:** implemented locally at `/localization/`; see the
-[measured results](06-localization-results.md). This is the next
-bounded motion/estimation experiment after [path planning](05-pathfinding.md).
-Shared target estimates are a separate [seventh lesson](07-shared-estimates.md).
-Bias-state estimation and real localization hardware remain proposed work.
+[measured results](06-localization-results.md). This experiment builds on
+[path planning](05-pathfinding.md). Shared target estimates are covered in
+[lesson 7](07-shared-estimates.md). Bias-state estimation and real localization
+hardware are outside this model.
 
 **Question:** what happens when a robot follows a valid route using a position
 estimate that differs from its physical position?

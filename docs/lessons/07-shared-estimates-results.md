@@ -102,10 +102,9 @@ CI averaging is not minimum-error estimation across this network.
   2D/3D, context loss, unavailable WebGL, keyboard, 390 px layout and navigation
   across seven pages. No page exceptions occurred. Deliberately unavailable WebGL
   emits Three.js's expected context-creation diagnostic.
-- Production build passed for seven HTML entries. No dependency installation
-  or version change occurred. The fusion script is about 25.9 kB minified /
-  10.1 kB gzip; the optional Three.js chunk retains its existing size warning,
-  about 737 kB minified / 187 kB gzip.
+- Production build passed for seven HTML entries. The fusion script is about
+  25.9 kB minified / 10.1 kB gzip; the optional Three.js chunk retains its
+  existing size warning, about 737 kB minified / 187 kB gzip.
 - A production-preview smoke check passed all seven routes and the six prior
   workshops' first steps, overlap and uncertainty metrics, identical naive/CI
   means, lazy 3D with unchanged raw state, distinct labels, ledger restoration,
@@ -114,8 +113,7 @@ CI averaging is not minimum-error estimation across this network.
   captures were inspected.
 - An independent read-only audit matched the source hash, metadata, original
   seed-1 observations, ten references, 1,000 compact trials, ten aggregates,
-  six numerical parameters and twenty result-table rows. All 68 local public
-  Markdown links resolve.
+  six numerical parameters and twenty result-table rows.
 
 This experiment does not test real sensors, networking, vehicle motion, robotics
 middleware or physical mission performance. Other browser engines were not tested.

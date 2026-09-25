@@ -128,9 +128,7 @@ Completed checks on 2026-09-18:
 The **9 shared SITL Python tests passed**. The full Chromium regression
 passed **162/162 tests**, including nine fleet interactions. WebGL-unavailable
 and context-loss cases intentionally exercise the 2D fallback; their expected
-graphics initialization messages do not represent failed checks. The repository
-audit validated **193 local public Markdown links**, all 21 navigation sets and
-public-file hygiene. Work remained on `main` with an untouched empty index.
+graphics initialization messages do not represent failed checks.
 
 ## What the comparison establishes
 

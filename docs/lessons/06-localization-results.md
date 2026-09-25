@@ -94,10 +94,10 @@ A favorable final outcome does not erase the error accumulated during the outage
   transitions in scratch memory across both maps, all estimator/schedule choices
   and bias on/off for seed1. The foundational and supporting filter sources were
   checked, including the Joseph covariance form and its identity linear case.
-- Production build passed for six HTML entries. No dependency was installed or
-  changed. The optional Three.js chunk retains its existing size warning, about
-  737 kB minified / 187 kB gzip; the localization page script is about 25.8 kB
-  minified plus the shared pathfinding module.
+- Production build passed for six HTML entries. The optional Three.js chunk
+  retains its existing size warning, about 737 kB minified / 187 kB gzip; the
+  localization page script is about 25.8 kB minified plus the shared pathfinding
+  module.
 - A production-preview browser smoke check passed all six routes and the previous
   five workshops' first steps, regular-fix arrival, dead-reckoning false arrival,
   missing/fresh fix inspection, recovery, termination before restoration, lazy
@@ -106,7 +106,7 @@ A favorable final outcome does not erase the error accumulated during the outage
   requests occurred. Local 2D false-arrival and 3D recovery captures were inspected.
 - An independent read-only audit matched both source hashes, all ten reference
   cases, 200 trials, ten aggregates, twenty numerical table rows and fourteen
-  exported parameters. Local Markdown links resolve.
+  exported parameters.
 
 This is a single-browser point simulation with known initial position and map,
 not a real GPS/IMU/SLAM system. No shared estimates, bias-state identification,

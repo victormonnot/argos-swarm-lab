@@ -104,15 +104,14 @@ landed vehicles** again. Host mission durations were **10.251 / 28.880 s**;
 sampled whole-recording minima were **5.907 / 4.392 m**, with zero non-ground
 contact updates. The repeat uses the same frozen sources and runtime image.
 Four successful runs demonstrate these executions; they are not a statistical
-robustness campaign. The repeat is retained locally rather than bundled again.
+robustness campaign. The repeat is not included in the bundled trace.
 
 ## Setup and resource observations
 
-The initial inherited 80 s estimator-preparation deadline was insufficient for
-three JSON autopilots in the shared world. That preparation attempt timed out
-before mission execution. The final recorder allows **200 s** for readiness;
-the bundled runs took **93.423 / 92.785 s**. It retains normal arming
-checks and the original task/freshness gates. Requested telemetry intervals are
+A preparation attempt with an 80 s estimator-readiness deadline timed out for
+three JSON autopilots in the shared world before mission execution. The recorder
+allows **200 s** for readiness; the bundled runs took **93.423 / 92.785 s**. It
+retains normal arming checks and the original task/freshness gates. Requested telemetry intervals are
 three times faster in simulation time than the built-in-physics helper, because
 the shared simulator progresses more slowly than the host clock. Maximum
 recorded LOCAL_POSITION_NED receipt gaps were **79.799 / 96.538 ms**, within
@@ -126,9 +125,8 @@ contact coverage use simulation time.
 Observed process VmRSS snapshots span **220,508–221,256 KiB** for the actual
 Gazebo server and **5,740–5,972 KiB per autopilot**. These are process snapshots,
 not container totals, peak measurements or browser memory requirements. The
-local derived Docker image occupied **2,106,316,287 bytes**, sharing its existing
-Gazebo parent layers. Cached parent dependencies were reused; the new observer
-layer was built locally.
+derived Docker image occupied **2,106,316,287 bytes** and shares its Gazebo parent
+layers.
 
 ## Completed checks
 
@@ -160,8 +158,7 @@ cleanup. Runtime helper unit checks passed **44 tests** (9 SITL, 11 fleet,
   shared-world interactions and prior workshops. The suite also verifies malformed
   imports, plain-text labels, pause/scrub, keyboard/mobile operation and WebGL
   fallback without changing recorded state.
-- Public documentation links, all 23 navigation sets and `git diff --check`
-  passed. The original recovery recording still passes its unchanged contract.
+- The original recovery recording still passes its unchanged contract.
 
 ## Limits
 
@@ -170,9 +167,9 @@ open layout; a successful trace does not establish obstacle avoidance, safe
 passage scheduling or robustness to arbitrary route crossings. Shared rigid-body
 physics does not imply a modeled shared rotor-wake or radio environment.
 
-Withdrawal is a commanded retirement with continuing telemetry. Process death,
-vehicle damage, communication cuts and GPS observation loss are distinct future
-experiments. A recorded success rate from repeated future fault campaigns will
-describe their declared mission, intervention distribution and simulator model.
-Live mission editing and a general robustness test bench are separate planned
-stages in the [catalog](../learning-path.md#next-integration-stages).
+Withdrawal is a commanded retirement with continuing telemetry. This workshop
+does not model process death, vehicle damage, communication cuts or GPS
+observation loss. It provides recorded replay; live mission editing and a general
+robustness test bench are not implemented. The nominal/withdrawal pair and
+functional repeat do not establish a statistical success rate under faults.
+See the [current integration limits](../learning-path.md#current-integration-limits).

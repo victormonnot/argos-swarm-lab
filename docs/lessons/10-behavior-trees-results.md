@@ -80,7 +80,7 @@ Playwright/Chromium browser on 2026-09-14:
   mobile navigation, context loss and unavailable WebGL.
 - `npm run build`: all **ten** HTML entries built. Vite retains the existing
   advisory for the shared optional Three.js chunk (736.58 kB minified,
-  186.86 kB gzip); no new dependency was installed or selected.
+  186.86 kB gzip).
 - The JSON exporter ran successfully. Its 12 saved summaries, source hash,
   revision and configuration were checked against the current model.
 
@@ -96,5 +96,4 @@ execution controls and reference comparisons, camera framing, 390 px layout and
 back navigation without page errors or failed HTTP responses. Desktop, tree
 inspection, whole-yard 3D, drone close-up and mobile captures were visually
 reviewed. Browser WebGL checks use software rendering and do not measure GPU
-performance. The 98 local public Markdown links resolved; whitespace and
-private-content checks passed.
+performance.

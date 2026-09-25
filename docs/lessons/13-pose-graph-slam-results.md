@@ -119,7 +119,7 @@ a material change in the reconstructed trajectory.
 
 - `npm run build`: **13 HTML entries built successfully**. The existing shared
   optional Three.js chunk remains 736.58 kB minified / 186.86 kB gzip and emits
-  Vite's size advisory. No dependency was added or installed.
+  Vite's size advisory.
 - Production-preview Chromium checks passed all 13 routes, navigation, three
   references, the 100-pair comparison, correct/wrong/no-loop outcomes, numerical
   failure inspection, 2D/3D switching, camera controls, 390 px layout and back
@@ -128,7 +128,7 @@ a material change in the reconstructed trajectory.
   were inspected. This software-WebGL check does not establish hardware
   rendering performance.
 
-## Presentation follow-up — 2026-09-14
+## Presentation behavior and checks — 2026-09-14
 
 The seed-7 correct-loop reference changes a historical position by at most
 **0.5620 m** in its first iteration, **2.54 mm** in its second, then much less.
@@ -164,8 +164,8 @@ The production build passed all 13 HTML entries. Production-preview checks
 verified intermediate frames in both views, exact initial/current endpoints,
 the 2.54 mm second correction, comparison after stopping, reset and the 390 px
 layout with no page, console or HTTP errors. Before, during and after frames,
-wrong-loop geometry and mobile screenshots were inspected. No dependency was
-added or installed; software WebGL remains a functional rendering check.
+wrong-loop geometry and mobile screenshots were inspected. Software WebGL
+remains a functional rendering check.
 
 ## Limits
 

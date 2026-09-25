@@ -112,9 +112,9 @@ case in this fixed experiment.
   WebGL, keyboard controls, 390 px layout and all nine workshop links.
   No page exceptions occurred; deliberate WebGL unavailability produces
   Three.js's expected context-creation diagnostic.
-- The production build passed for nine HTML entries. No dependency installation
-  or version change occurred. The existing optional Three.js chunk retains
-  Vite's large-chunk advisory and loads only when a 3D view is requested.
+- The production build passed for nine HTML entries. The existing optional
+  Three.js chunk retains Vite's large-chunk advisory and loads only when a 3D
+  view is requested.
 - Production-preview checks passed all nine routes and navigation, local
   suffix-release inspection, round-2 exclusivity versus round-3 agreement,
   isolated 3D inspection, permanent partition, restoration, all four independent
@@ -124,10 +124,7 @@ case in this fixed experiment.
   were visually reviewed.
 - An independent final audit matched the artifact's source hash, parameters,
   utilities, initial bundles, exact optimum and four full-precision summaries.
-  The published result tables and phase descriptions match those values. All
-  eighty-nine local public Markdown links resolve. Whitespace and private-content
-  scans pass; continuity notes and local captures remain excluded from public
-  changes.
+  The published result tables and phase descriptions match those values.
 
 This experiment does not evaluate task service, motion, sensor quality, real
 network transport or physical robots. Rich path-dependent scores, time windows,

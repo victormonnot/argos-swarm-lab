@@ -4,6 +4,11 @@
 !.env.example
 local/
 
+# Local planning and continuity documents
+/AGENTS.md
+/docs/current-state.md
+/docs/public-site-plan.md
+
 # Generated web artifacts
 node_modules/
 dist/

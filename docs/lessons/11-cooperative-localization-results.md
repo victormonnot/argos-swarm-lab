@@ -107,8 +107,7 @@ Playwright/Chromium browser on 2026-09-14:
   outage, deterministic reset/playback, isolated comparisons, camera/view
   invariance, mobile navigation and WebGL fallback.
 - `npm run build`: all **eleven** HTML entries built. The existing optional
-  Three.js chunk advisory remains (736.58 kB minified, 186.86 kB gzip). No new
-  dependency was installed or selected.
+  Three.js chunk advisory remains (736.58 kB minified, 186.86 kB gzip).
 - The JSON exporter completed with 12 reference cases and four 200-pair
   ensembles, with a recorded hash of the actual model source.
 
@@ -128,8 +127,7 @@ reference/ensemble copies, indirect corrections, anchor restoration, view/camera
 controls, 390 px layout and back navigation, with no page/console errors or
 failed HTTP responses. Desktop whole-yard, drone close-up, 2D map, covariance
 inspection and mobile captures were visually reviewed. Software WebGL checks
-do not establish hardware GPU performance. The **108** local public Markdown
-links resolve; source-hash, whitespace and private-content checks passed.
+do not establish hardware GPU performance. Source-hash checks passed.
 
 The model is a centralized, linear position reference with a supplied shared
 orientation and robot identities. It is not distributed estimation, nonlinear

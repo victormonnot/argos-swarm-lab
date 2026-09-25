@@ -23,8 +23,7 @@ playback reads these observations; it does not simulate replacement deliveries.
   `ba7024d2261bf7fd056abdacfe28307532a3824300ddb29b559121f74ac5a250`.
 - Recording timestamp: `2026-09-16T14:01:00.001420+00:00`.
 
-The already cached pinned image was reused. No dependency installation or
-host-wide ROS setup was needed for this workshop. Docker is needed only to
+The recorder uses the same pinned image as workshop 14. Docker is needed only to
 produce a new actual trace; the supplied web replay runs with the usual setup.
 
 ```sh
