@@ -304,18 +304,25 @@ evidence in 18 and 21. These reuse current capabilities. A richer sensor selecto
 standalone evidence explorer and prerequisite graph are follow-up candidates,
 not requirements that postpone the first release.
 
-## Visual direction
+## Visual requirements and open design choices
 
-An approachable field guide with a precise experimental workspace. Preserve the
-current green identity and scene quality, while giving the explanations more
-space and replacing numerical lesson order as the main discovery mechanism.
+The visual identity remains to be defined before implementing the new site
+shell. Palette, typography, imagery and overall composition are open choices.
+The following requirements guide design exploration without prescribing a
+particular editorial or technological appearance.
+
+Two candidates are available for comparison: a dark, immersive composition with
+cyan accents and a prominent workshop scene, and a light, contemporary composition
+with cobalt accents and a wider scene below the headline. Both use clear
+sans-serif typography, the same learning content and explicit execution-mode
+labels. Any scene still is identified as an image from a paused recording.
+Neither candidate is a selected implementation target yet.
 
 | Element | Proposed treatment |
 | --- | --- |
-| Editorial surfaces | Warm off-white `#f6f7f3`, white content surfaces and light separators. |
-| Text and action color | Dark ink `#173234`, green `#176357`, pale mint `#bff0d8` for restrained emphasis. Verify every final contrast pairing. |
-| Experiment surfaces | Existing dark `#101f22` panels; state labels and evidence remain legible. |
-| Typography | Familiar system sans-serif for UI/body; monospace only for values, units and code. Optional editorial serif headings can be compared in a design preview. No font service required. |
+| Surfaces and color | Palette and light/dark treatment remain open. Verify contrast in the selected design. |
+| Experiment surfaces | Preserve readable state labels, controls and evidence while integrating the chosen identity. |
+| Typography | Typeface choices remain open. Distinguish prose, controls and numerical evidence clearly. |
 | Reading scale | Target 16–18 px body text, comfortable line spacing and about 65–75 characters per prose line. Keep essential labels comfortably readable. |
 | Layout | Short shared header, clear page title, generous editorial spacing, compact workshop metadata, bounded experiment workspace. |
 | Imagery | Existing experiment captures and explanatory diagrams, accurately captioned. Avoid implied field deployment from decorative imagery. |
