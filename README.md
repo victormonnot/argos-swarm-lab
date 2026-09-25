@@ -27,6 +27,12 @@ mission execution with central greedy assignment and per-vehicle MAVLink address
 and **three drones sharing one Gazebo world with measured separation and physical contacts**.
 The [catalog](docs/learning-path.md) also describes possible further extensions.
 
+The [public-site proposal](docs/public-site-plan.md) audits this foundation and
+defines a staged home page, workshop catalog, guided paths, glossary, sourced
+timeline, method/sensor profiles and a small LiDAR explainer. These website
+additions are planned, not yet implemented; the current root page remains the
+consensus workshop. Hosting and publication are not configured by this proposal.
+
 Workshops **2–9** pair their original 2D diagrams with detailed drone scenes,
 volumetric sites and whole-site/follow cameras. They remain planar kinematics
 or static information models: display altitude and scenery do not add flight
@@ -824,6 +830,7 @@ Browser dependencies remain shared.
 | Document | Purpose |
 | --- | --- |
 | [Project scope](docs/charter.md) | Purpose, design principles and implementation boundaries. |
+| [Public-site proposal](docs/public-site-plan.md) | Existing-product audit, site structure, visual direction and bounded first-release plan. |
 | [Module catalog](docs/learning-path.md) | Available modules and proposed extensions. |
 | [Experiment guide](docs/experiment-guide.md) | Lesson format, comparisons and failure-model rules. |
 | [Consensus results](docs/lessons/01-consensus-results.md) | Observed outcomes, verification and limits. |

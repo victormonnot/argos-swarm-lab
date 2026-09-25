@@ -186,6 +186,17 @@ supported vehicle counts and acceptance criteria must be verified before deliver
 Workshops 14–23 include runnable process recorders and interactive pages for
 their actual traces. Workshop 23 extends this integration to one shared world.
 
+## Public educational site
+
+The next proposed workstream organizes the existing 23 workshops for public
+readers before extending runtime capabilities. The
+[public-site proposal](public-site-plan.md) defines an accessible home page,
+a catalog by theme/difficulty/prerequisites, four guided paths, a glossary,
+method and sensor profiles, a sourced timeline and one small LiDAR explainer.
+These pages and editorial additions are not yet implemented. They preserve the
+workshops and distinguish browser models, recorded replays and future live
+execution. Hosting and publication remain separate decisions.
+
 ## Next integration stages
 
 Workshop **23 — shared-world mission** brings the three-vehicle
@@ -196,7 +207,7 @@ sampled vehicle separation and physics-step contact history supplement the
 received estimates used by the controller. No live operator interface or general
 fault campaign is implemented by this stage.
 
-Two subsequent stages are planned:
+Two subsequent stages are planned after the public-site workstream:
 
 - **Live local mission supervision:** start an actual simulator run, receive
   telemetry and change bounded mission inputs during execution. Record requested
