@@ -253,6 +253,7 @@ test('390px without WebGL preserves all three streams, shared-world controls and
   await expect(page.locator('#shared-world-landing-count')).toHaveText('3 / 3');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(23);
-  await expect(navigation.getByRole('link', { name: /23.*Shared Gazebo world/i })).toHaveAttribute('aria-current', 'page');
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true }).locator('option')).toHaveCount(23);
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true })).toBeVisible();
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true })).toHaveValue('/shared-world/');
 });

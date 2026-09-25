@@ -1,0 +1,173 @@
+@import './fonts.css';
+
+:root {
+  --argos-bg: #10100f;
+  --argos-ink: #e8e2d5;
+  --argos-muted: #aaa499;
+  --argos-line: #3b3934;
+  --argos-accent: #e45a4c;
+  --argos-sans: 'IBM Plex Sans', sans-serif;
+  --argos-mono: 'IBM Plex Mono', monospace;
+  --argos-display: 'Barlow Condensed', sans-serif;
+}
+
+.argos-header,
+.argos-footer,
+.argos-workshop-nav,
+.argos-workshop-sections {
+  box-sizing: border-box;
+  color: var(--argos-ink);
+  background: var(--argos-bg);
+  font-family: var(--argos-sans);
+}
+
+.argos-header *,
+.argos-footer *,
+.argos-workshop-nav *,
+.argos-workshop-sections * { box-sizing: border-box; }
+
+.argos-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 28px;
+  max-width: none;
+  margin: 0;
+  padding: 22px max(28px, calc((100vw - 1304px) / 2));
+  border-bottom: 1px solid var(--argos-line);
+}
+
+.argos-header a,
+.argos-footer a,
+.argos-workshop-nav a,
+.argos-workshop-sections a {
+  color: inherit;
+  text-decoration: none;
+  text-underline-offset: 5px;
+}
+
+.argos-header a:hover,
+.argos-footer a:hover,
+.argos-workshop-nav a:hover,
+.argos-workshop-sections a:hover { text-decoration: underline; }
+
+.argos-header :focus-visible,
+.argos-footer :focus-visible,
+.argos-workshop-nav :focus-visible,
+.argos-workshop-sections :focus-visible {
+  outline: 2px solid var(--argos-accent);
+  outline-offset: 5px;
+}
+
+.argos-header .argos-brand {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 12px;
+  font: 600 29px/1 var(--argos-display);
+  letter-spacing: 1px;
+}
+
+.argos-brand small {
+  display: block;
+  margin-top: 6px;
+  font: 400 9px/1.1 var(--argos-mono);
+  letter-spacing: 2px;
+  color: var(--argos-muted);
+}
+
+.argos-mark {
+  display: block;
+  width: 31px;
+  height: 31px;
+  fill: var(--argos-bg);
+  stroke: var(--argos-ink);
+  stroke-width: 1;
+}
+
+.argos-mark circle { fill: var(--argos-accent); stroke: none; }
+
+.argos-primary-nav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-left: auto;
+}
+
+.argos-primary-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  font: 400 13px/1.4 var(--argos-sans);
+}
+
+.argos-primary-nav a[aria-current='page'] { text-decoration: underline; text-decoration-color: var(--argos-accent); }
+.argos-primary-nav a span { color: var(--argos-accent); }
+.argos-header-caption { padding-left: 28px; border-left: 1px solid var(--argos-line); color: var(--argos-muted); font: 400 9px/1.8 var(--argos-mono); letter-spacing: .7px; }
+.argos-menu-toggle { display: none; }
+
+.argos-workshop-topbar {
+  margin-top: 20px;
+  border: 1px solid var(--argos-line);
+}
+
+.argos-workshop-nav {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 360px);
+  gap: 14px 28px;
+  padding: 18px 22px;
+}
+
+.argos-workshop-current { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.argos-workshop-number { color: var(--argos-accent); font: 500 34px/1 var(--argos-display); }
+.argos-workshop-current strong { display: block; font: 500 16px/1.35 var(--argos-sans); }
+.argos-workshop-mode { display: block; margin-bottom: 5px; color: var(--argos-muted); font: 400 10px/1.4 var(--argos-mono); letter-spacing: .4px; text-transform: uppercase; }
+.argos-workshop-jump { display: none; min-width: 0; }
+.argos-nav-ready .argos-workshop-jump { display: block; }
+.argos-workshop-jump label { display: block; margin-bottom: 6px; color: var(--argos-muted); font: 400 11px/1.3 var(--argos-sans); }
+.argos-workshop-jump select { width: 100%; min-width: 0; border: 1px solid #57534b; border-radius: 0; padding: 9px 12px; color: var(--argos-ink); background: #1b1a17; font: 400 12px/1.4 var(--argos-sans); cursor: pointer; color-scheme: dark; }
+.argos-workshop-links { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 24px; }
+.argos-workshop-links a { font: 400 12px/1.5 var(--argos-sans); padding: 4px 0; }
+.argos-workshop-reset { align-self: center; margin: 0; color: var(--argos-muted); font: 400 11px/1.5 var(--argos-sans); }
+.argos-workshop-sections { display: flex; flex-wrap: wrap; gap: 12px 28px; padding: 10px 22px; border-top: 1px solid var(--argos-line); }
+.argos-workshop-sections a { padding: 4px 0; font: 400 12px/1.5 var(--argos-sans); }
+
+.argos-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  max-width: none;
+  margin: 0;
+  padding: 32px max(28px, calc((100vw - 1304px) / 2));
+  border-top: 1px solid var(--argos-line);
+}
+
+.argos-footer .argos-footer-brand { font: 600 22px/1 var(--argos-display); letter-spacing: 1px; }
+.argos-footer-brand span { font: 400 10px/1 var(--argos-mono); color: var(--argos-muted); }
+.argos-footer p { margin: 0; font: 400 12px/1.6 var(--argos-sans); color: var(--argos-muted); }
+.argos-footer > a:last-child { font: 400 12px/1.5 var(--argos-sans); }
+.argos-footer > a:last-child span { color: var(--argos-accent); }
+
+@media (max-width: 1050px) {
+  .argos-header-caption { display: none; }
+  .argos-header { padding-inline: 28px; }
+  .argos-footer { padding-inline: 28px; }
+}
+
+@media (max-width: 640px) {
+  .argos-header { gap: 18px; padding: 18px; }
+  .argos-primary-nav { justify-content: space-between; width: 100%; margin: 0; gap: 16px; }
+  .argos-nav-ready .argos-menu-toggle { display: flex; align-items: center; gap: 22px; margin-left: auto; padding: 11px 12px; border: 1px solid #57534b; border-radius: 0; color: var(--argos-ink); background: transparent; font: 400 12px/1.4 var(--argos-sans); cursor: pointer; }
+  .argos-nav-ready .argos-menu-toggle:hover { background: #26241f; border-color: var(--argos-muted); }
+  .argos-menu-toggle span { color: var(--argos-accent); font: 400 18px/1 var(--argos-mono); }
+  .argos-menu-toggle[aria-expanded='true'] span { transform: rotate(45deg); }
+  .argos-nav-ready .argos-primary-nav:not([data-open]) { display: none; }
+  .argos-workshop-nav { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 18px; }
+  .argos-workshop-links { gap: 14px 20px; }
+  .argos-workshop-links a { min-height: 36px; display: inline-flex; align-items: center; }
+  .argos-workshop-sections { padding: 8px 18px; gap: 8px 24px; }
+  .argos-workshop-sections a { min-height: 36px; display: inline-flex; align-items: center; }
+  .argos-footer { flex-direction: column; align-items: flex-start; gap: 16px; padding: 26px 18px; }
+}

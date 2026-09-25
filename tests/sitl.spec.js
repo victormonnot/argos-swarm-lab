@@ -232,7 +232,8 @@ test('a 390px screen without WebGL retains flight evidence, controls and navigat
   expect(frame.completedStages).toContain('takeoff');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link', { name: /18.*ArduPilot.*MAVLink/i })).toBeVisible();
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true })).toBeVisible();
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true })).toHaveValue('/sitl/');
   await page.locator('#sitl-case').selectOption(rejected.id);
   await page.locator('#sitl-finish').click();
   expect((await expectFrame(page, rejected, rejected.endMs)).completedStages).not.toContain('takeoff');

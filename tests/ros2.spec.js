@@ -186,7 +186,8 @@ test('a 390px screen and unavailable WebGL retain controls, process inspection a
   await expect(page.locator('#ros-agent-details')).toContainText(String(nominal.agents[4].pid));
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link', { name: /14.*ROS/i })).toBeVisible();
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true })).toBeVisible();
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true })).toHaveValue('/ros2/');
   await page.locator('#ros-reset').click();
   await expectState(page, nominal, 0);
 });

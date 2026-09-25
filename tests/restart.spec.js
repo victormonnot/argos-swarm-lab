@@ -199,7 +199,8 @@ test('a 390px screen without WebGL retains truthful replay and policy inspection
   await expect(page.locator('#restart-callback-decision')).toContainText(/Accepted/);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link', { name: /16.*restart/i })).toBeVisible();
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true })).toBeVisible();
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true })).toHaveValue('/restart/');
   await page.locator('#restart-reset').click();
   await expectFrame(page, restarted, 0, 'incarnation');
 });

@@ -2,19 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#101f22" />
+  <meta name="theme-color" content="#10100f" />
   <meta name="description" content="Compare fixed, greedy and Hungarian task allocation. Inspect finite-state execution and reallocation after an agent becomes unavailable." />
   <title>Task Allocation &amp; Finite-State Execution · ARGOS Swarm Lab</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 </head>
-<body class="mission-page">
+<body class="mission-page argos-workshop" data-workshop="03">
   <a class="skip-link" href="#mission-experiment">Skip to experiment</a>
-  <header class="site-header"><a class="brand" href="/">ARGOS <span class="brand-light">/ Swarm Lab</span></a><nav aria-label="Page navigation"><a href="#mission-experiment">Experiment</a><a href="#mission-method">The methods ↗</a></nav><span class="local-tag"><span></span> LOCAL LAB</span></header>
+  <!-- argos:header -->
   <main>
-    <nav class="lesson-switcher" aria-label="Workshops"><a href="/">01 / Average consensus</a><a href="/movement/">02 / Potential fields</a><a href="/mission/" aria-current="page">03 / Task allocation</a><a href="/architecture/">04 / Decision architectures</a><a href="/pathfinding/">05 / A* path planning</a><a href="/localization/">06 / Kalman position filtering</a><a href="/fusion/">07 / Shared estimates</a><a href="/orca/">08 / ORCA collision avoidance</a><a href="/cbba/">09 / CBBA task bundles</a><a href="/behavior/">10 / Behavior Trees and FSM</a>
-      <a href="/cooperative/">11 / Cooperative localization</a>
-      <a href="/slam/">12 / EKF-SLAM</a><a href="/pose-graph/">13 / Pose-graph SLAM</a><a href="/ros2/">14 / ROS 2 nodes and topics</a><a href="/qos/">15 / Message freshness and QoS</a><a href="/restart/">16 / Process failure and restart</a>
-      <a href="/middleware/">17 / Fast DDS and Zenoh</a><a href="/sitl/">18 / ArduPilot SITL and MAVLink</a><a href="/gazebo/">19 / Gazebo external physics</a><a href="/failsafe/">20 / GCS heartbeat failsafe</a><a href="/fleet/">21 / Two-vehicle mission</a><a href="/recovery/">22 / Mission recovery</a><a href="/shared-world/">23 / Shared Gazebo world</a><span>Switching workshops starts a fresh experiment or replay.</span></nav>
+    <div class="argos-workshop-topbar">
+      <!-- argos:workshop-nav -->
+      <nav class="argos-workshop-sections" aria-label="On this page"><a href="#mission-experiment">Experiment</a><a href="#mission-method">The methods ↗</a></nav>
+    </div>
     <section class="mission-intro"><p class="eyebrow">03 / MISSION EXECUTION &amp; ALLOCATION</p><h1>Assign the work.<br> <span>Then finish the mission.</span></h1><p>Three agents, six observation points. Compare <strong>fixed round-robin</strong>, <strong>nearest-pair greedy</strong> and the <strong>Hungarian algorithm</strong>, with the same finite-state executor.</p><p class="mission-predict"><strong>Predict:</strong> if one agent stops, can the remaining two finish its work?</p></section>
     <section id="mission-experiment" aria-label="Task allocation experiment">
       <div class="experiment-heading"><div><p class="eyebrow">CENTRAL ALLOCATION · FINITE-STATE EXECUTION</p><h2>Assigned does not mean completed.</h2></div><span id="mission-status" class="status" aria-live="polite">Paused</span></div>
@@ -51,7 +51,7 @@
     </div><details id="mission-comparisons" class="comparison-details"><summary>Compare the six measured reference runs</summary><p>Same starts, tasks, travel speed, service duration and budget. Each run stops at its first outcome. A blocked run’s short duration is not a successful completion time.</p><div class="table-scroll"><table><caption>Time is simulated. Travel includes unsuccessful work. Reassignments count an already assigned task moving to a different owner.</caption><thead><tr><th>Policy</th><th>A2 at 5 s</th><th>Outcome</th><th>Completed</th><th>Time</th><th>Travel</th><th>Reassigned</th><th>Lost service</th></tr></thead><tbody id="mission-comparison-table"></tbody></table></div></details></section>
     <section id="mission-method" class="model-section"><div><p class="eyebrow">LINEAR ASSIGNMENT PROBLEM</p><h2>A matching is a decision,<br>not a finished mission.</h2><p>The Hungarian algorithm minimizes the sum of current agent-to-task distances. The finite-state executor then has to travel and complete service.</p><p>When a job is interrupted, completed work stays completed, but its unfinished service must restart. Reallocation requires a free executor.</p></div><div class="model-content"><div class="equation mission-equation">c<sub>ij</sub> = ‖p<sub>i</sub> − q<sub>j</sub>‖<br>minimize ∑ c<sub>ij</sub> x<sub>ij</sub><br>at most one task per idle agent<br>at most one agent per pending task<br>number of pairs = min(idle agents, pending tasks)</div><dl class="equation-key"><div><dt>p<sub>i</sub>, q<sub>j</sub></dt><dd>Agent position and task position, in metres.</dd></div><div><dt>x<sub>ij</sub> ∈ {0, 1}</dt><dd>Whether that agent–task pair is selected.</dd></div><div><dt>Current distance objective</dt><dd>Service time is identical for all tasks. No future jobs or failure schedule enter the matrix.</dd></div><div><dt>Global measurements</dt><dd>Mission duration, total travel and completed fraction are evaluation results, not the optimized dispatch cost.</dd></div></dl><div class="model-facts"><div><h3>Unavailable is a modeled event.</h3><p>A2 stops at 5.0 s and its active task returns to pending. The coordinator learns this immediately. No real failure detector is implemented.</p></div><div><h3>What counts as finished?</h3><p>All six tasks must complete 2 s of service. If no assignment or execution can proceed while work remains, the result is blocked. Otherwise the budget is 60 s.</p></div></div><p class="reference">Primary assignment source: H. W. Kuhn (1955), <a href="https://doi.org/10.1002/nav.3800020109" target="_blank" rel="noreferrer">The Hungarian method for the assignment problem ↗</a>. This workshop uses a rectangular minimum-cost variant, recomputed for idle agents and pending tasks. It does not claim an optimal multi-stop mission schedule.</p></div></section>
   </main>
-  <footer><a class="brand" href="/">ARGOS <span class="brand-light">/ Swarm Lab</span></a><span>LESSON 03 / ALLOCATION &amp; EXECUTION</span></footer>
+  <!-- argos:footer -->
   <script type="module" src="/src/mission-main.js"></script>
 </body>
 </html>

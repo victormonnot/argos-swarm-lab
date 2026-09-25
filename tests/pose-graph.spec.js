@@ -231,8 +231,8 @@ test('mobile navigation and unavailable WebGL keep inspectors and controls usabl
   await page.locator('#graph-edge').selectOption('O18');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(23);
-  await navigation.getByRole('link', { name: '12 / EKF-SLAM', exact: true }).click();
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true }).locator('option')).toHaveCount(23);
+  await navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true }).selectOption('/slam/');
   await expect(page.locator('#slam-step-count')).toHaveText('0');
   await page.goBack(); await expect(page.locator('#graph-iteration')).toHaveText('0');
   await page.locator('#graph-step').click(); await expect(page.locator('#graph-iteration')).toHaveText('1');

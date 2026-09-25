@@ -1,15 +1,18 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="theme-color" content="#101f22" />
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="theme-color" content="#10100f" />
   <meta name="description" content="Replay three ArduPilot Iris drones in one Gazebo physics world. Compare received estimates with simulator truth, inspect task ownership, measured separation and recorded contacts." />
   <title>Three drones, one Gazebo world · ARGOS Swarm Lab</title><link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 </head>
-<body class="mission-page shared-world-page">
+<body class="mission-page shared-world-page argos-workshop" data-workshop="23">
 <a class="skip-link" href="#shared-world-experiment">Skip to experiment</a>
-<header class="site-header"><a class="brand" href="/">ARGOS <span class="brand-light">/ Swarm Lab</span></a><nav aria-label="Page navigation"><a href="#shared-world-experiment">Experiment</a><a href="#shared-world-method">Allocation &amp; execution ↗</a></nav><span class="local-tag"><span></span> LOCAL LAB</span></header>
+<!-- argos:header -->
 <main>
-<nav class="lesson-switcher" aria-label="Workshops"><a href="/">01 / Average consensus</a><a href="/movement/">02 / Potential fields</a><a href="/mission/">03 / Task allocation</a><a href="/architecture/">04 / Decision architectures</a><a href="/pathfinding/">05 / A* path planning</a><a href="/localization/">06 / Kalman position filtering</a><a href="/fusion/">07 / Shared estimates</a><a href="/orca/">08 / ORCA collision avoidance</a><a href="/cbba/">09 / CBBA task bundles</a><a href="/behavior/">10 / Behavior Trees and FSM</a><a href="/cooperative/">11 / Cooperative localization</a><a href="/slam/">12 / EKF-SLAM</a><a href="/pose-graph/">13 / Pose-graph SLAM</a><a href="/ros2/">14 / ROS 2 nodes and topics</a><a href="/qos/">15 / Message freshness and QoS</a><a href="/restart/">16 / Process failure and restart</a><a href="/middleware/">17 / Fast DDS and Zenoh</a><a href="/sitl/">18 / ArduPilot SITL and MAVLink</a><a href="/gazebo/">19 / Gazebo external physics</a><a href="/failsafe/">20 / GCS heartbeat failsafe</a><a href="/fleet/">21 / Two-vehicle mission</a><a href="/recovery/">22 / Mission recovery</a><a href="/shared-world/" aria-current="page">23 / Shared Gazebo world</a><span>Switching workshops starts a fresh experiment or replay.</span></nav>
+<div class="argos-workshop-topbar">
+      <!-- argos:workshop-nav -->
+      <nav class="argos-workshop-sections" aria-label="On this page"><a href="#shared-world-experiment">Experiment</a><a href="#shared-world-method">Allocation &amp; execution ↗</a></nav>
+    </div>
 <section class="mission-intro">
   <p class="eyebrow">23 / SHARED PHYSICS · THREE AUTOPILOTS · MEASURED SEPARATION</p>
   <h1>Three drones.<br><span>One physical world.</span></h1>
@@ -75,6 +78,6 @@
   <div class="shared-world-exercises"><h3>Try these inspections</h3><p><strong>1.</strong> Select withdrawal, then jump to <em>Task locked</em>. Inspect A1’s tree and the task owner. A halted attempt and a retained reservation should coexist.</p><p><strong>2.</strong> Jump to <em>Landed → release</em>, then <em>Reassigned</em>. Find the old and new owner and compare the command timestamps with the recorded task events.</p><p><strong>3.</strong> Switch between <em>World + estimates</em> and each pose layer. Inspect the selected vehicle’s error and report ages. Then switch to 2D: the cursor and underlying evidence must remain unchanged.</p><p><strong>4.</strong> Jump to <em>Six tasks done</em>. Compare the task count, landing cleanup, smallest sampled separation and contact observations. Which evidence supports each conclusion?</p></div>
   <h3>Primary sources and scope</h3><p><a href="https://arxiv.org/abs/1709.00084" target="_blank" rel="noreferrer">Colledanchise &amp; Ögren, Behavior Trees in Robotics and AI</a> explains tree semantics and reactivity. The bounded tree, ownership ledger and greedy policy here are explicit application choices.</p><p><a href="https://ardupilot.org/dev/docs/copter-commands-in-guided-mode.html" target="_blank" rel="noreferrer">ArduPilot Guided command documentation</a> describes the flight requests. <a href="https://mavlink.io/en/services/command.html" target="_blank" rel="noreferrer">MAVLink command protocol</a> distinguishes command acknowledgement from completed application work. <a href="https://ardupilot.org/dev/docs/sitl-with-gazebo.html" target="_blank" rel="noreferrer">The official ArduPilot–Gazebo integration</a> supplies the shared external physics. See the <a href="../docs/lessons/23-shared-world-mission.md">experiment specification</a> and <a href="../docs/lessons/23-shared-world-mission-results.md">measured results</a> for the implemented assumptions.</p>
 </section>
-</main><footer class="site-footer"><span>ARGOS / Swarm Lab</span><span>23 / Shared Gazebo world · local experiment</span></footer>
+</main><!-- argos:footer -->
 <script type="module" src="/src/shared-world-main.js"></script>
 </body></html>

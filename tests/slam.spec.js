@@ -173,8 +173,8 @@ test('mobile navigation and absent WebGL retain usable map and controls', async 
   await expect(page.locator('#slam-reference-table tr')).toHaveCount(6);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(23);
-  await navigation.getByRole('link', { name: '11 / Cooperative localization', exact: true }).click();
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true }).locator('option')).toHaveCount(23);
+  await navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true }).selectOption('/cooperative/');
   await expect(page.locator('#coop-step-count')).toHaveText('0');
   await page.goBack(); await expect(page.locator('#slam-step-count')).toHaveText('0');
   await page.locator('#slam-step').click(); await expect(page.locator('#slam-time')).toHaveText('0.25 s');

@@ -168,9 +168,11 @@ test('keyboard, mobile navigation and unavailable WebGL keep CBBA usable', async
   await expect(page.locator('#cbba-reference-table tr')).toHaveCount(4);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(23);
-  await navigation.getByRole('link', { name: '08 / ORCA collision avoidance', exact: true }).click(); await expect(page.locator('#orca-step-count')).toHaveText('0');
-  await page.getByRole('navigation', { name: 'Workshops', exact: true }).getByRole('link', { name: '09 / CBBA task bundles', exact: true }).click();
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true }).locator('option')).toHaveCount(23);
+  await navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true }).selectOption('/orca/'); await expect(page.locator('#orca-step-count')).toHaveText('0');
+  await page.getByRole('navigation', { name: 'Workshops', exact: true }).getByRole('combobox', { name: 'Choose a workshop', exact: true }).selectOption('/cbba/');
+  await expect(page).toHaveURL('/cbba/');
+  await expect(page.locator('#cbba-round')).toHaveText('0');
   await page.addInitScript(() => {
     const original = HTMLCanvasElement.prototype.getContext;
     HTMLCanvasElement.prototype.getContext = function (type, ...args) { return type.startsWith('webgl') ? null : original.call(this, type, ...args); };

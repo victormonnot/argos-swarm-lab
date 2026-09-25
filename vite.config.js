@@ -1,11 +1,15 @@
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
+import { sitePlugin } from './scripts/site-plugin.js';
 
 export default defineConfig({
+  plugins: [sitePlugin()],
   build: {
     rolldownOptions: {
       input: {
-        consensus: resolve(import.meta.dirname, 'index.html'),
+        home: resolve(import.meta.dirname, 'index.html'),
+        workshops: resolve(import.meta.dirname, 'workshops/index.html'),
+        consensus: resolve(import.meta.dirname, 'consensus/index.html'),
         movement: resolve(import.meta.dirname, 'movement/index.html'),
         mission: resolve(import.meta.dirname, 'mission/index.html'),
         architecture: resolve(import.meta.dirname, 'architecture/index.html'),

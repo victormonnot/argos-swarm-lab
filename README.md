@@ -4,6 +4,15 @@ An interactive tool for exploring multi-robot coordination through reproducible
 experiments. Change a parameter, observe collective behavior, introduce a failure
 and compare the results.
 
+The home page introduces the lab; `/workshops/` lets you explore all 23 workshops
+by question, theme, difficulty and execution mode. Each entry explains recommended
+preparation and model limits. **Start here** selects the four introductory
+workshops without workshop prerequisites. Filters are shareable through the URL.
+
+Workshops 1–13 are **interactive simulations** computed in the browser. Workshops
+14–23 are **recorded replays** of software execution with declared synthetic data
+or simulated flight dynamics. The site does not connect to a live mission.
+
 **Available:** twenty-three local workshops with explanations, linked 2D/3D views, step
 controls and measured comparisons: **distributed average consensus**,
 **Artificial Potential Fields**, **task allocation with finite-state
@@ -48,11 +57,17 @@ npm run dev
 Open the URL printed by Vite, normally [http://127.0.0.1:5173](http://127.0.0.1:5173).
 The server binds to loopback. No account, backend or external service is needed.
 Dependencies and the optional test browser need a network connection to install;
-the workshops load their assets locally. Use the workshop links to switch pages;
-the additional workshops are at `/movement/`, `/mission/`, `/architecture/`,
+the workshops and their fonts load their assets locally. Start at `/` for the
+home page or `/workshops/` for the catalog. Consensus is at `/consensus/`; the
+other workshops are at `/movement/`, `/mission/`, `/architecture/`,
 `/pathfinding/`, `/localization/`, `/fusion/`, `/orca/`, `/cbba/`, `/behavior/`,
 `/cooperative/`, `/slam/`, `/pose-graph/`, `/ros2/`, `/qos/`, `/restart/`, `/middleware/`,
 `/sitl/`, `/gazebo/`, `/failsafe/`, `/fleet/`, `/recovery/`, and `/shared-world/`. Navigation starts a new run or rewinds a recording.
+
+Known old consensus bookmarks such as `/#experiment`, `/#field-notes` and
+`/#model` forward to the corresponding section under `/consensus/` when
+JavaScript is available. The catalog and its workshop/preparation links remain
+readable without JavaScript; filters and experiments require it.
 
 Keep the development server running while using the workshops. To choose another
 port, append `-- --port <port> --strictPort` to `npm run dev` and open the URL
@@ -825,6 +840,7 @@ Browser dependencies remain shared.
 | Document | Purpose |
 | --- | --- |
 | [Project scope](docs/charter.md) | Purpose, design principles and implementation boundaries. |
+| [Site navigation and discovery](docs/site.md) | Routes, catalog filters, metadata and static page generation. |
 | [Module catalog](docs/learning-path.md) | Available modules, method context and integration limits. |
 | [Experiment guide](docs/experiment-guide.md) | Lesson format, comparisons and failure-model rules. |
 | [Consensus results](docs/lessons/01-consensus-results.md) | Observed outcomes, verification and limits. |

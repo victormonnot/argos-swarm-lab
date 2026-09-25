@@ -46,7 +46,7 @@ test.beforeEach(async ({ page }) => {
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.goto('/');
+  await page.goto('/consensus/');
   await expect(page.locator('#step-count')).toHaveText('0');
 });
 

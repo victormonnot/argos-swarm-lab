@@ -3,23 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#101f22" />
+  <meta name="theme-color" content="#10100f" />
   <meta name="description" content="Explore Artificial Potential Fields: three agents navigate using attraction and repulsion, with a reproducible local trap and collision comparisons." />
   <title>Artificial Potential Fields · ARGOS Swarm Lab</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 </head>
-<body class="movement-page">
+<body class="movement-page argos-workshop" data-workshop="02">
   <a class="skip-link" href="#movement-experiment">Skip to experiment</a>
-  <header class="site-header">
-    <a class="brand" href="/">ARGOS <span class="brand-light">/ Swarm Lab</span></a>
-    <nav aria-label="Page navigation"><a href="#movement-experiment">Experiment</a><a href="#movement-model">The model ↗</a></nav>
-    <span class="local-tag"><span></span> LOCAL LAB</span>
-  </header>
+  <!-- argos:header -->
   <main>
-    <nav class="lesson-switcher" aria-label="Workshops"><a href="/">01 / Average consensus</a><a href="/movement/" aria-current="page">02 / Potential fields</a><a href="/mission/">03 / Task allocation</a><a href="/architecture/">04 / Decision architectures</a><a href="/pathfinding/">05 / A* path planning</a><a href="/localization/">06 / Kalman position filtering</a><a href="/fusion/">07 / Shared estimates</a><a href="/orca/">08 / ORCA collision avoidance</a><a href="/cbba/">09 / CBBA task bundles</a><a href="/behavior/">10 / Behavior Trees and FSM</a>
-      <a href="/cooperative/">11 / Cooperative localization</a>
-      <a href="/slam/">12 / EKF-SLAM</a><a href="/pose-graph/">13 / Pose-graph SLAM</a><a href="/ros2/">14 / ROS 2 nodes and topics</a><a href="/qos/">15 / Message freshness and QoS</a><a href="/restart/">16 / Process failure and restart</a>
-      <a href="/middleware/">17 / Fast DDS and Zenoh</a><a href="/sitl/">18 / ArduPilot SITL and MAVLink</a><a href="/gazebo/">19 / Gazebo external physics</a><a href="/failsafe/">20 / GCS heartbeat failsafe</a><a href="/fleet/">21 / Two-vehicle mission</a><a href="/recovery/">22 / Mission recovery</a><a href="/shared-world/">23 / Shared Gazebo world</a><span>Switching workshops starts a fresh experiment or replay.</span></nav>
+    <div class="argos-workshop-topbar">
+      <!-- argos:workshop-nav -->
+      <nav class="argos-workshop-sections" aria-label="On this page"><a href="#movement-experiment">Experiment</a><a href="#movement-model">The model ↗</a></nav>
+    </div>
     <section class="movement-intro" aria-labelledby="movement-title">
       <div><p class="eyebrow">02 / COLLECTIVE MOVEMENT</p><h1 id="movement-title">Artificial Potential Fields<span>Attraction, repulsion, and getting stuck.</span></h1><p>Three agents move toward a shared goal region. Each combines a pull toward the goal with pushes away from walls and nearby agents.</p></div>
       <aside class="movement-prediction"><strong>Predict before running</strong><p>If attraction and repulsion cancel before the goal, will the agents find a way around?</p><a href="#movement-cases">Test the U-shaped trap ↓</a></aside>
@@ -76,7 +72,7 @@
       <p class="reference">Primary method source: Oussama Khatib (1986), <a href="https://khatib.stanford.edu/publications/pdfs/Khatib_1986_IJRR.pdf" target="_blank" rel="noreferrer">Real-Time Obstacle Avoidance for Manipulators and Mobile Robots ↗</a>. This page implements the stated velocity-controller adaptation, with no global path search or guarantee of collision avoidance or arrival.</p>
     </div></section>
   </main>
-  <footer><a class="brand" href="/">ARGOS <span class="brand-light">/ Swarm Lab</span></a><span>LESSON 02 / ARTIFICIAL POTENTIAL FIELDS</span></footer>
+  <!-- argos:footer -->
   <script type="module" src="/src/movement-main.js"></script>
 </body>
 </html>

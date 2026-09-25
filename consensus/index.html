@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#10100f" />
+    <meta name="description" content="Explore distributed average consensus: a decentralized, leaderless algorithm with synchronous neighbor exchanges and linked 2D and 3D views." />
+    <title>Distributed Average Consensus · ARGOS Swarm Lab</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="argos-workshop" data-workshop="01">
+    <a class="skip-link" href="#experiment">Skip to experiment</a>
+    <!-- argos:header -->
+    <main>
+      <div class="argos-workshop-topbar">
+      <!-- argos:workshop-nav -->
+      <nav class="argos-workshop-sections" aria-label="On this page"><a href="#experiment">Experiment</a><a href="#field-notes">Field notes</a><a href="#model">The model <span aria-hidden="true">↗</span></a></nav>
+    </div>
+      <section class="intro" aria-labelledby="lesson-title">
+        <div><p class="eyebrow"><span class="chapter">01</span> ALGORITHM / AVERAGE CONSENSUS</p><h1 id="lesson-title">Distributed average<br><span>consensus.</span></h1><p class="intro-copy">Six agents apply the same local averaging rule, without a leader.<br class="desktop-break"> Explore how their communication links shape agreement.</p></div>
+        <aside class="prediction"><span class="eyebrow">BEFORE YOU PRESS PLAY</span><p>If every agent listens only to its neighbors, where will their numbers end up?</p><div class="prediction-choices" role="group" aria-label="Your prediction"><button data-prediction="mean">Their average</button><button data-prediction="leader">The largest value</button><button data-prediction="local">It depends on the links</button></div><p id="prediction-feedback" class="small" aria-live="polite">Make a prediction, then test it below.</p></aside>
+      </section>
+      <section class="method-profile" aria-labelledby="method-profile-title">
+        <div class="method-profile-heading"><h2 id="method-profile-title">Know the method</h2><a href="#model">Rule, symbols &amp; source ↗</a></div>
+        <dl class="method-aspects">
+          <div><dt>Algorithm variant</dt><dd><strong>Linear · constant edge gain</strong><p>Each neighbor difference contributes with the same gain, α = 1/12.</p></dd></div>
+          <div><dt>Decision architecture</dt><dd><strong>Decentralized · leaderless</strong><p>Every agent decides from its own value and its neighbors’ values.</p></dd></div>
+          <div><dt>Update timing</dt><dd><strong>Synchronous · discrete time</strong><p>All agents read step k, then update together to step k + 1.</p></dd></div>
+          <div><dt>Communication model</dt><dd><strong>Undirected · unweighted</strong><p>Links carry values both ways, with equal gain and no delay or random loss.</p></dd></div>
+        </dl>
+        <p class="method-execution"><strong>Execution:</strong> six agents in one browser simulation. Decentralized describes their decisions; the simulator computes the global mean and disagreement for you to inspect.</p>
+      </section>
+      <section id="experiment" class="experiment" aria-label="Consensus experiment">
+        <div class="experiment-heading"><div><span class="eyebrow">THE EXPERIMENT</span><h2>Agreement through exchange</h2></div><span id="run-status" class="status" aria-live="polite">Paused · ready to explore</span></div>
+        <div class="lab-grid">
+          <div class="visual-panel">
+            <div class="visual-toolbar"><span><span class="live-dot"></span><strong id="topology-label">Complete graph</strong><span class="muted"> / 6 agents</span></span><div class="segmented" role="group" aria-label="Graph view"><button id="view-2d" aria-pressed="true">2D</button><button id="view-3d" aria-pressed="false">3D</button></div></div>
+            <div id="graph-viewport" aria-label="Agent network"></div>
+            <div class="visual-caption"><span>ABSTRACT MODEL <span aria-hidden="true">·</span> NO PHYSICAL UNITS</span><span id="view-hint">Select an agent to inspect its neighbors</span></div>
+            <div class="transport"><button id="play" class="primary"><span aria-hidden="true">▶</span> Play</button><button id="step-button">Step once <span aria-hidden="true">→</span></button><button id="reset" class="quiet">Reset</button><div class="speed-control"><label for="speed">Speed</label><select id="speed"><option value="1">1 step/s</option><option value="5" selected>5 steps/s</option><option value="20">20 steps/s</option><option value="60">60 steps/s</option></select></div></div>
+            <div class="metrics"><div><span class="metric-label">MODEL STEP</span><strong id="step-count">0</strong><small>of 1,000</small></div><div><span class="metric-label">DISAGREEMENT</span><strong id="disagreement">12.0000</strong><small>max − min</small></div><div><span class="metric-label">CURRENT MEAN</span><strong id="current-mean">6.0000</strong><small>initial <span id="initial-mean">6.0000</span></small></div><div><span class="metric-label">CONNECTED GROUPS</span><strong id="component-count">1</strong><small id="component-label">all agents connected</small></div></div>
+          </div>
+          <aside class="configuration" aria-label="Experiment configuration">
+            <div class="panel-heading"><span class="eyebrow">01 / CONFIGURE</span><span class="small">New run</span></div>
+            <label for="preset" class="field-label">Network topology</label><select id="preset" aria-describedby="topology-help"><option value="complete">Complete graph — everyone connects</option><option value="chain">Chain — neighbor to neighbor</option><option value="groups">Two groups — no bridge</option></select>
+            <p id="topology-help" class="topology-help">Topology means who exchanges with whom. All three presets use the same consensus algorithm and decision architecture.</p>
+            <form id="initial-form"><fieldset><legend>Starting values</legend><div class="value-inputs" id="value-inputs"></div><button id="apply-values" type="submit" class="wide">Apply values &amp; reset <span aria-hidden="true">↗</span></button></fieldset><p id="input-error" class="error" role="alert"></p></form>
+            <p class="small">Applying values or choosing a network starts a paused run and clears link events.</p>
+            <div class="config-divider"></div>
+            <div class="panel-heading"><span class="eyebrow">02 / INTERRUPT</span><span id="edge-count" class="small">15 links</span></div><p class="small">Pause, then toggle a link. Both directions change; current values are preserved.</p><div id="link-controls" class="link-controls" role="group" aria-label="Communication links"></div><div class="link-key"><span><i class="on-key"></i>Connected</span><span><i></i>Disconnected</span></div>
+            <details class="replay-details"><summary>Link events &amp; replay <span id="event-count">0 events</span></summary><ol id="event-log"><li>No link edits in this run.</li></ol><button id="replay" class="wide">Replay run <span aria-hidden="true">↺</span></button><p class="small">Replays the recorded steps and link edits. Configuration is locked until you exit replay with Reset. Runs stay in this tab and are lost on reload.</p></details>
+          </aside>
+        </div>
+        <div class="inspection-grid">
+          <section class="chart-panel" aria-labelledby="chart-title"><div class="panel-heading"><div><span class="eyebrow">OBSERVE</span><h3 id="chart-title">A measure of disagreement</h3></div><span class="chart-key"><i></i> max − min</span></div><div id="history-chart"></div><div class="chart-footer"><p id="agreement-status" aria-live="polite">Agreement threshold: 0.01. Not reached yet.</p><div><button id="advance-100" class="text-button">Advance to step 100</button><button id="run-budget" class="text-button">Run to 1,000 <span aria-hidden="true">↗</span></button></div></div></section>
+          <section class="state-panel" aria-labelledby="state-title"><div class="panel-heading"><div><span class="eyebrow">INSPECT</span><h3 id="state-title">What each agent knows</h3></div></div><div class="table-scroll"><table id="state-table"><caption class="sr-only">Current agent values, neighbors and connected groups</caption><thead><tr><th>Agent</th><th>Value</th><th>Neighbors</th><th>Group</th></tr></thead><tbody></tbody></table></div><p id="agent-detail" class="agent-detail"></p><p class="small">Each agent receives only its neighbors’ values. The mean, disagreement and group IDs are evaluator measurements, not agent inputs.</p></section>
+        </div>
+        <div class="exchange-note"><span><strong id="exchanges-per-step">30</strong> directed scalar exchanges / next step</span><span><strong id="total-exchanges">0</strong> exchanges so far <span class="muted">· Model counts, not network bytes</span></span></div>
+      </section>
+      <section id="field-notes" class="field-notes" aria-labelledby="notes-title"><div class="section-heading"><div><p class="eyebrow">CHANGE ONE THING. SEE WHAT HAPPENS.</p><h2 id="notes-title">Four experiments, one consensus algorithm.</h2></div><p>Predict an outcome. Run it. Explain the difference.</p></div><div class="exercise-grid">
+        <article><span class="exercise-number">01 / CONNECTIVITY</span><h3>More links, faster agreement?</h3><p class="scenario-aspect"><strong>Changes:</strong> network topology</p><p>Run the complete graph, then the chain. Keep the values the same. Compare the steps and exchanges needed to agree.</p><button data-scenario="complete">Load complete graph <span>↗</span></button><button data-scenario="chain" class="secondary-exercise">Load chain <span>↗</span></button></article>
+        <article><span class="exercise-number">02 / PARTITION</span><h3>Two groups. Two answers.</h3><p class="scenario-aspect"><strong>Changes:</strong> network connectivity</p><p>Disconnect the bridge. Can each group agree while the whole network still disagrees? Run to step 1,000 to find out.</p><button data-scenario="groups">Load two groups <span>↗</span></button></article>
+        <article><span class="exercise-number">03 / RECOVERY</span><h3>Bring the conversation back.</h3><p class="scenario-aspect"><strong>Changes:</strong> link removal / restoration</p><p>Load a chain with A3–A4 removed at step 0. Advance to step 100, restore A3–A4, then run to 1,000. Does agreement return?</p><button data-scenario="recovery">Start recovery experiment <span>↗</span></button></article>
+        <article><span class="exercise-number">04 / SHARED BIAS</span><h3>Agreed. But is it correct?</h3><p class="scenario-aspect"><strong>Changes:</strong> initial values</p><p>Add 100 to every starting value on the complete graph. Does disagreement change? What can this model tell you about truth?</p><button id="shift-values">Add 100 to starting values <span>↗</span></button></article>
+      </div><p id="exercise-notice" class="exercise-notice" aria-live="polite">Every exercise starts paused. Take a moment to predict before pressing Play.</p>
+      <details class="comparison-details"><summary>Compare measured reference runs <span>5 runs · 1,000 steps each</span></summary><p>Computed locally using the same model, with starting values [0, 2, 4, 8, 10, 12]. Recovery restores A3–A4 at step 100. Shared bias adds 100. These comparisons do not change your experiment.</p><div class="table-scroll"><table id="comparison-table"><caption>Agreement means an unrounded range ≤ 0.01. A missing result is reported at the 1,000-step budget.</caption><thead><tr><th>Experiment</th><th>First agreement</th><th>Exchanges to agreement</th><th>Final range</th></tr></thead><tbody></tbody></table></div></details></section>
+      <section id="model" class="model-section" aria-labelledby="model-title"><div><p class="eyebrow">THE ALGORITHM / LINEAR CONSENSUS</p><h2 id="model-title">The local<br>averaging rule.</h2><p>An agent nudges its number toward its neighbors’ numbers. Every agent reads the previous step, then all six update together.</p><p>For example, A1 starts at 0 in the complete graph. Its neighbors sum to 36, so its next value is 0 + 36 / 12 = <strong>3</strong>.</p></div><div class="model-content"><div class="equation">xᵢ[k + 1] = xᵢ[k] + <span>¹⁄₁₂</span> ∑ⱼ∈Nᵢ (xⱼ[k] − xᵢ[k])</div><dl class="equation-key"><div><dt>xᵢ[k]</dt><dd>Agent i’s value at step k.</dd></div><div><dt>Nᵢ</dt><dd>The neighbors currently linked to agent i.</dd></div><div><dt>∑</dt><dd>Add one difference for each neighbor.</dd></div><div><dt>α = 1/12</dt><dd>The fixed gain applied to each neighbor difference.</dd></div></dl><p>With six agents, α = 1 / (2N) = 1/12. This is a linear weighted sum of the previous values. Each neighbor has weight α; the agent’s own value has weight 1 − α × its number of neighbors. Removing a link changes this self-weight while the edge gain stays fixed.</p><p>Even with five neighbors, an agent retains a positive share of its own value. Each update is a weighted average, so values stay within their previous range.</p><div class="model-facts"><div><h3>Why the average survives</h3><p>Every undirected exchange adds to one agent exactly what it subtracts from another. The sum stays constant. A fixed connected graph converges to the initial mean.</p></div><div><h3>Where this model stops</h3><p>Six fixed agents, synchronous steps, equal undirected links, no delays or random message loss. No flight dynamics, GPS, membership changes, or external truth measurement.</p></div></div><p class="reference">Foundational context: Olfati-Saber &amp; Murray (2004), <a href="https://www.cds.caltech.edu/~murray/papers/2003f_om04-tac.html" target="_blank" rel="noreferrer">Consensus Problems in Networks of Agents With Switching Topology and Time-Delays ↗</a>. This lesson implements the discrete averaging rule shown above, not every case in the paper.</p></div></section>
+    </main>
+    <!-- argos:footer -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

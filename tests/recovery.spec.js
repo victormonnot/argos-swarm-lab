@@ -196,6 +196,7 @@ test('390px without WebGL preserves all three streams, recovery controls and twe
   await expect(page.locator('#recovery-landing-count')).toHaveText('3 / 3');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(23);
-  await expect(navigation.getByRole('link', { name: /22.*Mission recovery/i })).toHaveAttribute('aria-current', 'page');
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true }).locator('option')).toHaveCount(23);
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true })).toBeVisible();
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true })).toHaveValue('/recovery/');
 });

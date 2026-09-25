@@ -195,8 +195,8 @@ test('mobile navigation and unavailable WebGL retain usable controls and state',
   await expect(page.locator('#coop-reference-table tr')).toHaveCount(12);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(23);
-  await navigation.getByRole('link', { name: '10 / Behavior Trees and FSM', exact: true }).click();
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true }).locator('option')).toHaveCount(23);
+  await navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true }).selectOption('/behavior/');
   await expect(page.locator('#behavior-step-count')).toHaveText('0');
   await page.goBack(); await expect(page.locator('#coop-step-count')).toHaveText('0');
   await page.locator('#coop-step').click(); await expect(page.locator('#coop-time')).toHaveText('0.25 s');

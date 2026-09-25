@@ -208,7 +208,8 @@ test('a 390px screen without WebGL retains replay, selection and recorded state 
   await expect(page.locator('#qos-callback-decision')).toContainText(/reject|stale/i);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link', { name: /15.*QoS/i })).toBeVisible();
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true })).toBeVisible();
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true })).toHaveValue('/qos/');
   await page.locator('#qos-reset').click();
   await expectFrame(page, stalled, 0, 'gated20');
 });

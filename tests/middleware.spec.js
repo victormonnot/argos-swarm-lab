@@ -196,7 +196,8 @@ test('a 390px screen without WebGL keeps replay and late-join evidence available
   await expect(page.locator('#middleware-received')).toHaveText(String(frame.receivedCount));
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link', { name: /17.*DDS.*Zenoh/i })).toBeVisible();
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true })).toBeVisible();
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true })).toHaveValue('/middleware/');
   await page.locator('#middleware-case').selectOption(volatile.id);
   await page.locator('#middleware-time-slider').fill('3000');
   expect((await expectFrame(page, volatile, 3000)).position).toBeNull();

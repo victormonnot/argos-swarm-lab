@@ -131,9 +131,11 @@ test('keyboard, narrow layout, workshop navigation and unavailable WebGL remain 
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(23);
-  await navigation.getByRole('link', { name: '06 / Kalman position filtering', exact: true }).click(); await expect(page.locator('#loc-step-count')).toHaveText('0');
-  await page.getByRole('navigation', { name: 'Workshops', exact: true }).getByRole('link', { name: '07 / Shared estimates', exact: true }).click();
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true }).locator('option')).toHaveCount(23);
+  await navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true }).selectOption('/localization/'); await expect(page.locator('#loc-step-count')).toHaveText('0');
+  await page.getByRole('navigation', { name: 'Workshops', exact: true }).getByRole('combobox', { name: 'Choose a workshop', exact: true }).selectOption('/fusion/');
+  await expect(page).toHaveURL('/fusion/');
+  await expect(page.locator('#fusion-round')).toHaveText('0');
   await page.addInitScript(() => {
     const original = HTMLCanvasElement.prototype.getContext;
     HTMLCanvasElement.prototype.getContext = function (type, ...args) { return type.startsWith('webgl') ? null : original.call(this, type, ...args); };

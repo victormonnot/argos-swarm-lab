@@ -19,6 +19,12 @@ with an experiment. Its **lesson page** explains the method, exposes controls
 and displays the observed results. Each follows the
 [experiment guide](experiment-guide.md).
 
+In the running site, `/workshops/` filters this collection by question, theme,
+difficulty and execution mode. Each catalog entry links to recommended prior
+workshops and states its fidelity and limits. These recommendations guide a
+reader's starting point; they do not restrict access. See the
+[site navigation documentation](site.md) for route and filter behavior.
+
 ## Available workshops
 
 | Module | Question explored | Bounded experiment and comparison | Concepts covered |

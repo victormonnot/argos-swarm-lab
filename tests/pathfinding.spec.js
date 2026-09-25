@@ -121,7 +121,7 @@ test('timed playback, 2D/3D, trace inspection and camera motion preserve a singl
   expect(await physical(page)).toEqual(slow);
 });
 
-test('keyboard cell navigation, mobile controls and all workshop links remain usable', async ({ page }) => {
+test('keyboard cell navigation, mobile controls and workshop selection remain usable', async ({ page }) => {
   await page.keyboard.press('Tab'); await expect(page.locator('.skip-link')).toBeFocused(); await page.keyboard.press('Enter');
   const start = page.locator('[data-path-cell="51"]'); await start.focus(); await page.keyboard.press('Enter');
   await expect(start).toBeFocused(); await page.keyboard.press('ArrowLeft');
@@ -131,10 +131,10 @@ test('keyboard cell navigation, mobile controls and all workshop links remain us
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.locator('#path-step').click(); await expect(page.locator('#path-step-count')).toHaveText('1');
   const navigation = page.getByRole('navigation', { name: 'Workshops', exact: true });
-  await expect(navigation.getByRole('link')).toHaveCount(23);
-  await navigation.getByRole('link', { name: '04 / Decision architectures', exact: true }).click();
+  await expect(navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true }).locator('option')).toHaveCount(23);
+  await navigation.getByRole('combobox', { name: 'Choose a workshop', exact: true }).selectOption('/architecture/');
   await expect(page.locator('#arch-step-count')).toHaveText('0');
-  await page.getByRole('navigation', { name: 'Workshops', exact: true }).getByRole('link', { name: '05 / A* path planning', exact: true }).click();
+  await page.getByRole('navigation', { name: 'Workshops', exact: true }).getByRole('combobox', { name: 'Choose a workshop', exact: true }).selectOption('/pathfinding/');
   await expect(page.locator('#path-step-count')).toHaveText('0');
 });
 

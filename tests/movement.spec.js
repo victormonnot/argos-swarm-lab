@@ -21,12 +21,12 @@ test.afterEach(async ({ page }) => expect(errors.get(page)).toEqual([]));
 test('workshop navigation exposes both algorithms and starts fresh runs', async ({ page }) => {
   await expect(page.locator('h1')).toContainText('Artificial Potential Fields');
   await page.locator('#movement-step').click();
-  await page.getByRole('navigation', { name: 'Workshops', exact: true }).getByRole('link', { name: '01 / Average consensus' }).click();
+  await page.getByRole('navigation', { name: 'Workshops', exact: true }).getByRole('combobox', { name: 'Choose a workshop', exact: true }).selectOption('/consensus/');
   await expect(page.locator('#step-count')).toHaveText('0');
   await expect(page.locator('#state-table tbody tr')).toHaveCount(6);
   await page.locator('#step-button').click();
   await expect(page.locator('#step-count')).toHaveText('1');
-  await page.getByRole('link', { name: '02 / Potential fields', exact: true }).click();
+  await page.getByRole('navigation', { name: 'Workshops', exact: true }).getByRole('combobox', { name: 'Choose a workshop', exact: true }).selectOption('/movement/');
   await expect(page.locator('#movement-step-count')).toHaveText('0');
 });
 

@@ -3,6 +3,10 @@
 **Status:** implemented local workshop. See the [setup instructions](../../README.md#run-locally)
 and [measured results](01-consensus-results.md).
 
+The workshop is available at `/consensus/`. Known former root-page fragments,
+including `/#experiment`, `/#field-notes` and `/#model`, forward to the same
+sections under `/consensus/` when JavaScript is available.
+
 **Question:** how do several agents reach agreement through neighbor exchanges?
 
 ## Method profile

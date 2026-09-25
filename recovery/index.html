@@ -1,15 +1,18 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="theme-color" content="#101f22" />
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="theme-color" content="#10100f" />
   <meta name="description" content="Replay a three-drone ArduPilot SITL mission: central nearest-pair greedy assignment, reactive Behavior Trees, controlled withdrawal, exclusive task ownership and measured recovery." />
   <title>Three-drone mission recovery · ARGOS Swarm Lab</title><link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 </head>
-<body class="mission-page recovery-page">
+<body class="mission-page recovery-page argos-workshop" data-workshop="22">
 <a class="skip-link" href="#recovery-experiment">Skip to experiment</a>
-<header class="site-header"><a class="brand" href="/">ARGOS <span class="brand-light">/ Swarm Lab</span></a><nav aria-label="Page navigation"><a href="#recovery-experiment">Experiment</a><a href="#recovery-method">Allocation &amp; execution ↗</a></nav><span class="local-tag"><span></span> LOCAL LAB</span></header>
+<!-- argos:header -->
 <main>
-<nav class="lesson-switcher" aria-label="Workshops"><a href="/">01 / Average consensus</a><a href="/movement/">02 / Potential fields</a><a href="/mission/">03 / Task allocation</a><a href="/architecture/">04 / Decision architectures</a><a href="/pathfinding/">05 / A* path planning</a><a href="/localization/">06 / Kalman position filtering</a><a href="/fusion/">07 / Shared estimates</a><a href="/orca/">08 / ORCA collision avoidance</a><a href="/cbba/">09 / CBBA task bundles</a><a href="/behavior/">10 / Behavior Trees and FSM</a><a href="/cooperative/">11 / Cooperative localization</a><a href="/slam/">12 / EKF-SLAM</a><a href="/pose-graph/">13 / Pose-graph SLAM</a><a href="/ros2/">14 / ROS 2 nodes and topics</a><a href="/qos/">15 / Message freshness and QoS</a><a href="/restart/">16 / Process failure and restart</a><a href="/middleware/">17 / DDS and Zenoh middleware</a><a href="/sitl/">18 / ArduPilot SITL and MAVLink</a><a href="/gazebo/">19 / Gazebo external physics</a><a href="/failsafe/">20 / GCS heartbeat failsafe</a><a href="/fleet/">21 / Two-vehicle mission</a><a href="/recovery/" aria-current="page">22 / Mission recovery</a><a href="/shared-world/">23 / Shared Gazebo world</a><span>Switching workshops starts a fresh experiment or replay.</span></nav>
+<div class="argos-workshop-topbar">
+      <!-- argos:workshop-nav -->
+      <nav class="argos-workshop-sections" aria-label="On this page"><a href="#recovery-experiment">Experiment</a><a href="#recovery-method">Allocation &amp; execution ↗</a></nav>
+    </div>
 <section class="mission-intro">
   <p class="eyebrow">22 / THREE DRONES · REACTIVE EXECUTION · TASK RECOVERY</p>
   <h1>One drone retires.<br><span>The mission continues.</span></h1>
@@ -67,6 +70,6 @@
   <div class="recovery-exercises"><h3>Try these inspections</h3><p><strong>1.</strong> Select withdrawal, then jump to <em>Task locked</em>. Inspect A1’s tree and the task owner. A halted attempt and a retained reservation should coexist.</p><p><strong>2.</strong> Jump to <em>Landed → release</em>, then <em>Reassigned</em>. Find the old and new owner and compare the command timestamps with the recorded task events.</p><p><strong>3.</strong> Jump to <em>Six tasks done</em>. Compare the task count with landing cleanup. Then switch to 2D: all three aircraft must stay at exactly the same recorded positions.</p></div>
   <h3>Primary sources and scope</h3><p><a href="https://arxiv.org/abs/1709.00084" target="_blank" rel="noreferrer">Colledanchise &amp; Ögren, Behavior Trees in Robotics and AI</a> explains tree semantics and reactivity. The bounded tree, ownership ledger and greedy policy here are explicit application choices.</p><p><a href="https://ardupilot.org/dev/docs/copter-commands-in-guided-mode.html" target="_blank" rel="noreferrer">ArduPilot Guided command documentation</a> describes the flight requests. <a href="https://mavlink.io/en/services/command.html" target="_blank" rel="noreferrer">MAVLink command protocol</a> distinguishes command acknowledgement from completed application work. See the <a href="../docs/lessons/22-mission-recovery.md">experiment specification</a> and <a href="../docs/lessons/22-mission-recovery-results.md">measured results</a> for the implemented assumptions.</p>
 </section>
-</main><footer class="site-footer"><span>ARGOS / Swarm Lab</span><span>22 / Three-drone mission recovery · local experiment</span></footer>
+</main><!-- argos:footer -->
 <script type="module" src="/src/recovery-main.js"></script>
 </body></html>
