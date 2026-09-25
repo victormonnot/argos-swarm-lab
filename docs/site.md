@@ -25,7 +25,12 @@ Gazebo world. Neither browser mode connects to live mission execution.
 
 The home terrain is an original schematic illustration. Its paths and links are
 hand-composed visual relations, not planned trajectories, recorded telemetry or
-evidence of mission success. Switching its layer changes only that illustration.
+evidence of mission success. Switching its layer changes only that illustration;
+communication links use a quiet cold-blue accent while paths remain red.
+Drag the drawing to rotate it, or hold Shift while dragging to move the view.
+With the drawing focused, arrow keys rotate and Shift + arrow keys move it.
+Double-click, Home or **Reset view** restores the initial viewpoint without
+changing the selected layer. Touch dragging rotates the same illustration.
 
 ## Catalog behavior
 

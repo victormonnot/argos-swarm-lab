@@ -1,11 +1,12 @@
 /* Editorial pages share the workshop shell, but never its simulation styles. */
 .argos-site {
-  --site-bg: #10100f;
+  --site-bg: #1a1a18;
   --site-panel: #191917;
   --site-ink: #e8e2d5;
   --site-muted: #aaa69d;
   --site-line: #3b3a35;
   --site-red: #e45a4c;
+  --site-blue: var(--argos-cool);
   --site-paper: #e1dbce;
   --site-paper-ink: #23231f;
   --site-paper-muted: #59574f;
@@ -26,7 +27,7 @@
 .argos-site button, .argos-site select, .argos-site input { font: inherit; }
 .argos-site button, .argos-site select, .argos-site summary { cursor: pointer; }
 .argos-site button { border-radius: 0; }
-.argos-site :is(a, button, input, select, summary):focus-visible { outline: 2px solid currentColor; outline-offset: 5px; }
+.argos-site :is(a, button, input, select, summary):focus-visible { outline: 2px solid var(--site-blue); outline-offset: 5px; }
 .argos-site .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; clip-path: inset(50%); overflow: hidden; white-space: nowrap; }
 .argos-skip { position: absolute; left: 20px; top: 12px; z-index: 10; padding: 10px 15px; background: #e8e2d5; color: #10100f; transform: translateY(-200%); }
 .argos-skip:focus { transform: translateY(0); }
@@ -45,12 +46,18 @@
 .hero-copy h1 { font: 500 clamp(65px, 6.8vw, 96px)/.99 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif; text-transform: uppercase; letter-spacing: -.015em; margin: 32px 0 27px; }
 .hero-lede { max-width: 330px; font-size: 17px; line-height: 1.7; color: var(--site-muted); }
 .home-figure { margin: 0; min-width: 0; display: flex; flex-direction: column; }
-.figure-heading { display: flex; justify-content: space-between; gap: 20px; align-items: center; color: var(--site-muted); padding-top: 14px; }
+.figure-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px; align-items: center; color: var(--site-muted); padding-top: 14px; }
+.figure-heading > .site-mono { color: var(--site-blue); }
 .figure-controls { display: flex; border: 1px solid var(--site-line); flex-shrink: 0; }
 .figure-controls button { border: 0; min-height: 39px; padding: 8px 14px; background: transparent; color: var(--site-muted); font: 400 12px 'IBM Plex Mono', monospace; }
 .figure-controls button[aria-pressed=true] { color: var(--site-bg); background: var(--site-ink); }
+.figure-controls button[data-layer=network][aria-pressed=true] { background: var(--site-blue); }
+.figure-controls .figure-reset { border-left: 1px solid var(--site-line); }
+.figure-help { color: var(--site-muted); font-size: 11px; padding: 0 0 10px; }
 .terrain-stage { min-width: 0; flex: 1; display: grid; align-items: center; }
 .terrain-stage canvas, .terrain-stage img { display: block; width: 100%; height: 440px; object-fit: contain; }
+.terrain-stage canvas { cursor: grab; touch-action: none; user-select: none; }
+.terrain-stage canvas[data-dragging] { cursor: grabbing; }
 .home-figure figcaption { display: flex; justify-content: space-between; gap: 20px; border-top: 1px solid var(--site-line); padding-top: 14px; font-size: 12px; color: var(--site-muted); }
 .home-figure figcaption strong { color: var(--site-ink); font-weight: 500; }
 .home-figure figcaption .site-mono { white-space: nowrap; }
@@ -58,6 +65,7 @@
 .home-index-band p:last-child { font-size: 13px; color: var(--site-muted); }
 .home-index-band strong { color: var(--site-ink); font-weight: 500; }
 .site-paper { background: var(--site-paper); color: var(--site-paper-ink); color-scheme: light; }
+.site-paper :is(a, button, input, select, summary):focus-visible { outline-color: var(--site-paper-ink); }
 .home-start { display: grid; grid-template-columns: 32% 68%; padding: 44px 48px 48px; }
 .start-intro { padding-right: 30px; }
 .start-intro h2 { font: 500 49px/1.03 'Barlow Condensed', 'Arial Narrow', sans-serif; text-transform: uppercase; margin: 18px 0; }
@@ -79,6 +87,7 @@
 .live-boundary { color: var(--site-muted); font-size: 14px; }
 .live-boundary strong { font-weight: 500; color: var(--site-ink); }
 .mode-shape { display: inline-block; width: 7px; height: 7px; border: 1px solid currentColor; flex-shrink: 0; }
+.mode-shape.simulation { color: var(--site-blue); }
 .mode-shape.replay { border-radius: 50%; }
 
 /* Static workshop links remain useful when filtering scripts are unavailable. */
@@ -92,7 +101,7 @@
 .catalog-filters :is(input[type=search], select) { background: var(--site-panel); border: 1px solid var(--site-line); color: var(--site-ink); padding: 11px; width: 100%; min-width: 0; min-height: 46px; border-radius: 0; font: 400 15px/1.4 'IBM Plex Sans', Arial, sans-serif; }
 .catalog-filters input::placeholder { color: var(--site-muted); }
 .catalog-filters .catalog-start { flex-direction: row; align-items: center; gap: 10px; grid-column: 1 / 4; font: 400 14px 'IBM Plex Sans', Arial, sans-serif; min-height: 36px; color: var(--site-ink); }
-.catalog-start input { accent-color: var(--site-ink); width: 17px; height: 17px; margin: 0; }
+.catalog-start input { accent-color: var(--site-blue); width: 17px; height: 17px; margin: 0; }
 .catalog-clear { justify-self: end; border: 0; padding: 8px 0; background: transparent; color: var(--site-ink); font-size: 13px !important; text-decoration: underline; text-underline-offset: 5px; }
 .catalog-status { display: flex; justify-content: space-between; gap: 25px; padding: 22px 0; align-items: baseline; }
 .catalog-active { font-size: 12px; color: var(--site-muted); text-align: right; overflow-wrap: anywhere; }
@@ -167,7 +176,7 @@
   .site-secondary { min-height: 44px; }
   .home-figure { margin-top: 28px; }
   .figure-heading { flex-direction: row; align-items: center; gap: 12px; }
-  .figure-heading > .site-mono { max-width: 150px; }
+  .figure-heading > .site-mono { max-width: 100%; }
   .figure-controls button { min-height: 44px; padding: 9px 12px; }
   .terrain-stage canvas, .terrain-stage img { height: 260px; }
   .home-figure figcaption { font-size: 12px; }

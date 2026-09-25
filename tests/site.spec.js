@@ -1,6 +1,25 @@
 import { test, expect } from '@playwright/test';
 
 const visibleEntries = (page) => page.locator('.workshop-entry:visible');
+const terrainImage = (page) => page.locator('#home-terrain').evaluate(async (canvas) => {
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  return canvas.toDataURL();
+});
+
+async function readyTerrain(page) {
+  const canvas = page.locator('#home-terrain');
+  await expect(canvas).toBeVisible();
+  await canvas.scrollIntoViewIfNeeded();
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  });
+  return canvas;
+}
+
+async function expectTerrainImage(page, image, matches = true) {
+  await expect.poll(async () => (await terrainImage(page)) === image).toBe(matches);
+}
 
 // Editorial navigation must not initialize a simulator or fetch a recording.
 test('home and catalog expose real entry points without heavy or external requests', async ({ page }) => {
@@ -14,13 +33,113 @@ test('home and catalog expose real entry points without heavy or external reques
   const original = await page.locator('#home-terrain').evaluate((canvas) => canvas.toDataURL());
   await page.getByRole('button', { name: 'Links', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Links', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  expect(await page.locator('#home-terrain').evaluate((canvas) => canvas.toDataURL())).not.toEqual(original);
+  await expectTerrainImage(page, original, false);
   await page.locator('.site-primary').click();
   await expect(page).toHaveURL(/\/workshops\/$/);
   await expect(visibleEntries(page)).toHaveCount(23);
   expect(urls.every((url) => new URL(url).hostname === '127.0.0.1')).toBe(true);
   expect(urls.filter((url) => /three|\/data\/|trace|\/src\/(main|.*-view|.*-model)\.js/.test(url))).toEqual([]);
   expect(errors).toEqual([]);
+});
+
+test('home terrain rotates and pans by dragging, then resets without changing its layer', async ({ page }) => {
+  await page.goto('/');
+  const canvas = await readyTerrain(page);
+  const baseline = await terrainImage(page);
+  const box = await canvas.boundingBox();
+  const center = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+
+  await page.mouse.move(center.x, center.y);
+  await page.mouse.down();
+  await page.mouse.move(center.x + 110, center.y + 35, { steps: 6 });
+  await page.mouse.up();
+  await expectTerrainImage(page, baseline, false);
+  const rotated = await terrainImage(page);
+  await page.mouse.move(center.x - 70, center.y - 30, { steps: 4 });
+  await expectTerrainImage(page, rotated);
+
+  await page.keyboard.down('Shift');
+  await page.mouse.down();
+  await page.mouse.move(center.x - 20, center.y + 25, { steps: 4 });
+  await page.mouse.up();
+  await page.keyboard.up('Shift');
+  await expectTerrainImage(page, rotated, false);
+  await page.getByRole('button', { name: 'Reset view', exact: true }).click();
+  await expectTerrainImage(page, baseline);
+
+  const links = page.getByRole('button', { name: 'Links', exact: true });
+  await links.click();
+  await expectTerrainImage(page, baseline, false);
+  const linksBaseline = await terrainImage(page);
+  await page.mouse.move(center.x, center.y);
+  await page.mouse.down();
+  await page.mouse.move(center.x - 85, center.y + 20, { steps: 5 });
+  await page.mouse.up();
+  await expectTerrainImage(page, linksBaseline, false);
+  await canvas.dblclick();
+  await expectTerrainImage(page, linksBaseline);
+  await expect(links).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('home terrain offers keyboard rotation, panning and reset', async ({ page }) => {
+  await page.goto('/');
+  const canvas = await readyTerrain(page);
+  await expect(canvas).toHaveAccessibleDescription(/arrow/i);
+  await expect(canvas).toHaveAccessibleDescription(/shift/i);
+  const baseline = await terrainImage(page);
+  await canvas.focus();
+  await page.keyboard.press('ArrowRight');
+  await expectTerrainImage(page, baseline, false);
+  const rotated = await terrainImage(page);
+  await page.keyboard.press('Shift+ArrowDown');
+  await expectTerrainImage(page, rotated, false);
+  await page.keyboard.press('Home');
+  await expectTerrainImage(page, baseline);
+  await expect(canvas).toBeFocused();
+});
+
+test('home terrain supports touch dragging and recovers after an interrupted gesture', async ({ browser }, testInfo) => {
+  const context = await browser.newContext({
+    baseURL: testInfo.project.use.baseURL,
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+  });
+  try {
+    const page = await context.newPage();
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.goto('/');
+    const canvas = await readyTerrain(page);
+    const baseline = await terrainImage(page);
+    const box = await canvas.boundingBox();
+    const start = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    const scrollBefore = await page.evaluate(() => scrollY);
+    const client = await context.newCDPSession(page);
+    await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [start] });
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchMove', touchPoints: [{ x: start.x + 55, y: start.y + 25 }],
+    });
+    await expectTerrainImage(page, baseline, false);
+    await client.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });
+    const interrupted = await terrainImage(page);
+    await page.touchscreen.tap(start.x - 35, start.y - 20);
+    await expectTerrainImage(page, interrupted);
+    await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [start] });
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchMove', touchPoints: [{ x: start.x - 45, y: start.y - 30 }],
+    });
+    await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await expectTerrainImage(page, interrupted, false);
+    expect(await page.evaluate(() => scrollY)).toBe(scrollBefore);
+
+    await page.getByRole('button', { name: 'Reset view', exact: true }).click();
+    await expectTerrainImage(page, baseline);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    expect(errors).toEqual([]);
+  } finally {
+    await context.close();
+  }
 });
 
 test('catalog filters intersect and restore on Back, Forward and a shared URL', async ({ page }) => {

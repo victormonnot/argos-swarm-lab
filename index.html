@@ -24,15 +24,17 @@
         <figure class="home-figure">
           <div class="figure-heading">
             <span class="site-mono">Fig. 01 / Collective behavior</span>
-            <div class="figure-controls" aria-label="Illustration layer" hidden>
+            <div class="figure-controls" role="group" aria-label="Illustration controls" hidden>
               <button type="button" data-layer="routes" aria-pressed="true">Paths</button>
               <button type="button" data-layer="network" aria-pressed="false">Links</button>
+              <button type="button" class="figure-reset" data-reset-view>Reset view</button>
             </div>
           </div>
           <div class="terrain-stage">
             <img class="terrain-still" src="/images/coordination-terrain.png" width="1200" height="800" alt="A schematic drawing of three quadrotors above a wireframe terrain, with illustrative red paths." />
-            <canvas id="home-terrain" hidden role="img" aria-label="Schematic drawing of three quadrotors and illustrative paths above a wireframe terrain. No mission is being simulated."></canvas>
+            <canvas id="home-terrain" hidden role="img" tabindex="0" aria-describedby="home-view-help" aria-label="Schematic drawing of three quadrotors and illustrative paths above a wireframe terrain. No mission is being simulated."></canvas>
           </div>
+          <p id="home-view-help" class="figure-help" hidden>Drag to rotate · Shift + drag to move<span class="sr-only">. Arrow keys rotate; Shift + arrow keys move. Home, double-click or Reset view restores the initial viewpoint.</span></p>
           <figcaption><span><strong>Three agents. A shared space.</strong><br>Schematic illustration · not a recorded run</span><span class="site-mono site-accent">A1 / A2 / A3</span></figcaption>
         </figure>
       </section>
