@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#10100f" />
+    <meta name="theme-color" content="#f3f4f1" />
     <meta name="description" content="Explore how robots work together through 23 inspectable workshops on coordination, navigation, estimation and simulated missions." />
     <title>ARGOS Swarm Lab · How robots work together</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -15,40 +15,59 @@
     <main id="main">
       <section class="home-hero" aria-labelledby="home-title">
         <div class="hero-copy">
-          <p class="site-overline">An interactive robotics lab</p>
-          <h1 id="home-title">How robots<br>work<br>together<span class="site-accent">.</span></h1>
-          <p class="hero-lede">Explore coordination, navigation and autonomy through experiments you can inspect.</p>
-          <a class="site-primary" href="/workshops/">Explore the workshops <span aria-hidden="true">↗</span></a>
-          <a class="site-secondary" href="/workshops/?start=1">New to robotics? Start here</a>
+          <p class="site-overline">A place to explore autonomous systems</p>
+          <h1 id="home-title">Small machines.<br>A world of questions.</h1>
+          <p class="hero-lede">Look closer. Try an idea. Understand what makes it work.</p>
         </div>
-        <figure class="home-figure">
-          <div class="figure-heading">
-            <span class="site-mono">Fig. 01 / Collective behavior</span>
-            <div class="figure-controls" role="group" aria-label="Illustration controls" hidden>
-              <button type="button" data-layer="routes" aria-pressed="true">Paths</button>
-              <button type="button" data-layer="network" aria-pressed="false">Links</button>
-              <button type="button" class="figure-reset" data-reset-view>Reset view</button>
+        <div class="home-exhibit">
+          <div class="scene-caption" aria-live="polite" aria-atomic="true">
+            <p class="scene-index site-mono">Fig. 01 / Coordination</p>
+            <h2 class="scene-title">Thinking together.</h2>
+            <p class="scene-description">A shared decision can emerge from many small exchanges.</p>
+          </div>
+          <figure class="home-figure">
+            <div class="terrain-stage">
+              <img class="terrain-still" src="/images/coordination-terrain.png" width="1200" height="800" alt="A schematic drawing of four quadrotors linked above a layered wireframe landscape." />
+              <canvas id="home-terrain" hidden role="img" tabindex="0" aria-describedby="home-view-help" aria-label="Schematic drawing of four quadrotors with local communication links above a layered landscape. No mission is being simulated."></canvas>
             </div>
+            <figcaption class="figure-controls" hidden>
+              <p id="home-view-help" class="figure-help">Drag to rotate · Shift + drag to move<span class="sr-only">. Arrow keys rotate; Shift + arrow keys move. Home, double-click or Reset view restores the initial viewpoint.</span></p>
+              <button type="button" data-reset-view>Reset view</button>
+            </figcaption>
+          </figure>
+          <div class="scene-callout">
+            <p class="site-mono">A question to start with</p>
+            <p class="scene-question">Can a group agree without a leader?</p>
+            <a class="scene-link site-text-link" href="/consensus/">Explore the idea <span aria-hidden="true">↗</span></a>
           </div>
-          <div class="terrain-stage">
-            <img class="terrain-still" src="/images/coordination-terrain.png" width="1200" height="800" alt="A schematic drawing of three quadrotors above a wireframe terrain, with illustrative red paths." />
-            <canvas id="home-terrain" hidden role="img" tabindex="0" aria-describedby="home-view-help" aria-label="Schematic drawing of three quadrotors and illustrative paths above a wireframe terrain. No mission is being simulated."></canvas>
+        </div>
+        <div class="scene-notes site-mono"><p>Concept illustration · not a live mission</p><p class="scene-legend">Local connections</p></div>
+        <section class="home-discover" aria-labelledby="discover-title">
+          <div class="section-heading"><h2 id="discover-title">Follow your curiosity.</h2><p>Pick a different point of view</p></div>
+          <div class="home-topics" role="group" aria-label="Explore a topic" hidden>
+            <button type="button" class="home-topic" data-topic="coordination" aria-pressed="true"><span class="topic-index site-mono">01 <span aria-hidden="true">↗</span></span><span class="topic-title">Coordination</span><span class="topic-description">How a group acts together.</span></button>
+            <button type="button" class="home-topic" data-topic="motion" aria-pressed="false"><span class="topic-index site-mono">02 <span aria-hidden="true">↗</span></span><span class="topic-title">Motion</span><span class="topic-description">How to find a way through.</span></button>
+            <button type="button" class="home-topic" data-topic="perception" aria-pressed="false"><span class="topic-index site-mono">03 <span aria-hidden="true">↗</span></span><span class="topic-title">Perception</span><span class="topic-description">How measurements shape an estimate.</span></button>
           </div>
-          <p id="home-view-help" class="figure-help" hidden>Drag to rotate · Shift + drag to move<span class="sr-only">. Arrow keys rotate; Shift + arrow keys move. Home, double-click or Reset view restores the initial viewpoint.</span></p>
-          <figcaption><span><strong>Three agents. A shared space.</strong><br>Schematic illustration · not a recorded run</span><span class="site-mono site-accent">A1 / A2 / A3</span></figcaption>
-        </figure>
+          <div class="home-topics home-topics-fallback">
+            <a class="home-topic" href="/consensus/"><span class="topic-index site-mono">01 <span aria-hidden="true">↗</span></span><span class="topic-title">Coordination</span><span class="topic-description">How a group acts together.</span></a>
+            <a class="home-topic" href="/pathfinding/"><span class="topic-index site-mono">02 <span aria-hidden="true">↗</span></span><span class="topic-title">Motion</span><span class="topic-description">How to find a way through.</span></a>
+            <a class="home-topic" href="/localization/"><span class="topic-index site-mono">03 <span aria-hidden="true">↗</span></span><span class="topic-title">Perception</span><span class="topic-description">How measurements shape an estimate.</span></a>
+          </div>
+          <div class="home-index-band"><p><strong>23 workshops.</strong> 13 interactive simulations · 10 recorded replays.</p><a class="site-primary site-text-link" href="/workshops/">Find your first workshop <span aria-hidden="true">↗</span></a></div>
+        </section>
       </section>
-      <div class="home-index-band"><p class="site-mono">23 workshops / From first principles to shared worlds</p><p><strong>Change a rule.</strong> Observe the result.</p></div>
-      <section class="home-start site-paper" aria-labelledby="start-title">
-        <div class="start-intro"><p class="site-mono">A place to start / 01</p><h2 id="start-title">Follow a<br>question.</h2><p>You do not need a robotics background. Begin with something you can see.</p></div>
-        <div class="start-list">
-          <a class="start-row" href="/consensus/"><span class="start-id">01</span><span><h3>How do robots reach agreement?</h3><p>Consensus · Beginner · Interactive simulation</p></span><span aria-hidden="true">↗</span></a>
-          <a class="start-row" href="/pathfinding/"><span class="start-id">05</span><span><h3>How does a robot find its way?</h3><p>Path planning · Beginner · Interactive simulation</p></span><span aria-hidden="true">↗</span></a>
-          <a class="start-row" href="/shared-world/"><span class="start-id">23</span><span><h3>What changes in a shared world?</h3><p>Three-drone mission · Advanced · Recorded replay</p></span><span aria-hidden="true">↗</span></a>
+      <section id="learning-paths" class="home-paths" aria-labelledby="paths-title">
+        <div class="section-heading"><div><p class="site-overline">Learning paths</p><h2 id="paths-title">One idea leads to another.</h2></div><a class="site-secondary" href="/workshops/?start=1">New to robotics? Start here</a></div>
+        <p class="section-lede">Follow a thread through the lab. Each stop is a working experiment, with its own explanation, assumptions and limits.</p>
+        <div class="path-list">
+          <article class="learning-path"><p class="site-mono">01 / Start with the group</p><h3>From one robot <br>to many.</h3><p>Discover how local exchanges and shared decisions shape a group.</p><ol><li><a href="/consensus/">Reach agreement</a><span>Consensus</span></li><li><a href="/mission/">Decide who does what</a><span>Task allocation</span></li><li><a href="/architecture/">Change who decides</a><span>Decision architectures</span></li></ol><p class="path-preparation">Start here: no previous workshop needed.</p></article>
+          <article class="learning-path"><p class="site-mono">02 / Find a way through</p><h3>From a map <br>to a route.</h3><p>Compare planned routes with local motion and avoiding other robots.</p><ol><li><a href="/pathfinding/">Find a route</a><span>A* path planning</span></li><li><a href="/movement/">Try a local rule</a><span>Artificial Potential Fields</span></li><li><a href="/orca/">Make room for a neighbour</a><span>Reciprocal collision avoidance</span></li></ol><p class="path-preparation">Start here: no previous workshop needed.</p></article>
+          <article class="learning-path"><p class="site-mono">03 / Make sense of signals</p><h3>From a reading <br>to a belief.</h3><p>Explore what uncertain measurements reveal, alone and together.</p><ol><li><a href="/localization/">Estimate a position</a><span>Position estimation</span></li><li><a href="/fusion/">Combine imperfect estimates</a><span>Covariance Intersection</span></li><li><a href="/cooperative/">Localize together</a><span>Cooperative localization</span></li></ol><p class="path-preparation">Before this path: <a href="/pathfinding/">A* path planning</a>.</p></article>
         </div>
       </section>
       <section id="about" class="home-about" aria-labelledby="about-title">
-        <div class="about-heading"><p class="site-overline">Understand the evidence</p><h2 id="about-title">A model you<br>can question.</h2><p>ARGOS makes the assumptions, behavior and limits of multi-robot systems inspectable. Begin with an explanation, then explore the exact rule and its measured outcomes.</p></div>
+        <div class="about-heading"><p class="site-overline">Understand the evidence</p><h2 id="about-title">An idea you<br>can inspect.</h2><p>Begin with an explanation, then explore the exact rule and its measured outcomes. Knowing what a model leaves out is part of understanding it.</p></div>
         <div class="evidence-list">
           <article><h3><span class="mode-shape simulation" aria-hidden="true"></span>Interactive simulation</h3><p>Change a parameter and compute a new outcome in your browser. These educational models state their sensing, timing and motion assumptions.</p><a href="/workshops/?mode=simulation">Explore browser models <span aria-hidden="true">↗</span></a></article>
           <article><h3><span class="mode-shape replay" aria-hidden="true"></span>Recorded replay</h3><p>Inspect saved execution from ROS 2, autopilot software or Gazebo. Playback reveals recorded evidence; it does not control a running mission.</p><a href="/workshops/?mode=replay">Explore recorded runs <span aria-hidden="true">↗</span></a></article>

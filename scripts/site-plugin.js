@@ -16,18 +16,19 @@ function prefixPageLinks(html, base) {
 
 function renderHeader(path, base) {
   const inCatalog = /\/workshops(?:\/|$)/.test(path);
+  const onHome = path === '/' || path === '/index.html';
   return `<header class="argos-header">
     <a class="argos-brand" href="${siteUrl('/', base)}" aria-label="ARGOS Swarm Lab home">
-      <svg class="argos-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 29 26H3Z M16 3v15M3 26l13-8 13 8"/><circle cx="16" cy="3" r="2"/><circle cx="3" cy="26" r="2"/><circle cx="29" cy="26" r="2"/><circle cx="16" cy="18" r="2"/></svg>
+      <span class="argos-mark" aria-hidden="true"></span>
       <span>ARGOS <small>SWARM LAB</small></span>
     </a>
     <button class="argos-menu-toggle" type="button" aria-expanded="false" aria-controls="argos-primary-nav">Menu <span aria-hidden="true">+</span></button>
     <nav id="argos-primary-nav" class="argos-primary-nav" aria-label="Main navigation">
+      <a href="${siteUrl('/', base)}"${onHome ? ' aria-current="page"' : ''}>Explore</a>
       <a href="${siteUrl('/workshops/', base)}"${inCatalog ? ' aria-current="page"' : ''}>Workshops</a>
-      <a href="${siteUrl('/workshops/?start=1', base)}">Start here <span aria-hidden="true">↗</span></a>
-      <a href="${siteUrl('/#about', base)}">About</a>
+      <a href="${siteUrl('/#learning-paths', base)}">Learning paths</a>
     </nav>
-    <span class="argos-header-caption">LEARN / EXPERIMENT / UNDERSTAND</span>
+    <a class="argos-header-action" href="${siteUrl('/consensus/', base)}">Start with an idea <span aria-hidden="true">↗</span></a>
   </header>`;
 }
 
@@ -46,7 +47,7 @@ function renderWorkshopNavigation(workshop, base) {
 }
 
 function renderFooter(base) {
-  return `<footer class="argos-footer"><a class="argos-footer-brand" href="${siteUrl('/', base)}">ARGOS <span>/ SWARM LAB</span></a><p>Explore collective behavior. Understand its limits.</p><a href="${siteUrl('/workshops/', base)}">Explore the workshops <span aria-hidden="true">↗</span></a></footer>`;
+  return `<footer class="argos-footer"><a class="argos-footer-brand" href="${siteUrl('/', base)}">ARGOS <span>/ SWARM LAB</span></a><p>Experiments for curious minds.</p><nav class="argos-footer-links" aria-label="Footer navigation"><a href="${siteUrl('/#about', base)}">About the lab</a><a href="${siteUrl('/workshops/', base)}">Workshop library <span aria-hidden="true">↗</span></a></nav></footer>`;
 }
 
 /** Render shared navigation into static HTML so every route works without JavaScript. */

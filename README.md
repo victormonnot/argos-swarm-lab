@@ -8,6 +8,9 @@ The home page introduces the lab; `/workshops/` lets you explore all 23 workshop
 by question, theme, difficulty and execution mode. Each entry explains recommended
 preparation and model limits. **Start here** selects the four introductory
 workshops without workshop prerequisites. Filters are shareable through the URL.
+Three [learning paths](docs/site.md#learning-paths) connect existing workshops on
+group decisions, motion and position estimates. The home illustration introduces
+these themes; its camera and topic controls manipulate a schematic, not a mission.
 
 Workshops 1–13 are **interactive simulations** computed in the browser. Workshops
 14–23 are **recorded replays** of software execution with declared synthetic data
@@ -778,7 +781,8 @@ campaigns are not implemented. See the
   contain deterministic transitions without DOM, rendering
   or wall-clock dependencies. `src/assignment.js` implements the matching rules.
 - **[Vite](https://vite.dev/guide/):** local development and static production
-  builds, with twenty-three explicit HTML entries in `vite.config.js`. The lockfile records
+  builds, with twenty-five explicit HTML entries in `vite.config.js` (home, catalog
+  and twenty-three workshops). The lockfile records
   exact installed versions.
 - **SVG and [Three.js](https://threejs.org/docs/pages/WebGLRenderer.html):** readable
   2D diagrams and spatial views with orbit controls. Each pair receives the same

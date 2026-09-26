@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { workshops } from '../src/site/workshops.js';
 
 const visibleEntries = (page) => page.locator('.workshop-entry:visible');
 const terrainImage = (page) => page.locator('#home-terrain').evaluate(async (canvas) => {
@@ -28,12 +29,10 @@ test('home and catalog expose real entry points without heavy or external reques
   page.on('request', (request) => urls.push(request.url()));
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('How robotsworktogether.');
-  await expect(page.locator('#home-terrain')).toBeVisible();
-  const original = await page.locator('#home-terrain').evaluate((canvas) => canvas.toDataURL());
-  await page.getByRole('button', { name: 'Links', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Links', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await expectTerrainImage(page, original, false);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Small machines\.\s*A world of questions\./);
+  await readyTerrain(page);
+  await expect(page.locator('.scene-link')).toHaveAttribute('href', '/consensus/');
+  await expect(page.locator('.site-primary')).toHaveAttribute('href', '/workshops/');
   await page.locator('.site-primary').click();
   await expect(page).toHaveURL(/\/workshops\/$/);
   await expect(visibleEntries(page)).toHaveCount(23);
@@ -42,7 +41,34 @@ test('home and catalog expose real entry points without heavy or external reques
   expect(errors).toEqual([]);
 });
 
-test('home terrain rotates and pans by dragging, then resets without changing its layer', async ({ page }) => {
+test('home topics change the illustration and lead to their working workshop', async ({ page }) => {
+  await page.goto('/');
+  await readyTerrain(page);
+  const baseline = await terrainImage(page);
+  const title = await page.locator('.scene-title').textContent();
+  const question = await page.locator('.scene-question').textContent();
+  await expect(page.locator('[data-topic="coordination"]')).toHaveAttribute('aria-pressed', 'true');
+  const drawings = new Set([baseline]);
+
+  for (const [topic, url] of [['motion', '/pathfinding/'], ['perception', '/localization/']]) {
+    const button = page.locator(`[data-topic="${topic}"]`);
+    await button.focus();
+    await page.keyboard.press('Enter');
+    await expect(button).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('[data-topic][aria-pressed="true"]')).toHaveCount(1);
+    await expect(page.locator('.scene-title')).not.toHaveText(title);
+    await expect(page.locator('.scene-question')).not.toHaveText(question);
+    await expect(page.locator('.scene-link')).toHaveAttribute('href', url);
+    await expectTerrainImage(page, baseline, false);
+    drawings.add(await terrainImage(page));
+  }
+  expect(drawings.size).toBe(3);
+  await page.locator('.scene-link').click();
+  await expect(page).toHaveURL('/localization/');
+  await expect(page.locator('.argos-workshop-mode')).toHaveText('Interactive simulation');
+});
+
+test('home terrain rotates and pans by dragging, then resets without changing its topic', async ({ page }) => {
   await page.goto('/');
   const canvas = await readyTerrain(page);
   const baseline = await terrainImage(page);
@@ -67,18 +93,24 @@ test('home terrain rotates and pans by dragging, then resets without changing it
   await page.getByRole('button', { name: 'Reset view', exact: true }).click();
   await expectTerrainImage(page, baseline);
 
-  const links = page.getByRole('button', { name: 'Links', exact: true });
-  await links.click();
+  const motion = page.locator('[data-topic="motion"]');
+  await motion.click();
   await expectTerrainImage(page, baseline, false);
-  const linksBaseline = await terrainImage(page);
+  const motionBaseline = await terrainImage(page);
+  // Selecting a topic can scroll the scene; use its current position for dragging.
+  await canvas.scrollIntoViewIfNeeded();
+  const motionBox = await canvas.boundingBox();
+  center.x = motionBox.x + motionBox.width / 2;
+  center.y = motionBox.y + motionBox.height / 2;
   await page.mouse.move(center.x, center.y);
   await page.mouse.down();
   await page.mouse.move(center.x - 85, center.y + 20, { steps: 5 });
   await page.mouse.up();
-  await expectTerrainImage(page, linksBaseline, false);
+  await expectTerrainImage(page, motionBaseline, false);
   await canvas.dblclick();
-  await expectTerrainImage(page, linksBaseline);
-  await expect(links).toHaveAttribute('aria-pressed', 'true');
+  await expectTerrainImage(page, motionBaseline);
+  await expect(motion).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.scene-link')).toHaveAttribute('href', '/pathfinding/');
 });
 
 test('home terrain offers keyboard rotation, panning and reset', async ({ page }) => {
@@ -188,6 +220,30 @@ test('start-here and replay discovery expose preparation and actual mode', async
   await expect(page.locator('.argos-workshop-mode')).toHaveText('Recorded replay');
 });
 
+test('shared learning-path navigation opens three curated routes through existing workshops', async ({ page }) => {
+  await page.goto('/workshops/');
+  const navigation = page.getByRole('navigation', { name: 'Main navigation' });
+  await expect(navigation.getByRole('link', { name: 'Explore', exact: true })).toHaveAttribute('href', '/');
+  await navigation.getByRole('link', { name: 'Learning paths', exact: true }).click();
+  await expect(page).toHaveURL('/#learning-paths');
+  const paths = page.locator('#learning-paths');
+  await expect(paths).toBeVisible();
+  await expect(paths.locator('article')).toHaveCount(3);
+  const validRoutes = new Set(workshops.map((workshop) => workshop.url));
+  for (const card of await paths.locator('article').all()) {
+    const links = card.locator('a[href]');
+    expect(await links.count()).toBeGreaterThan(0);
+    for (const href of await links.evaluateAll((anchors) => anchors.map((link) => link.getAttribute('href')))) {
+      expect(validRoutes.has(href)).toBe(true);
+    }
+  }
+  const firstStep = paths.locator('article a[href]').first();
+  const destination = await firstStep.getAttribute('href');
+  await firstStep.click();
+  await expect(page).toHaveURL(destination);
+  await expect(page.locator('.argos-workshop-mode')).toBeVisible();
+});
+
 test('known consensus bookmarks redirect while home anchors remain on home', async ({ page }) => {
   for (const anchor of ['experiment', 'field-notes', 'model', 'state-table']) {
     await page.goto(`/#${anchor}`);
@@ -205,6 +261,9 @@ test('home, catalog and preparation remain navigable without JavaScript', async 
   await page.goto('/');
   await expect(page.locator('.terrain-still')).toBeVisible();
   await expect(page.locator('.terrain-still')).toHaveJSProperty('naturalWidth', 1200);
+  await expect(page.locator('.terrain-still')).toHaveJSProperty('naturalHeight', 800);
+  await expect(page.locator('#learning-paths article')).toHaveCount(3);
+  await expect(page.locator('.scene-link')).toHaveAttribute('href', '/consensus/');
   await page.locator('.site-primary').click();
   await expect(visibleEntries(page)).toHaveCount(23);
   await expect(page.locator('#catalog-filters')).toBeHidden();
@@ -222,6 +281,11 @@ test('mobile keyboard navigation, filtering and layout fit at 320 pixels', async
   await page.goto('/');
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
+  const skipColors = await page.getByRole('link', { name: 'Skip to content' }).evaluate((link) => {
+    const style = getComputedStyle(link);
+    return [style.color, style.backgroundColor];
+  });
+  expect(skipColors[0]).not.toBe(skipColors[1]);
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL('/#main');
   const menu = page.getByRole('button', { name: /Menu/ });
@@ -230,6 +294,9 @@ test('mobile keyboard navigation, filtering and layout fit at 320 pixels', async
   await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Workshops', exact: true }).click();
   await page.getByRole('combobox', { name: 'Execution mode', exact: true }).selectOption('replay');
   await expect(visibleEntries(page)).toHaveCount(10);
+  // A non-overflowing grid can still put text in the narrow number column.
+  const description = visibleEntries(page).first().locator('.workshop-description');
+  expect((await description.boundingBox()).width).toBeGreaterThan(200);
   await page.locator('[data-workshop-id="23"] summary').click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.goto('/');
