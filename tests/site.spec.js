@@ -231,6 +231,13 @@ test('shared learning-path navigation opens three curated routes through existin
   await expect(paths.locator('article')).toHaveCount(3);
   const validRoutes = new Set(workshops.map((workshop) => workshop.url));
   for (const card of await paths.locator('article').all()) {
+    const steps = card.locator('details');
+    await expect(steps).not.toHaveAttribute('open', '');
+    await expect(steps.locator('ol')).toBeHidden();
+    await steps.locator('summary').focus();
+    await page.keyboard.press('Enter');
+    await expect(steps.locator('ol')).toBeVisible();
+    await expect(steps.locator('li')).toHaveCount(3);
     const links = card.locator('a[href]');
     expect(await links.count()).toBeGreaterThan(0);
     for (const href of await links.evaluateAll((anchors) => anchors.map((link) => link.getAttribute('href')))) {
@@ -263,6 +270,10 @@ test('home, catalog and preparation remain navigable without JavaScript', async 
   await expect(page.locator('.terrain-still')).toHaveJSProperty('naturalWidth', 1200);
   await expect(page.locator('.terrain-still')).toHaveJSProperty('naturalHeight', 800);
   await expect(page.locator('#learning-paths article')).toHaveCount(3);
+  const path = page.locator('#learning-paths article').first();
+  await path.locator('summary').click();
+  await expect(path.locator('ol')).toBeVisible();
+  await expect(path.locator('ol a')).toHaveCount(3);
   await expect(page.locator('.scene-link')).toHaveAttribute('href', '/consensus/');
   await page.locator('.site-primary').click();
   await expect(visibleEntries(page)).toHaveCount(23);

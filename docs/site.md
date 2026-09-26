@@ -43,6 +43,10 @@ changing the selected topic. Touch dragging rotates the same illustration.
 
 The home page provides three reading sequences. Every stop links to its existing
 workshop; there is no account, progress tracking or access gate.
+Each path has a schematic illustration, a short introduction and a direct start
+link. **View the 3 workshops** expands the sequence and preparation notes, with
+keyboard support and without JavaScript. The perception path's prerequisite
+also remains visible beside its introduction.
 
 | Path | Workshop sequence | Preparation |
 | --- | --- | --- |

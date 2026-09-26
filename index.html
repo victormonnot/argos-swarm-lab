@@ -58,21 +58,99 @@
         </section>
       </section>
       <section id="learning-paths" class="home-paths" aria-labelledby="paths-title">
-        <div class="section-heading"><div><p class="site-overline">Learning paths</p><h2 id="paths-title">One idea leads to another.</h2></div><a class="site-secondary" href="/workshops/?start=1">New to robotics? Start here</a></div>
-        <p class="section-lede">Follow a thread through the lab. Each stop is a working experiment, with its own explanation, assumptions and limits.</p>
-        <div class="path-list">
-          <article class="learning-path"><p class="site-mono">01 / Start with the group</p><h3>From one robot <br>to many.</h3><p>Discover how local exchanges and shared decisions shape a group.</p><ol><li><a href="/consensus/">Reach agreement</a><span>Consensus</span></li><li><a href="/mission/">Decide who does what</a><span>Task allocation</span></li><li><a href="/architecture/">Change who decides</a><span>Decision architectures</span></li></ol><p class="path-preparation">Start here: no previous workshop needed.</p></article>
-          <article class="learning-path"><p class="site-mono">02 / Find a way through</p><h3>From a map <br>to a route.</h3><p>Compare planned routes with local motion and avoiding other robots.</p><ol><li><a href="/pathfinding/">Find a route</a><span>A* path planning</span></li><li><a href="/movement/">Try a local rule</a><span>Artificial Potential Fields</span></li><li><a href="/orca/">Make room for a neighbour</a><span>Reciprocal collision avoidance</span></li></ol><p class="path-preparation">Start here: no previous workshop needed.</p></article>
-          <article class="learning-path"><p class="site-mono">03 / Make sense of signals</p><h3>From a reading <br>to a belief.</h3><p>Explore what uncertain measurements reveal, alone and together.</p><ol><li><a href="/localization/">Estimate a position</a><span>Position estimation</span></li><li><a href="/fusion/">Combine imperfect estimates</a><span>Covariance Intersection</span></li><li><a href="/cooperative/">Localize together</a><span>Cooperative localization</span></li></ol><p class="path-preparation">Before this path: <a href="/pathfinding/">A* path planning</a>.</p></article>
+        <div class="paths-heading">
+          <p class="site-overline">Learning paths</p>
+          <h2 id="paths-title">One idea leads to another.</h2>
+          <p>Pick a thread. Follow three connected experiments.</p>
         </div>
+        <div class="path-list">
+          <article class="learning-path">
+            <div class="path-illustration" aria-hidden="true">
+              <svg viewBox="0 0 300 170" fill="none">
+                <path class="path-structure" d="m36 104 107-62 119 59-108 61z M36 83l107-62 119 59-108 61z M36 83v21m107-83v21m119 38v21m-108 40v21"/>
+                <path class="path-signal" d="m74 84 68-40 77 38-66 38z M74 84l79 36m-11-76 11 76"/>
+                <g class="path-node"><ellipse cx="74" cy="84" rx="10" ry="6"/><ellipse cx="142" cy="44" rx="10" ry="6"/><ellipse cx="219" cy="82" rx="10" ry="6"/><ellipse cx="153" cy="120" rx="10" ry="6"/></g>
+                <ellipse class="path-structure" cx="142" cy="44" rx="20" ry="12"/>
+              </svg>
+            </div>
+            <p class="site-mono">01 / Coordination</p>
+            <h3>From one robot<br>to many.</h3>
+            <div class="path-copy">
+              <p class="path-description">How local rules become a shared decision.</p>
+            </div>
+            <a class="path-start site-text-link" href="/consensus/">Start with consensus <span aria-hidden="true">↗</span></a>
+            <details class="path-details">
+              <summary>View the 3 workshops</summary>
+              <ol><li><a href="/consensus/">Reach agreement</a><span>Consensus</span></li><li><a href="/mission/">Decide who does what</a><span>Task allocation</span></li><li><a href="/architecture/">Change who decides</a><span>Decision architectures</span></li></ol>
+              <p class="path-preparation">No previous workshop needed.</p>
+            </details>
+          </article>
+          <article class="learning-path">
+            <div class="path-illustration" aria-hidden="true">
+              <svg viewBox="0 0 300 170" fill="none">
+                <path class="path-structure" d="m34 102 111-67 121 59-111 68z M62 119l111-70 M92 134l109-71 M123 149l108-73 M63 84l121 59 M92 67l121 59 M119 51l121 59"/>
+                <path class="path-obstacle" d="m130 88 31-18 29 15-31 19z M130 88V49l31-18 29 15v39 M130 49l29 16 31-19m-31 19v39"/>
+                <path class="path-signal" d="m75 111 28-18 43 22 64-40"/>
+                <g class="path-node"><ellipse cx="75" cy="111" rx="6" ry="4"/><ellipse cx="210" cy="75" rx="6" ry="4"/></g>
+              </svg>
+            </div>
+            <p class="site-mono">02 / Motion</p>
+            <h3>From a map<br>to a route.</h3>
+            <div class="path-copy">
+              <p class="path-description">Find a way through a world of obstacles.</p>
+            </div>
+            <a class="path-start site-text-link" href="/pathfinding/">Start with pathfinding <span aria-hidden="true">↗</span></a>
+            <details class="path-details">
+              <summary>View the 3 workshops</summary>
+              <ol><li><a href="/pathfinding/">Find a route</a><span>A* path planning</span></li><li><a href="/movement/">Try a local rule</a><span>Artificial Potential Fields</span></li><li><a href="/orca/">Make room for a neighbour</a><span>Reciprocal collision avoidance</span></li></ol>
+              <p class="path-preparation">No previous workshop needed.</p>
+            </details>
+          </article>
+          <article class="learning-path">
+            <div class="path-illustration" aria-hidden="true">
+              <svg viewBox="0 0 300 170" fill="none">
+                <path class="path-structure" d="m38 107 110-63 116 57-110 63z M76 85l116 57m-79-78 115 58 M76 126l109-64m-71 83 108-64"/>
+                <g transform="rotate(-15 154 100)"><ellipse class="path-structure" cx="154" cy="100" rx="77" ry="40"/><ellipse class="path-signal" cx="154" cy="100" rx="52" ry="27"/><ellipse class="path-signal" cx="154" cy="100" rx="25" ry="13"/></g>
+                <path class="path-structure" d="M154 100V37m-5 0h10 M107 117l47-17 60-25"/>
+                <g class="path-node"><circle cx="154" cy="100" r="5"/><circle cx="154" cy="37" r="4"/></g>
+              </svg>
+            </div>
+            <p class="site-mono">03 / Perception</p>
+            <h3>From a reading<br>to a belief.</h3>
+            <div class="path-copy">
+              <p class="path-description">Make sense of imperfect measurements.</p>
+  <p class="path-prerequisite">First: <a href="/pathfinding/">A* path planning</a>.</p>
+            </div>
+            <a class="path-start site-text-link" href="/localization/">Start with estimation <span aria-hidden="true">↗</span></a>
+            <details class="path-details">
+              <summary>View the 3 workshops</summary>
+              <ol><li><a href="/localization/">Estimate a position</a><span>Position estimation</span></li><li><a href="/fusion/">Combine imperfect estimates</a><span>Covariance Intersection</span></li><li><a href="/cooperative/">Localize together</a><span>Cooperative localization</span></li></ol>
+              <p class="path-preparation">Before this path: <a href="/pathfinding/">A* path planning</a>.</p>
+            </details>
+          </article>
+        </div>
+        <a class="paths-starter site-secondary" href="/workshops/?start=1">New to robotics? Start here</a>
       </section>
       <section id="about" class="home-about" aria-labelledby="about-title">
-        <div class="about-heading"><p class="site-overline">Understand the evidence</p><h2 id="about-title">An idea you<br>can inspect.</h2><p>Begin with an explanation, then explore the exact rule and its measured outcomes. Knowing what a model leaves out is part of understanding it.</p></div>
-        <div class="evidence-list">
-          <article><h3><span class="mode-shape simulation" aria-hidden="true"></span>Interactive simulation</h3><p>Change a parameter and compute a new outcome in your browser. These educational models state their sensing, timing and motion assumptions.</p><a href="/workshops/?mode=simulation">Explore browser models <span aria-hidden="true">↗</span></a></article>
-          <article><h3><span class="mode-shape replay" aria-hidden="true"></span>Recorded replay</h3><p>Inspect saved execution from ROS 2, autopilot software or Gazebo. Playback reveals recorded evidence; it does not control a running mission.</p><a href="/workshops/?mode=replay">Explore recorded runs <span aria-hidden="true">↗</span></a></article>
-          <p class="live-boundary"><strong>Live execution is separate.</strong> The site currently has no connection to a running mission. All flight examples use simulated dynamics.</p>
+        <div class="about-heading">
+          <p class="site-overline">Inside the lab</p>
+          <h2 id="about-title">Try an idea.<br>Look at the evidence.</h2>
         </div>
+        <div class="evidence-list">
+          <article>
+            <p class="site-mono">Change something</p>
+            <h3>Interactive simulation</h3>
+            <p class="evidence-description">Change a rule. Compute a new outcome in your browser.</p>
+            <a class="site-text-link" href="/workshops/?mode=simulation">Explore 13 simulations <span aria-hidden="true">↗</span></a>
+          </article>
+          <article>
+            <p class="site-mono">Look closer</p>
+            <h3>Recorded replay</h3>
+            <p class="evidence-description">Follow a saved run from ROS 2, autopilot software or Gazebo.</p>
+            <a class="site-text-link" href="/workshops/?mode=replay">Explore 10 recordings <span aria-hidden="true">↗</span></a>
+          </article>
+        </div>
+        <p class="live-boundary">No live mission connection. Flight examples use simulated dynamics.</p>
       </section>
     </main>
     <!-- argos:footer -->
